@@ -1,0 +1,317 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<%
+// The five procedure steps, given icons so the tracker reads at a glance. The
+// labels come from config/lsa2.js (steps); icons are presentation only.
+const stepIcons = ['folder-plus', 'search', 'geo-alt', 'send-check', 'award'];
+const metCount = criteria.filter(function (c) { return c.met === true; }).length;
+// "done" means the application has passed that step (application.step >= s.step);
+// the step now in progress is application.step + 1.
+const currentStep = application ? application.step + 1 : 0;
+const certified = application && application.certificateNo;
+// Overall progress: before applying it tracks the eligibility criteria; once the
+// application is live it tracks the five procedure steps.
+const pct = certified ? 100
+          : application ? Math.round((application.step / steps.length) * 100)
+          : Math.round((metCount / criteria.length) * 100);
+%>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <a href="/lsa2" class="text-decoration-none small text-muted d-inline-flex align-items-center mb-1">
+                <i class="bi bi-arrow-left me-1"></i>All up-scaling farms
+            </a>
+            <h1 class="page-title mb-1"><%= farm.name %></h1>
+            <p class="page-subtitle mb-0">
+                <i class="bi bi-person me-1"></i><%= farm.operator %>
+                <span class="mx-1">·</span>
+                <i class="bi bi-geo-alt me-1"></i><%= farm.municipality %>, <%= farm.province %>
+            </p>
+        </div>
+        <div class="text-end">
+            <% if (certified) { %>
+            <span class="badge bg-success-subtle text-success fs-6 px-3 py-2"><i class="bi bi-award me-1"></i>Certified LSA II</span>
+            <% } else if (application) { %>
+            <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2">Step <%= application.step %> of <%= steps.length %></span>
+            <% } else if (eligible) { %>
+            <span class="badge bg-success-subtle text-success fs-6 px-3 py-2">Eligible to apply</span>
+            <% } else { %>
+            <span class="badge bg-secondary-subtle text-secondary fs-6 px-3 py-2"><%= metCount %> of <%= criteria.length %> criteria met</span>
+            <% } %>
+        </div>
+    </div>
+
+    <% if (query.assessed) { %><div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Assessment recorded.<button class="btn-close" data-bs-dismiss="alert"></button></div><% } %>
+    <% if (query.applied) { %><div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Up-scaling application started.<button class="btn-close" data-bs-dismiss="alert"></button></div><% } %>
+    <% if (query.advanced) { %><div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Moved to step <%= query.advanced %>.<button class="btn-close" data-bs-dismiss="alert"></button></div><% } %>
+    <% if (query.error === 'ineligible') { %><div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-triangle me-2"></i>All four criteria must be met before applying.<button class="btn-close" data-bs-dismiss="alert"></button></div><% } %>
+    <% if (query.error === 'exists') { %><div class="alert alert-warning alert-dismissible fade show"><i class="bi bi-info-circle me-2"></i>This farm already has an up-scaling application.<button class="btn-close" data-bs-dismiss="alert"></button></div><% } %>
+    <% if (query.error === 'sequence') { %><div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-triangle me-2"></i>Steps must be completed in order.<button class="btn-close" data-bs-dismiss="alert"></button></div><% } %>
+    <% if (query.error === 'noapplication') { %><div class="alert alert-warning alert-dismissible fade show"><i class="bi bi-info-circle me-2"></i>Start the application before moving through the steps.<button class="btn-close" data-bs-dismiss="alert"></button></div><% } %>
+
+    <!-- ═══ WHERE THIS FARM STANDS ═══════════════════════════════ -->
+    <div class="card mb-4">
+        <div class="card-body p-4">
+
+            <% if (certified) { %>
+            <!-- Journey complete. -->
+            <div class="text-center py-2 mb-3">
+                <div class="lsa2-award-badge mb-2"><i class="bi bi-award-fill"></i></div>
+                <h5 class="mb-1">Certified as LSA II</h5>
+                <p class="text-muted mb-2">Certificate <code><%= application.certificateNo %></code><% if (application.certifiedAt) { %> · issued <%= application.certifiedAt %><% } %></p>
+            </div>
+            <% } %>
+
+            <% if (application) { %>
+            <!-- Visual 5-step tracker (reuses the accreditation tracker styles). -->
+            <div class="accreditation-tracker mb-2">
+                <% steps.forEach(function (s, i) {
+                     var sc = s.step <= application.step ? 'completed'
+                            : s.step === currentStep ? 'active' : ''; %>
+                <div class="tracker-step <%= sc %>">
+                    <div class="tracker-circle">
+                        <% if (sc === 'completed') { %><i class="bi bi-check-lg"></i><% } else { %><%= s.step %><% } %>
+                    </div>
+                    <% if (i < steps.length - 1) { %>
+                    <div class="tracker-line <%= s.step <= application.step ? 'completed' : '' %>"></div>
+                    <% } %>
+                    <div class="tracker-label">
+                        <i class="bi bi-<%= stepIcons[i] %>"></i>
+                        <span><%= s.label %></span>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3 border-top">
+                <span class="small text-muted"><i class="bi bi-hash me-1"></i>Reference <code><%= application.referenceNo %></code></span>
+                <div class="d-flex align-items-center gap-2" style="min-width:220px;flex:1;max-width:340px;">
+                    <div class="progress flex-grow-1" style="height:8px;">
+                        <div class="progress-bar bg-success" style="width:<%= pct %>%"></div>
+                    </div>
+                    <span class="small fw-semibold text-success"><%= pct %>%</span>
+                </div>
+            </div>
+
+            <!-- The single action that is due now (staff only). -->
+            <% if (!certified && canAssess && currentStep <= steps.length) {
+                 var next = steps[currentStep - 1]; %>
+            <div class="lsa2-next-action mt-3">
+                <div class="flex-grow-1">
+                    <div class="small text-muted text-uppercase fw-semibold" style="letter-spacing:.04em;">Next action</div>
+                    <div class="fw-semibold">Step <%= next.step %> — <%= next.label %></div>
+                    <div class="small text-muted"><i class="bi bi-person me-1"></i>Responsible: <%= next.who %></div>
+                </div>
+                <form method="POST" action="/lsa2/farm/<%= farm.id %>/advance" class="d-flex gap-2 align-items-center flex-wrap">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="step" value="<%= next.step %>">
+                    <% if (next.step === steps.length) { %>
+                    <input type="text" class="form-control form-control-sm" name="certificateNo"
+                           placeholder="Certificate no." required style="max-width:180px;">
+                    <% } %>
+                    <button class="btn btn-primary btn-sm"><i class="bi bi-check-lg me-1"></i>Mark step <%= next.step %> done</button>
+                </form>
+            </div>
+            <% } else if (!certified && !canAssess) { %>
+            <div class="alert alert-info mt-3 mb-0 py-2 px-3 small">
+                <i class="bi bi-hourglass-split me-1"></i>
+                Your application is at <strong>Step <%= currentStep %> — <%= steps[currentStep - 1].label %></strong>,
+                being handled by <%= steps[currentStep - 1].who %>. You will be notified as it moves forward.
+            </div>
+            <% } %>
+
+            <% } else { %>
+            <!-- No application yet: eligibility gate + call to action. -->
+            <div class="text-center py-3">
+                <% if (eligible) { %>
+                <div class="lsa2-cta-icon text-success mb-2"><i class="bi bi-arrow-up-circle-fill"></i></div>
+                <h5 class="mb-1">Ready to up-scale to LSA II</h5>
+                <p class="text-muted mb-3">All four criteria are met. Start the application to begin the five-step certification.</p>
+                <% if (['admin','evaluator','operator'].includes(role)) { %>
+                <form method="POST" action="/lsa2/farm/<%= farm.id %>/apply">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn btn-primary btn-lg"><i class="bi bi-arrow-up-circle me-2"></i>Start LSA II Application</button>
+                </form>
+                <% } %>
+                <% } else { %>
+                <div class="lsa2-cta-icon text-muted mb-2"><i class="bi bi-hourglass-split"></i></div>
+                <h5 class="mb-1"><%= metCount %> of <%= criteria.length %> criteria met</h5>
+                <p class="text-muted mb-0">All four must be met before an application can be started. See the criteria below.</p>
+                <% } %>
+            </div>
+            <% } %>
+
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- ═══ CRITERIA ═══════════════════════════════════════════ -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0"><i class="bi bi-check2-square me-2 text-primary"></i>Up-scaling Criteria</h5>
+                        <span class="badge bg-<%= eligible ? 'success' : 'secondary' %>-subtle text-<%= eligible ? 'success' : 'secondary' %>">
+                            <%= metCount %> / <%= criteria.length %>
+                        </span>
+                    </div>
+
+                    <div class="lsa2-criteria-list">
+                        <% criteria.forEach(function (c) {
+                             var state = c.met === true ? 'met' : c.met === false ? 'failed' : 'pending'; %>
+                        <div class="lsa2-criterion lsa2-criterion--<%= state %>">
+                            <span class="lsa2-criterion__mark">
+                                <% if (c.met === true) { %><i class="bi bi-check-lg"></i>
+                                <% } else if (c.met === false) { %><i class="bi bi-x-lg"></i>
+                                <% } else { %><i class="bi bi-dash-lg"></i><% } %>
+                            </span>
+                            <div class="min-w-0">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <strong class="small"><%= c.label %></strong>
+                                    <span class="badge bg-light text-muted border" style="font-size:10px;"><%= c.auto ? 'automatic' : 'assessed by ATI' %></span>
+                                </div>
+                                <div class="small text-muted"><%= c.detail %></div>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+
+                    <% if (canAssess) { %>
+                    <form method="POST" action="/lsa2/farm/<%= farm.id %>/assess" class="mt-3 pt-3 border-top">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <div class="small fw-semibold text-muted text-uppercase mb-2" style="letter-spacing:.04em;">ATI assessment</div>
+                        <div class="row g-2">
+                            <div class="col-sm-6">
+                                <label class="form-label small mb-1" for="competenceEnhanced">Competence enhanced</label>
+                                <select class="form-select form-select-sm" id="competenceEnhanced" name="competenceEnhanced">
+                                    <option value="">Not assessed</option>
+                                    <option value="yes" <%= application && application.competenceEnhanced === 1 ? 'selected' : '' %>>Yes</option>
+                                    <option value="no"  <%= application && application.competenceEnhanced === 0 ? 'selected' : '' %>>No</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small mb-1" for="valueChainCovered">Covers the value chain</label>
+                                <select class="form-select form-select-sm" id="valueChainCovered" name="valueChainCovered">
+                                    <option value="">Not assessed</option>
+                                    <option value="yes" <%= application && application.valueChainCovered === 1 ? 'selected' : '' %>>Yes</option>
+                                    <option value="no"  <%= application && application.valueChainCovered === 0 ? 'selected' : '' %>>No</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small mb-1" for="remarks">Remarks</label>
+                                <input type="text" class="form-control form-control-sm" id="remarks" name="remarks"
+                                       value="<%= application && application.eligibilityRemarks ? application.eligibilityRemarks : '' %>">
+                            </div>
+                            <div class="col-12 d-flex align-items-center gap-2 flex-wrap">
+                                <button class="btn btn-sm btn-primary">Save assessment</button>
+                                <% if (application && application.assessedBy) { %>
+                                <span class="small text-muted">Last assessed by <%= application.assessedBy %> on <%= application.assessedAt %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </form>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ DOCUMENTARY REQUIREMENTS ═══════════════════════════ -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <%
+                    var subCount = packet.filter(function (d) { return d.submitted; }).length;
+                    %>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h5 class="card-title mb-0"><i class="bi bi-folder2-open me-2 text-primary"></i>Documentary Requirements</h5>
+                        <span class="badge bg-primary-subtle text-primary"><%= subCount %> / <%= packet.length %></span>
+                    </div>
+                    <p class="small text-muted mb-3">Download the prescribed form, complete it, then upload your copy.</p>
+
+                    <div class="lsa2-doc-list">
+                        <% packet.forEach(function (d) {
+                             var st = d.submitted ? d.submitted.status : null; %>
+                        <div class="lsa2-doc">
+                            <span class="lsa2-doc__icon <%= st ? 'text-success' : 'text-muted' %>">
+                                <i class="bi bi-<%= st ? 'check-circle-fill' : 'circle' %>"></i>
+                            </span>
+                            <div class="lsa2-doc__name min-w-0">
+                                <div class="small fw-semibold text-truncate"><%= d.label %></div>
+                                <% if (st) { %>
+                                <span class="badge bg-success-subtle text-success" style="font-size:10px;"><%= st.replace(/_/g,' ') %></span>
+                                <% } else { %>
+                                <span class="badge bg-secondary-subtle text-secondary" style="font-size:10px;">Not submitted</span>
+                                <% } %>
+                            </div>
+                            <div class="lsa2-doc__actions">
+                                <% if (d.hasForm) { %>
+                                <a href="/forms/<%= d.type %>" class="btn btn-xs btn-outline-secondary" title="Download the prescribed form">
+                                    <i class="bi bi-download"></i><span class="d-none d-sm-inline ms-1">Form</span>
+                                </a>
+                                <% } %>
+                                <% if (d.submitted && d.submitted.storedName) { %>
+                                <a href="/documents/<%= d.submitted.id %>/file" target="_blank" rel="noopener"
+                                   class="btn btn-xs btn-outline-success" title="View the uploaded file">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <% } %>
+                                <% if (farm.applicantId) { %>
+                                <a href="/documents/submit?type=<%= d.type %>&applicant=<%= farm.applicantId %>"
+                                   class="btn btn-xs <%= d.submitted ? 'btn-outline-primary' : 'btn-primary' %>" title="<%= d.submitted ? 'Replace the file' : 'Upload your completed copy' %>">
+                                    <i class="bi bi-upload"></i><span class="d-none d-sm-inline ms-1"><%= d.submitted ? 'Replace' : 'Upload' %></span>
+                                </a>
+                                <% } %>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style nonce="<%= cspNonce %>">
+/* LSA II up-scaling — small presentational touches layered on the shared tokens. */
+.lsa2-award-badge {
+    width: 64px; height: 64px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-size: 32px; color: #fff;
+    background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+}
+.lsa2-cta-icon { font-size: 48px; line-height: 1; }
+.lsa2-next-action {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    background: rgba(45,122,62,.05);
+    border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 14px 16px;
+}
+.lsa2-criteria-list { display: flex; flex-direction: column; gap: 10px; }
+.lsa2-criterion { display: flex; gap: 10px; align-items: flex-start; }
+.lsa2-criterion__mark {
+    flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+}
+.lsa2-criterion--met    .lsa2-criterion__mark { background: var(--success-color); color: #fff; }
+.lsa2-criterion--failed .lsa2-criterion__mark { background: var(--danger-color); color: #fff; }
+.lsa2-criterion--pending .lsa2-criterion__mark { background: var(--border-color); color: var(--text-secondary); }
+
+.lsa2-doc-list { display: flex; flex-direction: column; }
+.lsa2-doc {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border-color);
+}
+.lsa2-doc:last-child { border-bottom: 0; }
+.lsa2-doc__icon { font-size: 18px; flex-shrink: 0; }
+.lsa2-doc__name { flex: 1; }
+.lsa2-doc__actions { display: flex; gap: 6px; flex-shrink: 0; }
+</style>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<%
+// One band per farm, so the table, the filters and the distribution bar all
+// agree. "Never checked" wins over score, because an unvisited farm scoring 0%
+// is not the same as one checked and found failing.
+function bandOf(f) {
+    if (f.lastChecked === null) return 'none';
+    if (f.score >= 80) return 'good';
+    if (f.score >= 50) return 'warn';
+    return 'risk';
+}
+const BAND = {
+    good: { label: 'Good standing', tone: 'success',   icon: 'check-circle-fill' },
+    warn: { label: 'Needs work',    tone: 'warning',   icon: 'exclamation-circle-fill' },
+    risk: { label: 'At risk',       tone: 'danger',    icon: 'x-circle-fill' },
+    none: { label: 'Not checked',   tone: 'secondary', icon: 'dash-circle' },
+};
+const dist = { good: 0, warn: 0, risk: 0, none: 0 };
+summaries.forEach((f) => { dist[bandOf(f)] += 1; });
+const avgTone = !summaries.length ? 'secondary'
+    : totals.averageScore >= 80 ? 'success'
+    : totals.averageScore >= 50 ? 'warning' : 'danger';
+const total = summaries.length;
+%>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Compliance Monitoring</h1>
+            <p class="page-subtitle mb-0">
+                Requirements come from the LSA Guidelines and cite their section. Scores are
+                computed from recorded checks, not estimated.
+            </p>
+        </div>
+    </div>
+
+    <!-- Summary tiles -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card border-start border-primary border-4">
+                <div class="stat-icon bg-primary"><i class="bi bi-building"></i></div>
+                <div class="stat-info"><h3><%= totals.farms %></h3><p>LSA Farms Monitored</p></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card border-start border-<%= avgTone %> border-4">
+                <div class="stat-icon bg-<%= avgTone %>"><i class="bi bi-speedometer2"></i></div>
+                <div class="stat-info"><h3><%= totals.averageScore %>%</h3><p>Average Compliance</p></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card border-start border-<%= totals.findings > 0 ? 'warning' : 'success' %> border-4">
+                <div class="stat-icon bg-<%= totals.findings > 0 ? 'warning' : 'success' %>"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="stat-info"><h3><%= totals.findings %></h3><p>Open Findings</p></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card border-start border-secondary border-4">
+                <div class="stat-icon bg-secondary"><i class="bi bi-question-circle"></i></div>
+                <div class="stat-info"><h3><%= totals.unchecked %></h3><p>Never Checked</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fleet health at a glance -->
+    <% if (total) { %>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-bar-chart-steps me-2 text-primary"></i>Fleet Health</h6>
+                <span class="small text-muted"><%= total %> Learning Site<%= total !== 1 ? 's' : '' %></span>
+            </div>
+            <div class="lsa-band-bar" role="img"
+                 aria-label="Good <%= dist.good %>, needs work <%= dist.warn %>, at risk <%= dist.risk %>, not checked <%= dist.none %>">
+                <% ['good','warn','risk','none'].forEach(function (k) { if (dist[k]) { %>
+                <div class="lsa-band-seg bg-<%= BAND[k].tone %>" style="width:<%= Math.round((dist[k]/total)*100) %>%"></div>
+                <% } }); %>
+            </div>
+            <div class="d-flex flex-wrap gap-3 mt-2">
+                <% ['good','warn','risk','none'].forEach(function (k) { %>
+                <span class="small d-inline-flex align-items-center gap-1">
+                    <span class="lsa-band-dot bg-<%= BAND[k].tone %>"></span>
+                    <span class="fw-semibold"><%= dist[k] %></span>
+                    <span class="text-muted"><%= BAND[k].label %></span>
+                </span>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <div class="card">
+        <!-- Search + status filter -->
+        <% if (total) { %>
+        <div class="card-body border-bottom pb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <label for="lsaSearch" class="visually-hidden">Search Learning Sites</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="lsaSearch" class="form-control" placeholder="Search by name, operator or location…" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="d-flex flex-wrap gap-1 justify-content-md-end" role="group" aria-label="Filter by status">
+                        <button type="button" class="btn btn-sm btn-outline-secondary lsa-chip active" data-band="all" aria-pressed="true">All <span class="lsa-chip__n"><%= total %></span></button>
+                        <% ['good','warn','risk','none'].forEach(function (k) { %>
+                        <button type="button" class="btn btn-sm btn-outline-<%= BAND[k].tone %> lsa-chip" data-band="<%= k %>" aria-pressed="false" <%= dist[k] ? '' : 'disabled' %>>
+                            <%= BAND[k].label %> <span class="lsa-chip__n"><%= dist[k] %></span>
+                        </button>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <div class="table-responsive">
+            <table class="table align-middle mb-0" id="lsaTable">
+                <thead>
+                    <tr>
+                        <th>Learning Site</th>
+                        <th>Status</th>
+                        <th style="width:180px">Compliance</th>
+                        <th>Findings</th>
+                        <th>Last checked</th>
+                        <th>Next due</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% summaries.forEach(function (f) {
+                         var band = bandOf(f); var meta = BAND[band]; %>
+                    <tr data-band="<%= band %>"
+                        data-text="<%= (f.name + ' ' + f.operator + ' ' + f.municipality + ' ' + f.province).toLowerCase() %>">
+                        <td>
+                            <div class="fw-semibold"><%= f.name %></div>
+                            <div class="small text-muted">
+                                <i class="bi bi-person me-1"></i><%= f.operator %>
+                                <span class="mx-1">·</span><%= f.municipality %>, <%= f.province %>
+                                <span class="mx-1">·</span><%= f.appliesTo === 'agri_processing' ? 'Agri-processing' : 'Farming' %>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-<%= meta.tone %>-subtle text-<%= meta.tone %> border border-<%= meta.tone %>-subtle">
+                                <i class="bi bi-<%= meta.icon %> me-1"></i><%= meta.label %>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="compliance-meter">
+                                <% if (band === 'none') { %>
+                                <span class="small text-muted">Awaiting first check</span>
+                                <% } else { %>
+                                <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                    <span class="fw-semibold"><%= f.score %>%</span>
+                                    <span class="small text-muted"><%= f.compliant %>/<%= f.applicable %></span>
+                                </div>
+                                <div class="progress" style="height:8px">
+                                    <div class="progress-bar bg-<%= meta.tone %>"
+                                         style="width: <%= f.score %>%"
+                                         role="progressbar" aria-valuenow="<%= f.score %>" aria-valuemin="0" aria-valuemax="100"
+                                         aria-label="<%= f.compliant %> of <%= f.applicable %> requirements compliant"></div>
+                                </div>
+                                <% if (f.pending) { %>
+                                <div class="small text-muted mt-1"><%= f.pending %> unchecked</div>
+                                <% } %>
+                                <% } %>
+                            </div>
+                        </td>
+                        <td>
+                            <% if (f.findings) { %>
+                            <span class="badge bg-warning-subtle text-warning"><i class="bi bi-flag me-1"></i><%= f.findings %></span>
+                            <% } else { %>
+                            <span class="text-muted small">—</span>
+                            <% } %>
+                        </td>
+                        <td class="small"><% if (f.lastChecked) { %><%= f.lastChecked %><% } else { %><span class="text-muted">Never</span><% } %></td>
+                        <td class="small"><%= f.nextCheckDate || '—' %></td>
+                        <td class="text-end">
+                            <a href="/compliance/farm/<%= f.id %>" class="btn btn-sm btn-outline-primary">
+                                Open<i class="bi bi-chevron-right ms-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <% }); %>
+                    <% if (!summaries.length) { %>
+                    <tr><td colspan="7" class="text-center text-muted py-5">
+                        <i class="bi bi-clipboard-check fs-3 d-block mb-2 opacity-50"></i>No LSA farms on record yet.
+                    </td></tr>
+                    <% } %>
+                    <tr id="lsaNoMatch" hidden>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-search d-block mb-2 opacity-50"></i>No Learning Site matches your search.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style nonce="<%= cspNonce %>">
+.lsa-band-bar {
+    display: flex; height: 12px; width: 100%;
+    border-radius: 6px; overflow: hidden; background: var(--border-color);
+}
+.lsa-band-seg { height: 100%; }
+.lsa-band-seg + .lsa-band-seg { box-shadow: inset 1px 0 0 rgba(255,255,255,.5); }
+.lsa-band-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.lsa-chip { border-radius: var(--radius-pill, 999px); }
+.lsa-chip__n { opacity: .7; font-variant-numeric: tabular-nums; }
+.lsa-chip.active { color: #fff; }
+.lsa-chip[data-band="all"].active { background: var(--text-secondary); border-color: var(--text-secondary); }
+</style>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+    var table = document.getElementById('lsaTable');
+    if (!table) return;
+    var search = document.getElementById('lsaSearch');
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.lsa-chip'));
+    var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr[data-band]'));
+    var noMatch = document.getElementById('lsaNoMatch');
+    var band = 'all';
+
+    function apply() {
+        var q = (search && search.value || '').trim().toLowerCase();
+        var shown = 0;
+        rows.forEach(function (r) {
+            var okBand = band === 'all' || r.getAttribute('data-band') === band;
+            var okText = !q || r.getAttribute('data-text').indexOf(q) !== -1;
+            var show = okBand && okText;
+            r.hidden = !show;
+            if (show) shown += 1;
+        });
+        if (noMatch) noMatch.hidden = shown !== 0;
+    }
+
+    chips.forEach(function (c) {
+        c.addEventListener('click', function () {
+            if (c.disabled) return;
+            band = c.getAttribute('data-band');
+            chips.forEach(function (o) {
+                var on = o === c;
+                o.classList.toggle('active', on);
+                o.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+            apply();
+        });
+    });
+    if (search) search.addEventListener('input', apply);
+}());
+</script>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

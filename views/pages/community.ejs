@@ -1,0 +1,825 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page }) %>
+
+<div class="main-wrapper">
+    <div class="page-content chat-page">
+        <div class="page-header">
+            <h1 class="page-title">Community Chat</h1>
+        </div>
+
+        <% if (typeof chatUnavailable !== 'undefined' && chatUnavailable) { %>
+        <div class="alert alert-warning">
+            <strong>Chat database tables are missing.</strong> Run the migration SQL on your MySQL database, then restart the app:
+            <code class="d-block mt-2">mysql -u root -p agri_aims &lt; database/migrations/002_chat.sql</code>
+        </div>
+        <% } else { %>
+
+        <div class="chat-container">
+            <div class="chat-sidebar">
+                <div class="chat-sidebar-header">
+                    <h5 class="mb-0">Channels</h5>
+                    <% if (currentUser && currentUser.role === 'admin') { %>
+                    <button type="button" class="btn btn-sm btn-outline-primary chat-add-channel"
+                            id="addChannelToggle" aria-label="Add a channel" title="Add a channel"
+                            data-call="toggleChannelForm">
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                    </button>
+                    <% } %>
+                </div>
+
+                <% if (currentUser && currentUser.role === 'admin') { %>
+                <form class="chat-channel-form" id="channelForm" hidden data-call="submitChannelForm" data-on="submit" data-args='["@event"]'>
+                    <div class="small text-muted" id="channelFormTitle">New channel</div>
+                    <input type="text" class="form-control form-control-sm" id="channelName"
+                           name="name" maxlength="80" required
+                           placeholder="Channel name, e.g. Rice Farmers">
+                    <input type="text" class="form-control form-control-sm" id="channelDesc"
+                           name="description" maxlength="255"
+                           placeholder="What is it for? (optional)">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-sm btn-primary flex-fill" id="channelSubmit">
+                            Add channel
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                data-call="toggleChannelForm" data-args='[false]'>Cancel</button>
+                    </div>
+                </form>
+                <% } %>
+
+                <div class="chat-channels" id="chatChannels">
+                    <% channels.forEach((ch, i) => { %>
+                    <div class="chat-channel <%= i===0 ? 'active' : '' %>"
+                         role="button" tabindex="0"
+                         aria-label="Open channel <%= ch.name %>"
+                         data-slug="<%= ch.slug %>"
+                         data-name="<%= ch.name %>"
+                         data-desc="<%= (ch.description || '').replace(/"/g, '&quot;') %>"
+                         data-call="selectChannel" data-args='["@this"]'>
+                        <div class="channel-name">
+                            <i class="bi bi-<%= ch.channelType==='public' ? 'megaphone' : ch.channelType==='regional' ? 'geo-alt' : 'tag' %>"></i>
+                            <%= ch.name %>
+                        </div>
+                        <div class="channel-desc"><%= ch.description %></div>
+                        <% if (currentUser && currentUser.role === 'admin') { %>
+                        <div class="channel-actions">
+                            <button type="button" class="msg-action" data-chan="edit"
+                                    data-slug="<%= ch.slug %>"
+                                    aria-label="Rename <%= ch.name %>" title="Rename">
+                                <i class="bi bi-pencil" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" class="msg-action" data-chan="delete"
+                                    data-slug="<%= ch.slug %>"
+                                    aria-label="Delete <%= ch.name %>" title="Delete">
+                                <i class="bi bi-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="chat-main">
+                <div class="chat-header">
+                    <div>
+                        <h5 id="currentChannelName" class="mb-0"><%= channels[0] ? channels[0].name : '' %></h5>
+                        <p id="currentChannelDesc" class="text-muted mb-0 small"><%= channels[0] ? channels[0].description : '' %></p>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <button class="chat-jump" id="chatJump" type="button" hidden
+                        data-call="jumpToLatest">
+                    <i class="bi bi-arrow-down"></i> <span id="chatJumpCount">New messages</span>
+                </button>
+                <div class="chat-input">
+                    <input type="text" class="form-control" id="messageInput"
+                           placeholder="Type a message… (log in from the home page first)"
+                           autocomplete="off">
+                    <button class="btn btn-primary" type="button" id="sendButton"
+                            aria-label="Send message" title="Send message" disabled
+                            data-call="sendMessage">
+                        <i class="bi bi-send" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <% } %>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+
+<script type="application/json" id="agriCommunityBootstrap"><%- safeJson({
+  initialSlug: initialSlug || 'general',
+  initialMessages: initialMessages || [],
+  currentUserId: currentUser ? currentUser.id : null,
+  currentUserRole: currentUser ? currentUser.role : null
+}) %></script>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+  // Posting a message is a cookie-authenticated write, so it must echo the CSRF token.
+  const CSRF_TOKEN = '<%= csrfToken %>';
+  const boot = JSON.parse(document.getElementById('agriCommunityBootstrap').textContent);
+  const isAdmin = boot.currentUserRole === 'admin';
+  let activeSlug = boot.initialSlug;
+  let lastMessageId = 0;
+  const pollMs = 4000;
+  let pollTimer = null;
+
+  // The moment the server last answered us. Edits and deletions are asked for
+  // relative to this, using the server's own clock rather than the browser's,
+  // which can be minutes out and would silently miss changes.
+  let lastSyncIso = null;
+
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  /**
+   * Turn plain URLs in a message into links.
+   *
+   * Order matters: the text is escaped FIRST, so by the time this runs any
+   * angle brackets or quotes the sender typed are already entities and cannot
+   * break out of the attribute. Only http and https are matched — never
+   * javascript: or data: — so a crafted message cannot produce a running link.
+   *
+   * Trailing punctuation is left out of the href: people write "see https://x.com."
+   * and the full stop is a sentence, not part of the address.
+   */
+  function linkify(escaped) {
+    return escaped.replace(/https?:\/\/[^\s<]+/g, (match) => {
+      const trimmed = match.replace(/[.,;:!?)\]]+$/, '');
+      const tail = match.slice(trimmed.length);
+      // The escaped text carries &amp; for &, which is exactly what an href needs.
+      return '<a href="' + trimmed + '" target="_blank" rel="noopener noreferrer">' +
+             trimmed + '</a>' + tail;
+    });
+  }
+
+  const isOwn = (m) => Boolean(boot.currentUserId) && m.userId === boot.currentUserId;
+
+  /** The text of a bubble: the message, or a tombstone where one used to be. */
+  function textHtml(m) {
+    if (m.deleted) {
+      return '<span class="message-deleted"><i class="bi bi-slash-circle" aria-hidden="true"></i> ' +
+             'This message was deleted</span>';
+    }
+    return linkify(esc(m.body || ''));
+  }
+
+  function timeHtml(m) {
+    const when = m.createdAtIso ? new Date(m.createdAtIso) : null;
+    const time = when ? when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    return time + (m.edited ? ' · edited' : '');
+  }
+
+  /**
+   * Edit is the author's alone; delete is the author's or an administrator's.
+   * The server enforces exactly this — these buttons only decide what is worth
+   * offering, never what is allowed.
+   */
+  function actionsHtml(m) {
+    if (m.deleted) return '';
+    const own = isOwn(m);
+    if (!own && !isAdmin) return '';
+    const parts = [];
+    if (own) {
+      parts.push('<button type="button" class="msg-action" data-act="edit" data-id="' + m.id +
+                 '" aria-label="Edit message" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></button>');
+    }
+    if (own || isAdmin) {
+      parts.push('<button type="button" class="msg-action" data-act="delete" data-id="' + m.id +
+                 '" aria-label="Delete message" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>');
+    }
+    return '<div class="message-actions">' + parts.join('') + '</div>';
+  }
+
+  function renderMessages(messages, appendOnly) {
+    const el = document.getElementById('chatMessages');
+
+    if (!appendOnly) { el.innerHTML = ''; lastRenderedDay = null; lastRenderedSender = null; }
+
+    let appended = 0;
+    messages.forEach((m) => {
+      if (appendOnly && document.querySelector(`[data-msg-id="${m.id}"]`)) return;
+      appended += 1;
+      if (m.id > lastMessageId) lastMessageId = m.id;
+
+      const own = isOwn(m);
+      const when = m.createdAtIso ? new Date(m.createdAtIso) : null;
+
+      // A day divider, so "9:15 AM" is never ambiguous about which day.
+      const day = when ? when.toDateString() : '';
+      if (day && day !== lastRenderedDay) {
+        el.insertAdjacentHTML('beforeend',
+          `<div class="chat-day-divider"><span>${esc(dayLabel(when))}</span></div>`);
+        lastRenderedDay = day;
+        lastRenderedSender = null;   // always name the sender after a divider
+      }
+
+      // Consecutive messages from one person are grouped, as every messaging
+      // app does, instead of repeating the avatar and name on every line.
+      const senderKey = (m.userId || m.senderName || '') + '|' + own;
+      const grouped = senderKey === lastRenderedSender;
+      lastRenderedSender = senderKey;
+
+      // The picture is the sender's current one; the initials are the snapshot
+      // taken when the message was written, and the fallback when there is no
+      // photo.
+      const avatar = m.senderPhoto
+        ? `<img class="avatar-photo" src="/profile/photo/${Number(m.userId)}" alt="${esc(m.senderName || '')}">`
+        : esc(m.senderAvatar || '??');
+      const name = esc(m.senderName || 'User');
+
+      el.insertAdjacentHTML('beforeend', `
+        <div class="chat-message ${own ? 'own' : ''}${grouped ? ' grouped' : ''}${m.deleted ? ' is-deleted' : ''}${m.edited ? ' is-edited' : ''}" data-msg-id="${m.id}">
+            <div class="message-avatar">${grouped ? '' : avatar}</div>
+            <div class="message-content">
+                ${own || grouped ? '' : `<div class="message-sender">${name}</div>`}
+                <p class="message-text">${textHtml(m)}</p>
+                <div class="message-time">${timeHtml(m)}</div>
+                ${actionsHtml(m)}
+            </div>
+        </div>`);
+    });
+
+    if (!appendOnly || following) {
+      el.scrollTop = el.scrollHeight;
+      setUnread(0);
+    } else {
+      // Arrived while the reader was further up: count it, do not move them.
+      setUnread(unreadBelow + appended);   // a re-sent message must not inflate the count
+    }
+  }
+
+  /**
+   * Apply edits and deletions to bubbles already on screen.
+   *
+   * Only the inside of the bubble is rewritten. Re-rendering the whole row
+   * would recompute grouping and day dividers against a partial list and
+   * shuffle the channel about; nobody edits a message and expects the layout
+   * above it to move.
+   */
+  function patchMessages(changed) {
+    if (!changed || !changed.length) return;
+    changed.forEach((m) => {
+      const el = document.querySelector(`[data-msg-id="${m.id}"]`);
+      if (!el) return;
+      // Never overwrite a box someone is typing in.
+      if (el.querySelector('.message-editor')) return;
+
+      const text = el.querySelector('.message-text');
+      const time = el.querySelector('.message-time');
+      if (text) text.innerHTML = textHtml(m);
+      if (time) time.textContent = timeHtml(m);
+      el.classList.toggle('is-deleted', Boolean(m.deleted));
+      el.classList.toggle('is-edited', Boolean(m.edited));
+
+      const oldActions = el.querySelector('.message-actions');
+      if (oldActions) oldActions.remove();
+      const html = actionsHtml(m);
+      if (html) el.querySelector('.message-content').insertAdjacentHTML('beforeend', html);
+    });
+  }
+
+  let unreadBelow = 0;
+
+  // True while the reader is parked at the bottom, so new messages should
+  // follow. A box too short to scroll never fires a scroll event, so the
+  // initial true is also the right answer for an empty or tiny channel.
+  let following = true;
+
+  function watchScroll() {
+    const el = document.getElementById('chatMessages');
+    if (!el) return;
+    el.addEventListener('scroll', () => {
+      following = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+      if (following) setUnread(0);
+    });
+  }
+
+  function setUnread(n) {
+    unreadBelow = n;
+    const pill = document.getElementById('chatJump');
+    if (!pill) return;
+    pill.hidden = n === 0;
+    document.getElementById('chatJumpCount').textContent =
+      n === 1 ? '1 new message' : n + ' new messages';
+  }
+
+  window.jumpToLatest = function () {
+    const el = document.getElementById('chatMessages');
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    following = true;
+    setUnread(0);
+  };
+
+  /** "Today", "Yesterday", or a written date. */
+  function dayLabel(d) {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return 'Today';
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  let lastRenderedDay = null;
+  let lastRenderedSender = null;
+
+  async function loadChannel(slug, reset) {
+    activeSlug = slug;
+    if (reset) { lastMessageId = 0; lastSyncIso = null; }
+
+    const params = [];
+    if (!reset) {
+      params.push('afterId=' + lastMessageId);
+      if (lastSyncIso) params.push('since=' + encodeURIComponent(lastSyncIso));
+    }
+    const q = params.length ? '?' + params.join('&') : '';
+
+    const res = await fetch('/api/community/channels/' + encodeURIComponent(slug) + '/messages' + q,
+      { credentials: 'same-origin' });
+    const json = await res.json();
+    if (!json.success) {
+      showNotification(json.error || 'Could not load messages', 'danger');
+      return;
+    }
+    const msgs = json.data.messages || [];
+    if (reset) {
+      renderMessages(msgs, false);
+    } else {
+      patchMessages(json.data.changed);
+      if (msgs.length) renderMessages(msgs, true);
+    }
+    if (json.data.serverTime) lastSyncIso = json.data.serverTime;
+  }
+
+  window.selectChannel = function (el) {
+    const slug = el.dataset.slug;
+    const name = el.dataset.name;
+    const desc = el.dataset.desc || '';
+    document.querySelectorAll('.chat-channel').forEach((c) => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('currentChannelName').textContent = name;
+    document.getElementById('currentChannelDesc').textContent = desc;
+    setUnread(0);
+    following = true;
+    loadChannel(slug, true);
+  };
+
+  let sending = false;
+
+  /** The button is live only when there is something to send and no send in flight. */
+  window.syncSendButton = function () {
+    const btn = document.getElementById('sendButton');
+    const input = document.getElementById('messageInput');
+    if (btn && input) btn.disabled = sending || !input.value.trim();
+  };
+
+  window.sendMessage = async function () {
+    const input = document.getElementById('messageInput');
+    const btn = document.getElementById('sendButton');
+    const text = (input.value || '').trim();
+    if (!text || sending) return;      // a second Enter must not post twice
+    sending = true;
+    input.disabled = true;
+    if (btn) btn.classList.add('sending');
+    syncSendButton();
+
+    // finally, not a straight-line restore: a dropped connection makes fetch
+    // throw, and without this the box stayed disabled and `sending` stayed true,
+    // locking the user out of the chat until they reloaded the page.
+    try {
+      const res = await fetch('/api/community/channels/' + encodeURIComponent(activeSlug) + '/messages', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': CSRF_TOKEN },
+        body: JSON.stringify({ body: text }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        // Keep what they typed — losing a message to a failed send is unforgivable.
+        showNotification(json.error || 'Send failed', 'danger');
+        return;
+      }
+      input.value = '';
+      // Append just the new message rather than re-rendering the channel: a full
+      // reload cleared and rebuilt every bubble, which flickered and lost the
+      // reader's place.
+      if (json.data && json.data.id) {
+        following = true;
+        renderMessages([json.data], true);
+        document.getElementById('chatMessages').scrollTop = 1e9;
+      } else {
+        await loadChannel(activeSlug, false);
+      }
+    } catch (err) {
+      showNotification('Could not reach the server. Your message is still here — try again.', 'danger');
+    } finally {
+      sending = false;
+      input.disabled = false;
+      if (btn) btn.classList.remove('sending');
+      input.focus();
+      syncSendButton();
+    }
+  };
+
+  window.handleChatEnter = function (e) {
+    if (e.key === 'Enter') sendMessage();
+  };
+
+  // ── editing and deleting ────────────────────────────────────────
+
+  /** The bubble currently being edited, so only one is open at a time. */
+  let editingId = null;
+
+  function messageEl(id) {
+    return document.querySelector(`[data-msg-id="${id}"]`);
+  }
+
+  /** The plain text of a bubble, taken from the DOM rather than kept in a cache
+   *  that could drift out of step with what is actually on screen. */
+  function currentText(el) {
+    const p = el.querySelector('.message-text');
+    return p ? p.textContent : '';
+  }
+
+  function startEdit(id) {
+    if (editingId !== null && editingId !== id) cancelEdit();
+    const el = messageEl(id);
+    if (!el || el.querySelector('.message-editor')) return;
+
+    editingId = id;
+    const text = currentText(el);
+    const p = el.querySelector('.message-text');
+    p.hidden = true;
+    const actions = el.querySelector('.message-actions');
+    if (actions) actions.hidden = true;
+
+    p.insertAdjacentHTML('afterend', `
+      <div class="message-editor">
+        <textarea class="form-control form-control-sm" rows="2" maxlength="4000"
+                  aria-label="Edit message"></textarea>
+        <div class="message-editor-buttons">
+          <button type="button" class="btn btn-sm btn-primary" data-act="save" data-id="${id}">Save</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-act="cancel" data-id="${id}">Cancel</button>
+        </div>
+      </div>`);
+
+    const box = el.querySelector('.message-editor textarea');
+    box.value = text;          // set as a value, never as markup
+    box.focus();
+    box.setSelectionRange(box.value.length, box.value.length);
+  }
+
+  function cancelEdit() {
+    if (editingId === null) return;
+    const el = messageEl(editingId);
+    editingId = null;
+    if (!el) return;
+    const editor = el.querySelector('.message-editor');
+    if (editor) editor.remove();
+    const p = el.querySelector('.message-text');
+    if (p) p.hidden = false;
+    const actions = el.querySelector('.message-actions');
+    if (actions) actions.hidden = false;
+  }
+
+  async function saveEdit(id) {
+    const el = messageEl(id);
+    if (!el) return;
+    const box = el.querySelector('.message-editor textarea');
+    const save = el.querySelector('[data-act="save"]');
+    if (!box) return;
+
+    const body = box.value.trim();
+    if (!body) {
+      showNotification('An edit cannot be empty. Delete the message instead.', 'danger');
+      return;
+    }
+    if (body === currentText(el)) { cancelEdit(); return; }
+
+    if (save) { save.disabled = true; save.textContent = 'Saving…'; }
+    try {
+      const res = await fetch(
+        '/api/community/channels/' + encodeURIComponent(activeSlug) + '/messages/' + id, {
+          method: 'PATCH',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'x-csrf-token': CSRF_TOKEN },
+          body: JSON.stringify({ body }),
+        });
+      const json = await res.json();
+      if (!res.ok) {
+        showNotification(json.error || 'Could not save the edit', 'danger');
+        return;                       // leave the editor open so the text is not lost
+      }
+      cancelEdit();
+      patchMessages([json.data]);
+    } catch (err) {
+      showNotification('Could not reach the server. Your edit is still here — try again.', 'danger');
+    } finally {
+      if (save) { save.disabled = false; save.textContent = 'Save'; }
+    }
+  }
+
+  async function removeMessage(id) {
+    if (!window.confirm('Delete this message? Everyone in the channel will see that it was deleted.')) return;
+    try {
+      const res = await fetch(
+        '/api/community/channels/' + encodeURIComponent(activeSlug) + '/messages/' + id, {
+          method: 'DELETE',
+          credentials: 'same-origin',
+          headers: { 'x-csrf-token': CSRF_TOKEN },
+        });
+      const json = await res.json();
+      if (!res.ok) {
+        showNotification(json.error || 'Could not delete the message', 'danger');
+        return;
+      }
+      patchMessages([json.data]);
+    } catch (err) {
+      showNotification('Could not reach the server — try again.', 'danger');
+    }
+  }
+
+  /**
+   * One listener on the list rather than a handler per button: bubbles are
+   * rebuilt constantly by the poll, and per-button handlers would leak with
+   * every render.
+   */
+  function watchMessageActions() {
+    const el = document.getElementById('chatMessages');
+    if (!el) return;
+    el.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn || !el.contains(btn)) return;
+      const id = Number(btn.dataset.id);
+      if (!id) return;
+      if (btn.dataset.act === 'edit') startEdit(id);
+      else if (btn.dataset.act === 'delete') removeMessage(id);
+      else if (btn.dataset.act === 'save') saveEdit(id);
+      else if (btn.dataset.act === 'cancel') cancelEdit();
+    });
+    el.addEventListener('keydown', (e) => {
+      if (!e.target.closest('.message-editor')) return;
+      if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+      // Enter saves, Shift+Enter keeps the newline — the usual bargain.
+      if (e.key === 'Enter' && !e.shiftKey && editingId !== null) {
+        e.preventDefault();
+        saveEdit(editingId);
+      }
+    });
+  }
+
+  // ── channels (administrators) ───────────────────────────────────
+
+  /** null while adding; a slug while renaming that channel. */
+  let editingChannelSlug = null;
+
+  window.toggleChannelForm = function (show) {
+    const form = document.getElementById('channelForm');
+    if (!form) return;
+    form.hidden = show === undefined ? !form.hidden : !show;
+    if (form.hidden) {
+      form.reset();
+      editingChannelSlug = null;
+    } else {
+      document.getElementById('channelName').focus();
+    }
+    setChannelFormMode();
+  };
+
+  /** The one form is used for both jobs; this is the only thing that differs. */
+  function setChannelFormMode() {
+    const title = document.getElementById('channelFormTitle');
+    const submit = document.getElementById('channelSubmit');
+    if (!title || !submit) return;
+    const renaming = editingChannelSlug !== null;
+    title.textContent = renaming ? 'Rename channel' : 'New channel';
+    submit.textContent = renaming ? 'Save changes' : 'Add channel';
+  }
+
+  function startChannelEdit(slug) {
+    const row = [...document.querySelectorAll('.chat-channel')].find((c) => c.dataset.slug === slug);
+    if (!row) return;
+    editingChannelSlug = slug;
+    const form = document.getElementById('channelForm');
+    form.hidden = false;
+    // The stored name carries the leading #; the box should not, or a rename
+    // would keep adding one.
+    document.getElementById('channelName').value = (row.dataset.name || '').replace(/^#/, '');
+    document.getElementById('channelDesc').value = row.dataset.desc || '';
+    setChannelFormMode();
+    document.getElementById('channelName').focus();
+  }
+
+  window.submitChannelForm = function (e) {
+    e.preventDefault();
+    if (editingChannelSlug !== null) return saveChannelEdit();
+    return addChannel();
+  };
+
+  async function saveChannelEdit() {
+    const slug = editingChannelSlug;
+    const nameEl = document.getElementById('channelName');
+    const descEl = document.getElementById('channelDesc');
+    const submit = document.getElementById('channelSubmit');
+    const name = nameEl.value.trim();
+    if (!name || submit.disabled) return;
+
+    submit.disabled = true;
+    submit.textContent = 'Saving…';
+    try {
+      const res = await fetch('/api/community/channels/' + encodeURIComponent(slug), {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': CSRF_TOKEN },
+        body: JSON.stringify({ name, description: descEl.value.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        showNotification(json.error || 'Could not rename the channel', 'danger');
+        return;
+      }
+      applyChannelRename(json.data);
+      toggleChannelForm(false);
+      showNotification('Channel renamed to ' + json.data.name, 'success');
+    } catch (err) {
+      showNotification('Could not reach the server — try again.', 'danger');
+    } finally {
+      submit.disabled = false;
+      setChannelFormMode();
+    }
+  }
+
+  /** Update the row, and the header too when it is the channel on screen. */
+  function applyChannelRename(channel) {
+    const row = [...document.querySelectorAll('.chat-channel')]
+      .find((c) => c.dataset.slug === channel.slug);
+    if (!row) return;
+    row.dataset.name = channel.name;
+    row.dataset.desc = channel.description || '';
+    const nameEl = row.querySelector('.channel-name');
+    const descEl = row.querySelector('.channel-desc');
+    if (nameEl) {
+      const icon = nameEl.querySelector('i');
+      nameEl.textContent = ' ' + channel.name;
+      if (icon) nameEl.prepend(icon);
+    }
+    if (descEl) descEl.textContent = channel.description || '';
+    if (activeSlug === channel.slug) {
+      document.getElementById('currentChannelName').textContent = channel.name;
+      document.getElementById('currentChannelDesc').textContent = channel.description || '';
+    }
+  }
+
+  async function removeChannel(slug) {
+    const row = [...document.querySelectorAll('.chat-channel')].find((c) => c.dataset.slug === slug);
+    const label = row ? row.dataset.name : slug;
+    if (!window.confirm('Remove ' + label + ' from the channel list?\n\n' +
+        'Its messages are kept in the database, but nobody will be able to open it.')) return;
+
+    try {
+      const res = await fetch('/api/community/channels/' + encodeURIComponent(slug), {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: { 'x-csrf-token': CSRF_TOKEN },
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        showNotification(json.error || 'Could not remove the channel', 'danger');
+        return;
+      }
+      if (row) row.remove();
+      if (editingChannelSlug === slug) toggleChannelForm(false);
+      // Standing in a channel that no longer exists is no place to be.
+      if (activeSlug === slug) {
+        const first = document.querySelector('.chat-channel');
+        if (first) selectChannel(first);
+      }
+      const kept = json.data.messagesKept;
+      showNotification(json.data.name + ' removed' +
+        (kept ? ' — ' + kept + ' message(s) kept in the database' : ''), 'success');
+    } catch (err) {
+      showNotification('Could not reach the server — try again.', 'danger');
+    }
+  }
+
+  /** One listener for the whole sidebar, for the same reason as the messages. */
+  function watchChannelActions() {
+    const list = document.getElementById('chatChannels');
+    if (!list) return;
+    list.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-chan]');
+      if (!btn) return;
+      // Without this the click also selects the channel underneath.
+      e.stopPropagation();
+      const slug = btn.dataset.slug;
+      if (btn.dataset.chan === 'edit') startChannelEdit(slug);
+      else if (btn.dataset.chan === 'delete') removeChannel(slug);
+    });
+  }
+
+  async function addChannel() {
+    const nameEl = document.getElementById('channelName');
+    const descEl = document.getElementById('channelDesc');
+    const submit = document.getElementById('channelSubmit');
+    const name = nameEl.value.trim();
+    if (!name || submit.disabled) return;
+
+    submit.disabled = true;
+    submit.textContent = 'Adding…';
+    try {
+      const res = await fetch('/api/community/channels', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': CSRF_TOKEN },
+        body: JSON.stringify({ name, description: descEl.value.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        showNotification(json.error || 'Could not add the channel', 'danger');
+        return;                        // keep what they typed so they can fix it
+      }
+      addChannelToSidebar(json.data);
+      toggleChannelForm(false);
+      showNotification('Channel ' + json.data.name + ' added', 'success');
+    } catch (err) {
+      showNotification('Could not reach the server — try again.', 'danger');
+    } finally {
+      submit.disabled = false;
+      setChannelFormMode();
+    }
+  }
+
+  /** Add the row without a page reload, and open it, as a person expects. */
+  function addChannelToSidebar(channel) {
+    const list = document.getElementById('chatChannels');
+    if (!list) return;
+    const row = document.createElement('div');
+    row.className = 'chat-channel';
+    row.dataset.slug = channel.slug;
+    row.dataset.name = channel.name;
+    row.dataset.desc = channel.description || '';
+    row.onclick = function () { selectChannel(row); };
+    row.innerHTML =
+      '<div class="channel-name"><i class="bi bi-tag" aria-hidden="true"></i> ' +
+      esc(channel.name) + '</div>' +
+      '<div class="channel-desc">' + esc(channel.description || '') + '</div>' +
+      (isAdmin ? '<div class="channel-actions">' +
+        '<button type="button" class="msg-action" data-chan="edit" data-slug="' + esc(channel.slug) +
+        '" aria-label="Rename channel" title="Rename"><i class="bi bi-pencil" aria-hidden="true"></i></button>' +
+        '<button type="button" class="msg-action" data-chan="delete" data-slug="' + esc(channel.slug) +
+        '" aria-label="Delete channel" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>' +
+        '</div>' : '');
+    list.appendChild(row);
+    selectChannel(row);
+    row.scrollIntoView({ block: 'nearest' });
+  }
+
+  function startPoll() {
+    if (pollTimer) clearInterval(pollTimer);
+    watchScroll();
+    watchMessageActions();
+    watchChannelActions();
+
+    pollTimer = setInterval(() => {
+      // No point asking the server for messages nobody is looking at.
+      if (document.hidden) return;
+      if (lastMessageId > 0) {
+        loadChannel(activeSlug, false);
+      }
+    }, pollMs);
+
+    // Catch up as soon as the tab is looked at again.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && lastMessageId > 0) loadChannel(activeSlug, false);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('chatMessages')) return;
+    // The message box needs two handlers, so it is wired here rather than via a
+    // single data-call: enable/disable the send button as you type, and send on
+    // Enter. (Everything else on this page uses data-call in actions.js.)
+    const mInput = document.getElementById('messageInput');
+    if (mInput) {
+      mInput.addEventListener('input', syncSendButton);
+      mInput.addEventListener('keypress', handleChatEnter);
+    }
+    renderMessages(boot.initialMessages || [], false);
+    boot.initialMessages.forEach((m) => { if (m.id > lastMessageId) lastMessageId = m.id; });
+    syncSendButton();
+    startPoll();
+  });
+})();
+</script>
+</body>
+</html>

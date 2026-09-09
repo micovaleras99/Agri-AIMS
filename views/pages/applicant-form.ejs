@@ -1,0 +1,180 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page }) %>
+
+<div class="main-wrapper">
+    <div class="page-content">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+                <li class="breadcrumb-item active">
+                    <%= applicant ? 'Edit Application' : 'New Application' %>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <h1 class="page-title">
+                <%= applicant ? 'Edit Application' : 'New LSA Application' %>
+            </h1>
+        </div>
+
+        <form action="<%= action %>" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <!-- Application Type -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="section-title mb-4">
+                        <i class="bi bi-tag me-2"></i>Application Type
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="lsaType" class="form-label">LSA Type <span class="text-danger">*</span></label>
+                            <select id="lsaType" class="form-select" name="lsaType" required>
+                                <option value="">Select LSA Type</option>
+                                <option value="regular"  <%= applicant && applicant.lsaType==='regular' ?'selected':'' %>>Regular LSA</option>
+                                <option value="rcef"     <%= applicant && applicant.lsaType==='rcef'    ?'selected':'' %>>RCEF-LSA</option>
+                                <option value="coco"     <%= applicant && applicant.lsaType==='coco'    ?'selected':'' %>>Coco-LSA</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="category" class="form-label">Applicant Category <span class="text-danger">*</span></label>
+                            <select id="category" class="form-select" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="private"      <%= applicant && applicant.category==='private'      ?'selected':'' %>>Private-owned</option>
+                                <option value="organization" <%= applicant && applicant.category==='organization' ?'selected':'' %>>Farmers/Fishers Organization</option>
+                                <option value="government"   <%= applicant && applicant.category==='government'   ?'selected':'' %>>Government-owned</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="classification" class="form-label">LSA Classification <span class="text-danger">*</span></label>
+                            <select id="classification" class="form-select" name="classification" required>
+                                <option value="">Select Classification</option>
+                                <optgroup label="Farming LSA">
+                                    <% classificationOptions.farming.forEach(c => { %>
+                                    <option value="<%= c.key %>" <%= applicant && applicant.classification===c.key ? 'selected' : '' %>><%= c.label %></option>
+                                    <% }) %>
+                                </optgroup>
+                                <optgroup label="Agri-Processing LSA">
+                                    <% classificationOptions.processing.forEach(c => { %>
+                                    <option value="<%= c.key %>" <%= applicant && applicant.classification===c.key ? 'selected' : '' %>><%= c.label %></option>
+                                    <% }) %>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <% if (applicant) { %>
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Application Status</label>
+                            <select id="status" class="form-select" name="status">
+                                <option value="submitted"       <%= applicant.status==='submitted'       ?'selected':'' %>>Submitted</option>
+                                <option value="document_review" <%= applicant.status==='document_review' ?'selected':'' %>>Document Review</option>
+                                <option value="under_review"    <%= applicant.status==='under_review'    ?'selected':'' %>>Under Review</option>
+                                <option value="approved"        <%= applicant.status==='approved'        ?'selected':'' %>>Approved</option>
+                                <option value="rejected"        <%= applicant.status==='rejected'        ?'selected':'' %>>Rejected</option>
+                            </select>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applicant Information -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="section-title mb-4">
+                        <i class="bi bi-person me-2"></i>Applicant Information
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input id="firstName" type="text" class="form-control" name="firstName"
+                                   value="<%= applicant ? applicant.firstName : '' %>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input id="lastName" type="text" class="form-control" name="lastName"
+                                   value="<%= applicant ? applicant.lastName : '' %>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                            <input id="email" type="email" class="form-control" name="email"
+                                   value="<%= applicant ? applicant.email : '' %>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="phone" class="form-label">Contact Number <span class="text-danger">*</span></label>
+                            <input id="phone" type="tel" class="form-control" name="phone"
+                                   value="<%= applicant ? applicant.phone : '' %>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="rsbsaNumber" class="form-label">RSBSA / NCFRS Number</label>
+                            <input id="rsbsaNumber" type="text" class="form-control" name="rsbsaNumber"
+                                   value="<%= applicant ? (applicant.rsbsaNumber || '') : '' %>"
+                                   placeholder="e.g. 05-24-01-001-000123">
+                            <div class="form-text">
+                                DA RSBSA registration, or PCA NCFRS for coconut-based farmers.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Farm Information -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="section-title mb-4">
+                        <i class="bi bi-tree me-2"></i>Farm / Enterprise Information
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label for="farmName" class="form-label">Farm / Enterprise Name <span class="text-danger">*</span></label>
+                            <input id="farmName" type="text" class="form-control" name="farmName"
+                                   value="<%= applicant ? applicant.farmName : '' %>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="farmArea" class="form-label">Farm Area (sq.m.) <span class="text-danger">*</span></label>
+                            <input id="farmArea" type="number" class="form-control" name="farmArea"
+                                   value="<%= applicant ? applicant.farmArea : '' %>" required min="1">
+                        </div>
+                        <div class="col-12">
+                            <label for="farmAddress" class="form-label">Street / Purok / Sitio <span class="text-danger">*</span></label>
+                            <textarea id="farmAddress" class="form-control" name="farmAddress" rows="2" required
+                                      placeholder="Purok 3, Zone II"
+                            ><%= applicant ? applicant.farmAddress : '' %></textarea>
+                            <div class="form-text">
+                                The detail below barangay level. Barangay, city/municipality,
+                                province and region are selected underneath and are stored from
+                                that selection.
+                            </div>
+                        </div>
+                        <%- include('../partials/location-select', {
+                            prefix: 'app',
+                            required: true,
+                            cols: 'col-md-3',
+                            selected: locationSelection
+                        }) %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex gap-3 justify-content-end">
+                <a href="/applicants" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-<%= applicant ? 'floppy' : 'send' %> me-2"></i>
+                    <%= applicant ? 'Save Changes' : 'Submit Application' %>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+</body>
+</html>

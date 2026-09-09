@@ -1,0 +1,139 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page }) %>
+
+<div class="main-wrapper">
+    <div class="page-content">
+
+        <div class="page-header">
+            <h1 class="page-title">LSA Directory</h1>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="card p-3 mb-4">
+            <form method="GET" action="/directory" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="search" class="form-label small fw-semibold">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input id="search" type="text" class="form-control" name="search"
+                               placeholder="Farm name or operator..."
+                               value="<%= filters.search || '' %>">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="province" class="form-label small fw-semibold">Province</label>
+                    <select id="province" class="form-select" name="province">
+                        <option value="">All Provinces</option>
+                        <% provinces.forEach(p => { %>
+                        <option value="<%= p %>" <%= filters.province===p?'selected':'' %>><%= p %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="classification" class="form-label small fw-semibold">Classification</label>
+                    <select id="classification" class="form-select" name="classification">
+                        <option value="">All Types</option>
+                        <% classifications.forEach(c => { %>
+                        <option value="<%= c.value %>" <%= filters.classification===c.value?'selected':'' %>><%= c.label %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                    <a href="/directory" class="btn btn-outline-secondary" aria-label="Clear search and filters" title="Clear search and filters"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-success"><i class="bi bi-building"></i></div>
+                    <div class="stat-info"><h3><%= totalFarms %></h3><p>Active LSAs</p></div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary"><i class="bi bi-geo-alt"></i></div>
+                    <div class="stat-info"><h3><%= provinces.length %></h3><p>Provinces</p></div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-info"><i class="bi bi-tags"></i></div>
+                    <div class="stat-info"><h3><%= classifications.length %></h3><p>Classifications</p></div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-warning"><i class="bi bi-people"></i></div>
+                    <div class="stat-info"><h3><%= totalVisitors.toLocaleString() %></h3><p>Total Visitors</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Directory Cards -->
+        <div class="row g-4">
+            <% if (farms.length === 0) { %>
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-search fs-1 text-muted d-block mb-2"></i>
+                <p class="text-muted">No LSAs found matching your search.</p>
+                <a href="/directory" class="btn btn-outline-secondary">Clear filters</a>
+            </div>
+            <% } %>
+            <% farms.forEach(f => { %>
+            <div class="col-md-6 col-xl-4">
+                <div class="directory-card">
+                    <div class="directory-card-header">
+                        <div class="directory-avatar">
+                            <%= f.operator.split(' ').map(n=>n[0]).join('').substring(0,2) %>
+                        </div>
+                        <div>
+                            <h6 class="mb-0"><%= f.name %></h6>
+                            <small class="text-muted"><%= f.operator %></small>
+                        </div>
+                    </div>
+                    <div class="directory-card-body">
+                        <div class="directory-info-row">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <span><%= f.province %>, <%= f.region %></span>
+                        </div>
+                        <div class="directory-info-row">
+                            <i class="bi bi-tag-fill text-primary"></i>
+                            <span><span class="badge bg-primary-subtle text-primary"><%= classificationLabel(f.classification) %></span></span>
+                        </div>
+                        <div class="directory-info-row">
+                            <i class="bi bi-award-fill text-warning"></i>
+                            <span><%= f.accreditationLevel %> Accredited</span>
+                        </div>
+                        <div class="directory-info-row">
+                            <i class="bi bi-people-fill text-info"></i>
+                            <span><%= f.visitorsThisYear %> visitors this year</span>
+                        </div>
+                    </div>
+                    <div class="directory-card-footer">
+                        <a href="/farms/<%= f.id %>" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye me-1"></i>View Profile
+                        </a>
+                        <% if (f.operatorUserId && (!currentUser || f.operatorUserId !== currentUser.id)) { %>
+                        <a href="/messages?to=<%= f.operatorUserId %>" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-envelope me-1"></i>Message
+                        </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

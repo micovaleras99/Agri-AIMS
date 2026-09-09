@@ -1,0 +1,1989 @@
+/* ============================================================
+   AGRI-AIMS — Additional EJS/Server-side Styles
+   These complement the main styles already in the file
+   ============================================================ */
+
+/* ── Main Layout ─────────────────────────────────────────── */
+.main-wrapper {
+    margin-top: var(--navbar-height);
+    min-height: calc(100vh - var(--navbar-height) - 60px);
+}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+.navbar {
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(45,122,62,0.08);
+    height: var(--navbar-height);
+}
+
+.brand-icon {
+    font-size: 28px;
+    color: var(--accent-color);
+}
+
+.brand-text {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    font-weight: 500;
+    font-size: 14px;
+    padding: 8px 14px !important;
+    border-radius: 8px;
+    color: var(--text-primary) !important;
+    transition: var(--transition-base);
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(45,122,62,0.08);
+    color: var(--primary-color) !important;
+    font-weight: 600;
+}
+
+.nav-bell { cursor: pointer; }
+.nav-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    background: var(--danger-color);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff;
+}
+
+.user-btn {
+    display: flex; align-items: center; gap: 8px;
+    text-decoration: none;
+    color: var(--text-primary) !important;
+}
+
+.user-avatar-sm {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff;
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.user-avatar-lg {
+    width: 78px; height: 78px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff;
+    font-size: 30px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* The camera button sits on the corner of the large avatar. The wrapper is
+   sized by its content so the button lands on the circle at any avatar size. */
+.avatar-edit { position: relative; width: max-content; }
+
+.avatar-edit-btn {
+    position: absolute; right: -2px; bottom: -2px;
+    width: 30px; height: 30px;
+    border: 2px solid var(--card-bg, #fff);
+    border-radius: 50%;
+    background: var(--primary-color, #2e7d32);
+    color: #fff; font-size: 13px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform .15s ease;
+}
+
+.avatar-edit-btn:hover { transform: scale(1.08); }
+.avatar-edit-btn:focus-visible { outline: 3px solid var(--accent-color, #66bb6a); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .avatar-edit-btn { transition: none; }
+    .avatar-edit-btn:hover { transform: none; }
+}
+
+/* The avatar is a <div> of initials or an <img> of a face; the size classes
+   above give both the same box, and this stops a non-square photo stretching. */
+.avatar-photo { object-fit: cover; background: var(--bg-secondary, #eee); }
+
+.user-name-label { font-weight: 600; font-size: 14px; }
+
+/* Notification Dropdown */
+.notif-dropdown {
+    position: fixed;
+    top: var(--navbar-height);
+    right: 20px;
+    width: 340px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    z-index: 1050;
+    display: none;
+    overflow: hidden;
+}
+
+.notif-dropdown.show { display: block; animation: slideDown .25s ease; }
+
+.notif-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.notif-body { max-height: 320px; overflow-y: auto; }
+
+.notif-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-size: 14px;
+}
+
+.notif-item:hover { background: var(--bg-primary); }
+.notif-item.unread { border-left: 3px solid var(--primary-color); }
+.notif-item i { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.notif-title { font-weight: 600; }
+.notif-time { font-size: 12px; color: var(--text-secondary); }
+
+/* ── Page Header ─────────────────────────────────────────── */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* ── Breadcrumb ──────────────────────────────────────────── */
+.breadcrumb {
+    font-size: 14px;
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before { color: var(--text-secondary); }
+.breadcrumb-item a { color: var(--primary-color); text-decoration: none; }
+.breadcrumb-item a:hover { text-decoration: underline; }
+
+/* ── Card Header Row ─────────────────────────────────────── */
+.card-header-row {
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+/* ── App ID Link ─────────────────────────────────────────── */
+.app-id-link {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.app-id-link:hover { text-decoration: underline; }
+
+/* ── Table Avatar ────────────────────────────────────────── */
+.table-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Status Badges ───────────────────────────────────────── */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+/* Each colour was a raw hex measuring between 1.7:1 and 4.0:1 against its own
+   tinted background — the label was the least readable text on the page, which
+   for a status is exactly backwards. The tints are unchanged; the text now
+   comes from the tokens, each darkened until it clears 4.5:1 there. */
+.status-badge.submitted       { background: rgba(52,152,219,.12); color: var(--info-color); }
+.status-badge.document_review,
+.status-badge.document-review { background: rgba(243,156,18,.12); color: var(--status-orange); }
+.status-badge.under_review    { background: rgba(155,89,182,.12); color: var(--status-purple); }
+.status-badge.approved        { background: rgba(39,174,96,.12);  color: var(--success-color); }
+.status-badge.rejected        { background: rgba(231,76,60,.12);  color: var(--danger-color); }
+.status-badge.pending         { background: rgba(243,156,18,.12); color: var(--status-yellow); }
+.status-badge.pending_review  { background: rgba(52,152,219,.12); color: var(--info-color); }
+.status-badge.verified        { background: rgba(39,174,96,.12);  color: var(--success-color); }
+.status-badge.incomplete      { background: rgba(231,76,60,.12);  color: var(--danger-color); }
+/* A semestral report sent back for correction. */
+.status-badge.returned        { background: rgba(231,76,60,.12);  color: var(--danger-color); }
+
+/* ── Section Title in forms ──────────────────────────────── */
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-color);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* ── Stat sub text ───────────────────────────────────────── */
+.stat-sub { font-size: 18px; color: var(--text-secondary); }
+
+/* ── Detail Page ─────────────────────────────────────────── */
+.detail-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff; font-size: 28px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto;
+    box-shadow: var(--shadow-md);
+}
+
+.detail-info-list { display: flex; flex-direction: column; gap: 10px; }
+
+.detail-info-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; color: var(--text-secondary);
+}
+
+.detail-info-item i { color: var(--primary-color); width: 16px; text-align: center; flex-shrink: 0; }
+
+/* ── Accreditation Tracker ───────────────────────────────── */
+.accreditation-tracker {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.tracker-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 80px;
+    position: relative;
+}
+
+.tracker-circle {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 3px solid var(--border-color);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    z-index: 1;
+    transition: var(--transition-base);
+}
+
+.tracker-step.active .tracker-circle {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(45,122,62,.2);
+}
+
+.tracker-step.completed .tracker-circle {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: #fff;
+}
+
+.tracker-line {
+    position: absolute;
+    top: 20px; left: 50%;
+    width: 100%; height: 3px;
+    background: var(--border-color);
+    z-index: 0;
+}
+
+.tracker-line.completed { background: var(--success-color); }
+
+.tracker-label {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; margin-top: 10px; text-align: center;
+}
+
+.tracker-label i { font-size: 14px; color: var(--primary-color); }
+.tracker-label span { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+.tracker-step.active .tracker-label span,
+.tracker-step.active .tracker-label i { color: var(--primary-color); }
+.tracker-step.completed .tracker-label span,
+.tracker-step.completed .tracker-label i { color: var(--success-color); }
+
+/* ── GIS Placeholder ─────────────────────────────────────── */
+.gis-placeholder {
+    background: linear-gradient(135deg, #f0f7f2 0%, #e8f5e9 100%);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    min-height: 160px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.gis-inner { text-align: center; padding: 20px; }
+
+/* ── Farm Cards ──────────────────────────────────────────── */
+.farm-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: var(--transition-base);
+}
+
+.farm-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+}
+
+.farm-card-header {
+    padding: 18px 20px;
+    background: linear-gradient(135deg, rgba(45,122,62,.04), rgba(39,174,96,.04));
+    border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: flex-start;
+}
+
+.farm-card-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+
+.farm-info-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text-secondary);
+}
+
+.farm-info-row i { width: 16px; text-align: center; flex-shrink: 0; }
+
+.farm-card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+/* Farm Detail Icon */
+.farm-detail-icon {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff; font-size: 36px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto; box-shadow: var(--shadow-md);
+}
+
+/* Mini Stat Cards */
+.mini-stat-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.mini-stat-card i { font-size: 24px; display: block; margin-bottom: 6px; }
+.mini-stat-card h4 { font-size: 24px; font-weight: 700; margin: 0; }
+.mini-stat-card small { color: var(--text-secondary); font-size: 12px; }
+
+.compliance-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-secondary);
+    padding: 6px 0;
+}
+
+/* ── Directory Cards ─────────────────────────────────────── */
+.directory-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: var(--transition-base);
+}
+
+.directory-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+}
+
+.directory-card-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 20px 14px;
+    background: linear-gradient(135deg, rgba(45,122,62,.04), rgba(39,174,96,.04));
+    border-bottom: 1px solid var(--border-color);
+}
+
+.directory-avatar {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff; font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.directory-card-body { padding: 14px 20px; display: flex; flex-direction: column; gap: 9px; }
+
+.directory-info-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text-secondary);
+}
+
+.directory-info-row i { width: 16px; text-align: center; flex-shrink: 0; }
+
+.directory-card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    display: flex; gap: 8px;
+}
+
+/* ── Auth Page ───────────────────────────────────────────── */
+.auth-container {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #f8faf9 0%, #e8f5e9 100%);
+}
+
+.auth-box {
+    background: #fff;
+    padding: 48px 40px;
+    border-radius: 24px;
+    box-shadow: var(--shadow-xl);
+    max-width: 500px; width: 100%;
+}
+
+.auth-header { text-align: center; margin-bottom: 32px; }
+.auth-icon { font-size: 56px; color: var(--primary-color); display: block; margin-bottom: 12px; }
+.auth-header h1 { font-family: 'Space Mono', monospace; font-size: 28px; }
+.auth-header p { color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+
+.auth-tabs {
+    display: flex; gap: 0;
+    background: var(--bg-primary);
+    border-radius: 10px; padding: 4px; margin-bottom: 24px;
+}
+
+.auth-tab {
+    flex: 1; padding: 10px; border: none; background: transparent;
+    font-weight: 600; font-size: 14px;
+    color: var(--text-secondary);
+    border-radius: 8px; cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.auth-tab.active { background: var(--primary-color); color: #fff; }
+
+.forgot-link { color: var(--primary-color); text-decoration: none; font-size: 13px; }
+.forgot-link:hover { text-decoration: underline; }
+
+.demo-roles { background: var(--bg-primary); padding: 12px; border-radius: 10px; }
+
+/* ── Error Page ──────────────────────────────────────────── */
+.error-container {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-primary);
+}
+
+.error-box { text-align: center; padding: 40px; }
+.error-code {
+    font-size: 120px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+}
+
+.error-title { font-size: 28px; margin-bottom: 12px; }
+.error-message { color: var(--text-secondary); font-size: 16px; margin-bottom: 28px; }
+
+/* ── Footer ──────────────────────────────────────────────── */
+.site-footer {
+    background: #fff;
+    border-top: 1px solid var(--border-color);
+    padding: 16px 24px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.footer-brand { font-weight: 700; color: var(--primary-color); }
+/* Was the border colour, which is a line colour: 1.26:1 as text. */
+.footer-sep   { color: var(--text-secondary); }
+
+/* ── Sidebar (if used) ───────────────────────────────────── */
+.sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 240px; height: 100vh;
+    background: #fff;
+    border-right: 1px solid var(--border-color);
+    display: flex; flex-direction: column;
+    z-index: 900; padding-top: var(--navbar-height);
+}
+
+.sidebar-brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 20px 20px 12px;
+    font-weight: 700; font-size: 18px;
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+    font-family: 'Space Mono', monospace;
+}
+
+.sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+
+.sidebar-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--text-secondary); padding: 8px 12px 4px;
+}
+
+.sidebar-link {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: var(--transition-base);
+    margin-bottom: 2px;
+}
+
+.sidebar-link i { font-size: 16px; width: 18px; text-align: center; }
+.sidebar-link:hover  { background: rgba(45,122,62,.06); color: var(--primary-color); }
+.sidebar-link.active { background: rgba(45,122,62,.1);  color: var(--primary-color); font-weight: 600; }
+
+.sidebar-footer {
+    padding: 16px; border-top: 1px solid var(--border-color);
+}
+
+.sidebar-user { display: flex; align-items: center; gap: 10px; }
+.sidebar-user-name { font-size: 13px; font-weight: 600; }
+.sidebar-user-role { font-size: 11px; color: var(--text-secondary); }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .page-header { flex-direction: column; align-items: flex-start; }
+    .page-title  { font-size: 26px; }
+    .farm-card-footer { flex-direction: column; gap: 8px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RBAC DASHBOARD STYLES
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Role Badge in Navbar ──────────────────────────────────── */
+.role-badge {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* ── Login: Role Selector ──────────────────────────────────── */
+.role-selector { }
+.role-selector-label {
+    font-size: 13px; font-weight: 600;
+    color: var(--text-secondary); margin-bottom: 10px;
+}
+
+.role-cards { display: flex; flex-direction: column; gap: 8px; }
+
+.role-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition-base);
+    background: #fff;
+}
+
+.role-card:hover {
+    border-color: var(--primary-light);
+    background: var(--bg-primary);
+}
+
+.role-card.active {
+    border-color: var(--primary-color);
+    background: rgba(45,122,62,.04);
+}
+
+.role-card-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 16px; flex-shrink: 0;
+}
+
+.role-card-info { flex-grow: 1; }
+.role-card-name { font-size: 14px; font-weight: 700; }
+.role-card-desc { font-size: 12px; color: var(--text-secondary); }
+.role-check { font-size: 16px; flex-shrink: 0; }
+
+/* Auth badge (ATI location) */
+.auth-badge {
+    display: inline-block;
+    background: rgba(45,122,62,.08);
+    color: var(--primary-color);
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; margin-top: 8px;
+}
+
+/* ── Btn XS ────────────────────────────────────────────────── */
+.btn-xs {
+    padding: 3px 8px; font-size: 11px; font-weight: 600;
+    border-radius: 6px; line-height: 1.5;
+}
+
+/* ── Pending Doc Card ──────────────────────────────────────── */
+.pending-doc-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+}
+
+/* ── Evaluator Queue Item ──────────────────────────────────── */
+.eval-queue-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.eval-queue-item:last-child { border-bottom: none; }
+
+/* ── Report Timeline ───────────────────────────────────────── */
+.report-timeline-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.report-timeline-item:last-child { border-bottom: none; }
+
+.report-timeline-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 4px;
+}
+
+/* ── Farm Quick Info (Operator) ────────────────────────────── */
+.farm-quick-info { display: flex; flex-direction: column; gap: 6px; }
+
+/* ── Applicant Hero Card ───────────────────────────────────── */
+.applicant-hero {
+    background: linear-gradient(135deg, rgba(45,122,62,.03), rgba(39,174,96,.06));
+    border: 1px solid rgba(45,122,62,.15) !important;
+}
+
+.applicant-mini-stat {
+    background: rgba(45,122,62,.07);
+    border-radius: 10px; padding: 12px 8px;
+}
+.applicant-mini-stat h4 { font-size: 24px; font-weight: 800; margin: 0; color: var(--primary-color); }
+.applicant-mini-stat small { font-size: 11px; color: var(--text-secondary); }
+.applicant-mini-stat.warning { background: rgba(243,156,18,.08); }
+.applicant-mini-stat.warning h4 { color: #e67e22; }
+.applicant-mini-stat.danger { background: rgba(231,76,60,.08); }
+.applicant-mini-stat.danger h4 { color: #e74c3c; }
+
+/* ── Linked stat cards ─────────────────────────────────────── */
+/* When a stat card is an <a>, keep its numbers in the normal text colour
+   (an anchor would otherwise tint the <h3> link-blue) while the hover-lift
+   from .stat-card:hover signals it is clickable. */
+a.stat-card { color: var(--text-primary); }
+a.stat-card:hover { color: var(--text-primary); }
+
+/* ── "Needs your attention" panel (operator dashboard) ─────── */
+.attention-panel {
+    background: var(--bg-secondary, #fff);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+.attention-panel__head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 18px;
+    font-weight: 700; font-size: 13px;
+    color: var(--text-primary);
+    background: rgba(45,122,62,.05);
+    border-bottom: 1px solid var(--border-color);
+}
+.attention-panel__head i { color: var(--warning-color, #f39c12); }
+.attention-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-color);
+    border-left: 4px solid transparent;
+}
+.attention-item:last-child { border-bottom: 0; }
+.attention-item__icon { font-size: 18px; flex-shrink: 0; }
+.attention-item__text { flex: 1; font-size: 13px; color: var(--text-primary); }
+.attention-item--danger  { border-left-color: var(--danger-color); }
+.attention-item--danger  .attention-item__icon { color: var(--danger-color); }
+.attention-item--warning { border-left-color: var(--warning-color, #f39c12); }
+.attention-item--warning .attention-item__icon { color: #e67e22; }
+.attention-item .btn { flex-shrink: 0; }
+
+/* ── 7-Step LSA List (Applicant) ───────────────────────────── */
+.lsa-steps-list { display: flex; flex-direction: column; gap: 0; }
+
+.lsa-step-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border-color);
+    position: relative;
+}
+.lsa-step-item:last-child { border-bottom: none; }
+
+.lsa-step-circle {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.lsa-step-item.completed .lsa-step-circle {
+    background: var(--success-color); border-color: var(--success-color); color: #fff;
+}
+.lsa-step-item.active .lsa-step-circle {
+    background: var(--primary-color); border-color: var(--primary-color); color: #fff;
+    box-shadow: 0 0 0 4px rgba(45,122,62,.18);
+}
+
+.lsa-step-content { flex-grow: 1; }
+.lsa-step-title {
+    font-weight: 700; font-size: 14px;
+    color: var(--text-primary);
+}
+.lsa-step-item.pending .lsa-step-title { color: var(--text-secondary); }
+.lsa-step-desc { font-size: 12px; color: var(--text-secondary); }
+
+/* ── Document Checklist (Applicant) ────────────────────────── */
+.doc-checklist-list { display: flex; flex-direction: column; gap: 6px; max-height: 370px; overflow-y: auto; }
+
+.doc-checklist-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.doc-progress-summary { padding: 12px; background: var(--bg-primary); border-radius: 10px; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   EVALUATOR DASHBOARD COMPONENTS
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Priority badge in queue ─────────────────────────────────── */
+.eval-priority-badge {
+    width: 28px; height: 28px; border-radius: 50%;
+    color: #fff; font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Checklist section card ──────────────────────────────────── */
+.checklist-section-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 18px;
+    height: 100%;
+}
+
+.checklist-section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 0;
+}
+
+.checklist-section-header h6 { font-size: 13px; color: var(--primary-color); }
+
+/* Individual checklist item row */
+.checklist-item-row {
+    display: flex; flex-direction: column;
+    gap: 4px; padding: 10px 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.checklist-item-row:last-child { border-bottom: none; }
+
+.checklist-item-label {
+    display: flex; align-items: flex-start; gap: 8px;
+}
+
+.checklist-item-bar { padding-left: 22px; }
+
+/* ── Validation schedule ─────────────────────────────────────── */
+.stat-card.border-start { border-left-width: 4px !important; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   LSA OPERATOR DASHBOARD COMPONENTS
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Compliance responsibility items ─────────────────────────── */
+.compliance-resp-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.compliance-resp-item:last-child { border-bottom: none; }
+
+.compliance-resp-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+}
+
+/* ── Report calendar table highlight ────────────────────────── */
+tr.table-warning td { background: rgba(255,193,7,.07) !important; }
+tr.table-danger  td { background: rgba(220, 53, 69,.07) !important; }
+
+/* ── Responsibility reminder cards ──────────────────────────── */
+.responsibility-reminder-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.responsibility-reminder-card.urgent {
+    background: rgba(231,76,60,.05);
+    border-color: rgba(231,76,60,.2);
+}
+
+.reminder-icon { font-size: 20px; flex-shrink: 0; }
+
+/* ── Min-width for text truncation ──────────────────────────── */
+.min-w-0 { min-width: 0; }
+
+/* ── Compliance gauge ────────────────────────────────────────── */
+.compliance-gauge {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   GEO-TAGGING & GIS MAP STYLES
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Farm map on detail page ─────────────────────────────────── */
+.farm-map-container {
+    height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+/* ── Full GIS map on farms page ──────────────────────────────── */
+.gis-full-map {
+    height: 580px;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+/* ── Geo coordinates display ─────────────────────────────────── */
+.geo-coords-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--bg-primary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.geo-coord-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+}
+
+.geo-coord-item i { width: 16px; flex-shrink: 0; }
+
+/* ── Pending placeholder ─────────────────────────────────────── */
+.geo-pending-placeholder {
+    min-height: 160px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa, #f0f7f2);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+}
+
+/* ── Geo-tag input panel ─────────────────────────────────────── */
+.geo-tag-panel {
+    background: rgba(231,76,60,.04);
+    border: 2px solid rgba(231,76,60,.18);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-top: 14px;
+}
+
+.geo-tag-panel-header {
+    display: flex; align-items: center;
+    font-size: 14px;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(231,76,60,.12);
+}
+
+/* ── Live preview map in form ────────────────────────────────── */
+.geo-preview-map {
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(231,76,60,.2);
+}
+
+/* ── Step badge on tracker ───────────────────────────────────── */
+.geo-step-badge {
+    display: inline-block;
+    background: rgba(231,76,60,.1);
+    color: #e74c3c;
+    font-size: 9px; font-weight: 800;
+    padding: 1px 5px; border-radius: 4px;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* ── Custom map marker pins (Leaflet) ────────────────────────── */
+.map-marker-pin {
+    width: 32px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: #e74c3c;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.25));
+}
+
+.gis-farm-pin {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700;
+    box-shadow: 0 3px 10px rgba(0,0,0,.22);
+    border: 2px solid #fff;
+}
+
+.gis-farm-pin.approved { background: #27ae60; color: #fff; }
+.gis-farm-pin.review   { background: #3498db; color: #fff; }
+.gis-farm-pin.pending  { background: #f39c12; color: #fff; }
+
+/* Map popup styling */
+.map-popup { font-size: 13px; }
+
+/* ── Map legend ──────────────────────────────────────────────── */
+.map-legend-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; font-size: 13px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.map-legend-item:last-child { border-bottom: none; }
+
+.legend-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%; flex-shrink: 0;
+}
+
+/* ── Pending geo-tag rows ────────────────────────────────────── */
+.pending-geotag-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pending-geotag-row:last-child { border-bottom: none; }
+
+/* ── Spinner for GPS button ──────────────────────────────────── */
+.spin { display: inline-block; animation: spin .8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ── font-monospace helper ───────────────────────────────────── */
+.font-monospace { font-family: 'Space Mono', monospace !important; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   7-STEP ACCREDITATION STYLES
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Step badge ──────────────────────────────────────────────── */
+.step-badge {
+    display: inline-block;
+    padding: 4px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 800; letter-spacing: 0.5px;
+}
+
+/* ── Overview: step cards grid ───────────────────────────────── */
+.acred-steps-grid {
+    display: flex; flex-direction: column; gap: 0;
+}
+
+.acred-step-card {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 20px 24px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    position: relative;
+    transition: var(--transition-base);
+}
+
+.acred-step-card:first-child { border-radius: 14px 14px 0 0; }
+.acred-step-card:last-child  { border-radius: 0 0 14px 14px; }
+.acred-step-card:hover { background: var(--bg-primary); }
+.acred-step-card.active  { background: rgba(45,122,62,.04); border-left: 4px solid var(--primary-color); }
+.acred-step-card.completed { background: rgba(39,174,96,.03); }
+.acred-step-card.pending   { opacity: 0.65; }
+
+.acred-step-number {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0; color: #fff;
+}
+
+.acred-connector {
+    position: absolute;
+    left: 44px; bottom: -1px;
+    width: 2px; height: 20px;
+    background: var(--border-color);
+    z-index: 1;
+}
+.acred-connector.done { background: var(--success-color); }
+
+.acred-step-body { flex-grow: 1; }
+.acred-step-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
+.acred-step-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.acred-step-meta  { font-size: 12px; color: var(--text-secondary); padding: 6px 10px; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border-color); }
+.acred-who-badge  { font-size: 11px; color: var(--text-secondary); background: var(--bg-primary); padding: 2px 8px; border-radius: 10px; border: 1px solid var(--border-color); }
+
+/* ── Sidebar steps ───────────────────────────────────────────── */
+.sidebar-step-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    text-decoration: none; color: var(--text-primary);
+    transition: var(--transition-base); margin-bottom: 2px;
+}
+.sidebar-step-link:hover   { background: var(--bg-primary); }
+.sidebar-step-link.active  { background: rgba(45,122,62,.08); color: var(--primary-color); }
+.sidebar-step-link.done    { color: var(--success-color); }
+.sidebar-step-link.pending { opacity: 0.55; cursor: default; }
+
+.sidebar-step-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+}
+
+.sidebar-step-num  { font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
+.sidebar-step-name { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.sidebar-step-who  { font-size: 10px; color: var(--text-secondary); }
+
+/* ── Assessment / checklist items ───────────────────────────── */
+.assess-check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    margin-bottom: 4px; transition: var(--transition-base);
+}
+.assess-check-item:hover { background: var(--bg-primary); }
+.assess-check-item .form-check-input { margin-top: 3px; flex-shrink: 0; }
+.assess-check-item .form-check-label { font-size: 13px; line-height: 1.4; cursor: pointer; }
+
+/* ── Score display card ──────────────────────────────────────── */
+.score-display-card {
+    display: flex; align-items: center; gap: 20px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #f8faf9, #e8f5e9);
+    border: 1px solid rgba(39,174,96,.2);
+    border-radius: 14px;
+}
+
+.score-circle {
+    width: 70px; height: 70px; border-radius: 50%;
+    background: var(--primary-color); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800;
+    flex-shrink: 0; transition: background .3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+/* ── Briefer styles ──────────────────────────────────────────── */
+.briefer-header { display: flex; align-items: center; gap: 16px; padding-bottom: 16px; border-bottom: 2px solid var(--border-color); }
+.briefer-logo { width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: #fff; font-size: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.briefer-title { font-size: 28px; font-weight: 800; color: var(--primary-color); margin: 16px 0 4px; }
+.briefer-subtitle { font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-bottom: 16px; }
+.briefer-section { padding: 16px 0; border-bottom: 1px dashed var(--border-color); }
+.briefer-section:last-child { border-bottom: none; }
+.briefer-section-title { font-size: 16px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; }
+.briefer-class-card { background: var(--bg-primary); border-radius: 10px; padding: 14px; height: 100%; }
+.briefer-list { padding-left: 18px; margin: 8px 0 0; font-size: 13px; }
+.briefer-list li { margin-bottom: 4px; }
+.briefer-req-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 13px; border-bottom: 1px solid var(--border-color); }
+.briefer-req-item:last-child { border-bottom: none; }
+.briefer-req-item i { color: var(--success-color); flex-shrink: 0; margin-top: 2px; }
+
+/* ── Endorsement letter ──────────────────────────────────────── */
+.endorsement-letter {
+    background: #fafafa; border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 32px; font-size: 14px; line-height: 1.7;
+}
+.letter-header { margin-bottom: 24px; }
+.letter-date   { text-align: right; color: var(--text-secondary); margin-bottom: 16px; }
+.letter-to     { font-size: 13px; }
+.letter-footer { margin-top: 32px; display: flex; justify-content: flex-start; }
+.letter-signatory { text-align: center; }
+.signatory-line { width: 200px; border-top: 1px solid var(--text-primary); margin: 0 auto 6px; }
+
+/* ── Certificate Preview ─────────────────────────────────────── */
+.certificate-preview {
+    background: linear-gradient(135deg, #fffdf5, #f0f9f0);
+    border: 3px solid var(--success-color);
+    border-radius: 16px; padding: 32px;
+    text-align: center; position: relative;
+    box-shadow: 0 4px 20px rgba(39,174,96,.1);
+}
+.cert-header { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; font-size: 12px; color: var(--text-secondary); }
+.cert-logo   { font-size: 48px; color: var(--primary-color); }
+.cert-agency { text-align: left; font-size: 11px; line-height: 1.5; }
+.cert-title  { font-size: 22px; font-weight: 900; color: var(--primary-color); letter-spacing: 2px; text-transform: uppercase; border: 2px solid var(--success-color); display: inline-block; padding: 6px 24px; border-radius: 30px; margin-bottom: 4px; }
+.cert-subtitle { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 16px; }
+.cert-text   { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+.cert-name   { font-size: 24px; font-weight: 800; color: var(--text-primary); font-family: 'Space Mono', monospace; }
+.cert-farm   { font-size: 16px; font-weight: 700; color: var(--primary-color); }
+.cert-location { font-size: 13px; color: var(--text-secondary); }
+.cert-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px auto; max-width: 360px; background: rgba(255,255,255,.6); border-radius: 10px; padding: 14px; }
+.cert-detail-item { text-align: left; }
+.cert-detail-label { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+.cert-detail-value { font-size: 13px; font-weight: 700; font-family: 'Space Mono', monospace; }
+.cert-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 24px; }
+.cert-signatory { text-align: center; font-size: 12px; line-height: 1.5; }
+.cert-sig-line { width: 180px; border-top: 1px solid var(--text-primary); margin: 0 auto 4px; }
+
+/* ── Geo-tag Information Panel ────────────────────────────────── */
+#farmMap {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.geo-info-panel {
+    padding: 16px 0;
+}
+
+.geo-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-primary);
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.geo-info-item i {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.geo-info-item div {
+    flex: 1;
+}
+
+.geo-info-item strong {
+    display: block;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.geo-info-item p {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 0;
+}
+
+.geo-info-item small {
+    color: var(--text-secondary);
+    font-size: 12px;
+    display: block;
+    margin-top: 4px;
+}
+.cert-seal   { font-size: 48px; color: var(--success-color); opacity: 0.5; }
+
+/* ── MOA items ───────────────────────────────────────────────── */
+.moa-item {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 6px 0; border-bottom: 1px dashed var(--border-color);
+    font-size: 13px;
+}
+.moa-item:last-child { border-bottom: none; }
+.moa-item i { flex-shrink: 0; margin-top: 2px; }
+
+/* ── Validation score bar ────────────────────────────────────── */
+.validation-score-bar {
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 14px 16px;
+}
+
+/* bg-orange helper */
+.bg-orange { background: #e67e22 !important; }
+.text-orange { color: #e67e22 !important; }
+.bg-purple { background: #8e44ad !important; }
+.text-purple { color: #8e44ad !important; }
+
+
+
+/* ── Small-screen tidy-ups ────────────────────────────────────
+   An application id and a "View All" button are single tokens; letting them
+   wrap turned "LSA-2026-0009" into three lines inside the table. */
+.app-id-link { white-space: nowrap; }
+.btn-sm      { white-space: nowrap; }
+
+@media (max-width: 575.98px) {
+    /* Charts get the full card width; a side legend leaves nothing for the plot. */
+    .card canvas { max-width: 100%; }
+}
+
+/* ── .page-container ──────────────────────────────────────────
+   The newer pages use .page-container where the older ones use
+   .main-wrapper > .page-content. It had no rule at all, so those 12 pages
+   started at y=0 underneath the 70px fixed navbar and, having no horizontal
+   padding, let every Bootstrap .row push its negative gutter margin 8px past
+   the viewport. Mirrors .page-content, plus the navbar clearance. */
+.page-container {
+    margin: var(--navbar-height) auto 0;
+    padding: 32px 20px 48px;
+    max-width: 1400px;
+}
+
+@media (max-width: 575.98px) {
+    .page-container { padding: 20px 14px 36px; }
+}
+
+/* ── Mobile navigation menu ───────────────────────────────────
+   The navbar is fixed-top, so the collapsed menu is fixed with it and the page
+   cannot be scrolled to reach the bottom of it. With 11 links the menu is about
+   520px tall, which overflows any phone in landscape and the shorter phones in
+   portrait — links below the fold were simply unreachable. Cap it to the space
+   under the navbar and let the menu itself scroll. */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        max-height: calc(100vh - var(--navbar-height));
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        /* .navbar has a fixed 70px height, so the expanded menu hangs outside
+           the bar's painted box and the page showed straight through it. Give
+           the menu its own surface. */
+        background: #fff;
+        box-shadow: 0 12px 24px rgba(45, 122, 62, .12);
+        border-top: 1px solid rgba(0, 0, 0, .06);
+        padding: 8px 16px 16px;
+        margin: 0 -16px;
+    }
+
+    /* dvh accounts for the browser's collapsing address bar where supported */
+    @supports (height: 100dvh) {
+        .navbar-collapse { max-height: calc(100dvh - var(--navbar-height)); }
+    }
+
+    /* The toggler was 54x38. 44px is the smallest comfortable touch target. */
+    .navbar-toggler {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* ── Bell + profile placement ─────────────────────────────────
+   The block sits before the toggler in the markup so it is always visible on a
+   phone. On desktop the nav links should still come first and these should sit
+   at the right-hand end, which is what the ordering below does. */
+.navbar-actions { order: 2; }
+
+@media (min-width: 992px) {
+    .navbar .container-fluid > .navbar-collapse { order: 1; }
+    .navbar-actions { order: 2; margin-left: auto; }
+}
+
+@media (max-width: 991.98px) {
+    /* .navbar is a fixed 70px box and its container wraps by default, so brand +
+       bell + avatar + hamburger overflowed onto a second row that painted
+       outside the bar. Keep the top row on one line and let the brand text
+       shrink instead. */
+    /* NOT flex-wrap: nowrap — the expanded menu needs flex-basis:100% to take a
+       row of its own, and nowrap collapsed it into a narrow floating column.
+       The top row stays on one line because the parts below were trimmed to
+       fit, not because wrapping was forbidden. */
+
+    /* The full brand needed 16 more pixels, and the bar was spending 48 on
+       container padding alone. Reclaim the chrome rather than drop the ATI logo
+       or shorten the name — identity is the one thing a header must keep. */
+    /* Bootstrap's spacing utilities are !important, so this has to be too. */
+    .navbar > .container-fluid.px-4 {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    /* The brand takes the leftover width; without this the auto margin below
+       claimed every spare pixel and squeezed the name down to 23px. */
+    .navbar-brand { flex: 1 1 auto; }
+    .navbar-actions { gap: 10px !important; }
+
+    .navbar-brand {
+        min-width: 0;
+        overflow: hidden;
+    }
+    /* gap-2 on the brand and 15px type left the name ~10px short; 14px and a
+       tighter gap fit "ATI LSA - AIMS" whole. The ellipsis stays as a guard for
+       anything narrower than 360px. */
+    .navbar-brand { gap: 6px !important; }
+    .navbar-brand img { height: 34px !important; }
+    .navbar-brand .brand-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 14px;
+    }
+
+    /* Bell and profile sit next to the brand; the hamburger stays at the far
+       right, where it was before these were moved out of the collapse. */
+    .navbar-actions {
+        margin-right: 4px;
+        flex: 0 0 auto;
+        order: 2;
+    }
+    .navbar-toggler { order: 3; }
+
+    /* The collapse must sort AFTER the bar's controls. Left at the default
+       order 0 it came first, and because it is flex-basis:100% it claimed the
+       row — shoving the bell, avatar and hamburger onto a third row over the
+       page whenever the menu was open. */
+    .navbar > .container-fluid > .navbar-collapse { order: 4; }
+
+    /* The profile button carries 12px/24px padding, making it 58px tall — too
+       tall for the 70px bar once the bar's own padding is counted, so it hung
+       3px below the edge. */
+    .navbar-actions .user-btn {
+        padding: 4px 6px;
+    }
+    .navbar-actions .user-name-label { display: none; }
+    /* The avatar is plainly tappable; the caret is 16px we would rather spend
+       on the site name. */
+    .navbar-actions .user-btn::after { display: none; }
+}
+
+/* ── Community chat, messaging-app touches ────────────────────
+   A divider between days, and tighter spacing when the same person sends
+   several messages in a row. Without these every line repeated the avatar and
+   name, and "9:15 AM" gave no clue which day it belonged to. */
+.chat-day-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 10px;
+    color: var(--text-muted, #6c757d);
+    font-size: 12px;
+}
+.chat-day-divider::before,
+.chat-day-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(0, 0, 0, .08);
+}
+.chat-day-divider span {
+    white-space: nowrap;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+
+/* A grouped message keeps the avatar column so bubbles stay aligned, but the
+   avatar itself is hidden and the gap above is closed up. */
+.chat-message.grouped { margin-top: 2px; }
+.chat-message.grouped .message-avatar { visibility: hidden; height: 0; }
+
+/* The clock only earns its space on hover once messages are grouped. */
+.chat-message.grouped .message-time { opacity: 0; transition: opacity .15s; }
+.chat-message.grouped:hover .message-time { opacity: .7; }
+
+/* ── Signature pad (Step 1 briefer) ──────────────────────────
+   The canvas is a fixed 600x180 surface scaled to the column width; the ruled
+   baseline sits under it so the box reads as somewhere to sign rather than an
+   empty panel. touch-action:none is what stops a finger scrolling the page
+   instead of drawing on a phone. */
+.signature-pad-wrap {
+    position: relative;
+    border: 1.5px dashed var(--border-color);
+    border-radius: 10px;
+    background: #fff;
+    padding: 8px;
+}
+.signature-pad {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 600 / 180;
+    touch-action: none;
+    cursor: crosshair;
+}
+.signature-baseline {
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REFINEMENT PASS — 2026-09-04
+   Direction: Government/Public Service → "Accessible & Ethical + Minimalism &
+   Swiss Style", Executive Dashboard. Trust paramount, decoration minimal,
+   hierarchy carried by scale and weight rather than by colour and ornament.
+
+   The previous pass fixed what was measurably broken: contrast, focus rings,
+   touch targets, the button size ladder. What it did not fix is that the
+   GEOMETRY was never a system. A measurement of both stylesheets found 25
+   distinct font sizes, 13 border radii, 20 box-shadows and 65 padding values,
+   with tokens for colour but none for type, space or radius. Everything below
+   either defines that missing scale or fixes something visibly wrong on a
+   rendered page.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* Type scale — the modular set the whole app should draw from. Values are
+       the ones already most used (13/14/16), rounded onto a scale, so adopting
+       it moves almost nothing. 12px is the floor for any real text. */
+    --text-xs:   12px;   /* labels, table headers, metadata */
+    --text-sm:   13px;
+    --text-base: 14px;   /* body in dense views */
+    --text-md:   16px;   /* body in prose and forms */
+    --text-lg:   18px;
+    --text-xl:   22px;   /* card titles */
+    --text-2xl:  28px;   /* page titles */
+
+    /* Spacing scale. 65 distinct padding values existed because there was
+       nothing to reach for. */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+
+    /* Radius scale. Border, fill, radius and shadow each say "separate
+       object" — spending them by role keeps hierarchy legible. */
+    --radius-sm:   6px;
+    --radius-md:  10px;
+    --radius-lg:  14px;
+    --radius-pill: 999px;
+}
+
+/* ── Page titles ────────────────────────────────────────────────────────────
+   Was 36px with a gradient clipped to the text. Two problems: at 36px it
+   competed with the brand wordmark for first read, and gradient text cannot be
+   contrast-measured — it renders as whatever the gradient happens to be behind
+   each glyph, and falls back to transparent where background-clip is not
+   supported. A government service should not stake legibility on that. */
+.page-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--primary-dark);
+}
+.page-subtitle { font-size: var(--text-base); }
+
+/* ── Tables ─────────────────────────────────────────────────────────────────
+   Headers were the same colour and weight as the data, so a row of labels read
+   as loudly as the record beneath it. In a table the data is the content and
+   the header is the caption: smaller, quieter, spaced. */
+.table thead th {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    padding: var(--space-3);
+}
+.table tbody td {
+    padding: var(--space-3);
+}
+/* Dates and reference numbers: never break mid-token, and line up their digits
+   down the column. "2026-09-04" was wrapping to "2026-09-" / "04". */
+.table td time,
+.table .date-cell,
+.app-id-link {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Badges ─────────────────────────────────────────────────────────────────
+   A status pill is one token of meaning. "Document Review" was wrapping inside
+   its own pill to "Document" / "Review", which reads as two states. */
+.status-badge {
+    white-space: nowrap;
+    border-radius: var(--radius-pill);
+}
+/* A badge with nothing in it is a grey lozenge that says nothing — the
+   Classification column rendered one for every applicant with no
+   classification set. Collapse it so the cell can show a dash instead. */
+.status-badge:empty { display: none; }
+
+/* ── The floating assistant must not sit on top of the page ─────────────────
+   It is fixed to the bottom-right and was covering the footer's
+   "All rights reserved", and the right edge of the dashboard chart. */
+@media (min-width: 768px) {
+    .footer-inner,
+    footer .container,
+    footer .container-fluid { padding-right: 84px; }
+}
+
+/* ── Quick actions ──────────────────────────────────────────────────────────
+   auto-fit/minmax(140px) fitted three tiles across the column and left the
+   fourth alone on its own row. Four items want a grid they fill exactly. */
+@media (min-width: 576px) {
+    .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────────────
+   Swiss direction: subtle, 200-250ms, and a control must acknowledge a press
+   rather than only a hover. */
+.btn:active:not(:disabled),
+.quick-action-btn:active { transform: translateY(1px); }
+
+/* ── Summary tiles ──────────────────────────────────────────────────────────
+   Compliance, Services, LSA II and Assistance all put .stat-value and
+   .stat-label straight inside .stat-card. Neither class had any CSS — they were
+   written and never styled — and .stat-card is `display:flex; align-items:
+   center`, built for the dashboard's [icon][info] pair. So the two divs became
+   flex siblings and the tiles rendered as "1  LSA farms monitored" on one line
+   with the number at body size: no hierarchy at all, and nothing like the
+   dashboard's tiles.
+
+   :has() picks out the variant with no icon rather than requiring a modifier
+   class in four views. flex-wrap keeps it legible if :has() is unsupported. */
+.stat-card { flex-wrap: wrap; }
+
+.stat-card:has(.stat-value) {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-5) var(--space-4);
+}
+
+.stat-value {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;   /* figures line up across a row of tiles */
+}
+
+.stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+
+/* The number carries the state, so a warning or muted value keeps its meaning
+   at this size rather than being overridden back to the default ink. */
+.stat-value.text-warning { color: var(--warning-text) !important; }
+.stat-value.text-secondary { color: var(--text-secondary) !important; }
+.stat-value.text-danger  { color: var(--danger-color) !important; }
+
+/* ── Links carry the brand, not Bootstrap's default ─────────────────────────
+   Thirty links on the Services page rendered in Bootstrap blue (#0d6efd) —
+   including every service card title, which made the loudest colour on the page
+   one the design system does not use anywhere else. Bootstrap 5.3 composes link
+   colour from an RGB triplet, so the triplet is what has to change. */
+:root {
+    --bs-link-color-rgb: 45, 122, 62;          /* --primary-color  #2d7a3e */
+    --bs-link-hover-color-rgb: 31, 90, 45;     /* --primary-dark   #1f5a2d */
+}
+
+/* The compliance meter needs a stable width, or the bar shrinks to whatever is
+   left after the percentage and the counts wrap under it. */
+.compliance-meter { min-width: 150px; }
+
+/* ── Enrolment suitability ──────────────────────────────────────────────────
+   Staff approve or reject an enrolment against the service's eligibility. The
+   criteria sit directly above the table so the comparison is on one screen, and
+   each participant's standing is a pill because "certified" versus "still
+   applying" is the first thing the decision turns on. Never colour alone: each
+   pill carries its own words. */
+.eligibility-note {
+    background: rgba(45, 122, 62, .05);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: var(--space-2) var(--space-3);
+}
+
+.standing-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.standing-pill.certified { background: rgba(39,174,96,.12); color: var(--success-color); }
+.standing-pill.lapsed    { background: rgba(231,76,60,.12); color: var(--danger-color); }
+.standing-pill.applying  { background: rgba(52,152,219,.12); color: var(--info-color); }
+.standing-pill.none      { background: rgba(0,0,0,.06);      color: var(--text-secondary); }
+
+
+/* ── Document Management: grouped by requirement ───────────────────────
+   Each document TYPE is a container holding every applicant's submission of
+   it, in checklist order. Replaces a wide table (and the earlier flat card
+   grid) so a reviewer works one requirement at a time across all applicants. */
+.doc-type {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+.doc-type__head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+.doc-type__icon {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    background: rgba(45,122,62,.10);
+    color: var(--primary-color);
+    font-size: 18px;
+}
+.doc-type__title { flex: 1; min-width: 0; }
+.doc-type__title h2 {
+    margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary);
+    line-height: 1.25;
+}
+.doc-type__form { font-size: 12px; color: var(--text-secondary); }
+.doc-type__counts {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.doc-type__total {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* The submissions inside one requirement — several applicants side by side. */
+.doc-type__items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 14px;
+    padding: 16px 18px;
+}
+.doc-item {
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--border-color);
+    border-radius: 10px;
+    padding: 13px 14px;
+}
+.doc-item--verified       { border-left-color: var(--success-color); }
+.doc-item--pending_review { border-left-color: var(--info-color); }
+.doc-item--incomplete,
+.doc-item--rejected       { border-left-color: var(--danger-color); }
+
+.doc-item__head { display: flex; align-items: flex-start; gap: 8px; }
+.doc-item__who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.doc-item__applicant {
+    font-weight: 600; font-size: 14px; color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.doc-item__head .status-badge { flex-shrink: 0; }
+
+.doc-item__meta {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 12.5px; color: var(--text-secondary);
+    border-top: 1px solid var(--border-color); padding-top: 9px;
+}
+.doc-item__file { min-width: 0; display: inline-flex; align-items: center; gap: 5px; max-width: 100%; }
+.doc-item__file a, .doc-item__file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-item__size {
+    font-size: 11px;
+    border: 1px solid var(--border-color); border-radius: 5px; padding: 1px 6px;
+}
+.doc-item__date { margin-left: auto; white-space: nowrap; }
+
+.doc-item__remarks {
+    background: var(--bg-primary); border-radius: 8px; padding: 7px 10px;
+    font-size: 12px; color: var(--text-primary);
+    display: flex; flex-direction: column; gap: 2px;
+}
+.doc-item__reviewer { font-size: 11px; color: var(--text-secondary); }
+
+.doc-item__resubmit {
+    margin-top: auto;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    border: 1px solid var(--danger-color); color: var(--danger-color);
+    background: rgba(192,63,50,.06); border-radius: 8px;
+    padding: 7px 12px; font-size: 13px; font-weight: 600; text-decoration: none;
+    transition: background .15s ease;
+}
+.doc-item__resubmit:hover { background: rgba(192,63,50,.12); color: var(--danger-color); }
+
+.doc-item__review {
+    display: flex; flex-direction: column; gap: 8px;
+    border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: auto;
+}
+.doc-item__actions { display: flex; gap: 8px; }
+.doc-item__actions .btn { flex: 1; }
+
+/* ── Submit Document: a guided, requirement-aware form ─────────────────
+   The old form was three bare fields — an applicant dropdown that had one
+   option, a flat list of 35 document types, and an upload box whose drag &
+   drop never worked. This turns it into numbered steps, and for a single
+   applicant replaces the type dropdown with their own requirement checklist. */
+.submit-step {
+    display: flex; gap: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+}
+.submit-step__no {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: var(--primary-color); color: #fff;
+    font-weight: 700; font-size: 15px;
+}
+.submit-step__body { flex: 1; min-width: 0; }
+.submit-step__title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 3px 0 12px; }
+
+.submit-who {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-primary); border-radius: 10px; padding: 12px 14px;
+}
+.submit-who__avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--primary-color); color: #fff; font-weight: 700; font-size: 14px;
+    text-transform: uppercase;
+}
+
+/* The requirement picker — one selectable row per requirement. */
+.req-picker { display: flex; flex-direction: column; gap: 8px; }
+.req-option {
+    display: flex; align-items: flex-start; gap: 12px;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+}
+.req-option:hover { background: var(--bg-primary); }
+.req-option--incomplete { border-left-color: var(--danger-color); }
+.req-option--missing    { border-left-color: var(--secondary-color); }
+.req-option--pending_review { border-left-color: var(--info-color); }
+.req-option--verified   { border-left-color: var(--success-color); }
+.req-option--done { opacity: .6; cursor: default; }
+.req-option--done:hover { background: none; }
+
+.req-option input { margin-top: 3px; flex-shrink: 0; width: 18px; height: 18px; accent-color: var(--primary-color); }
+.req-option__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.req-option__name { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+.req-option__form { font-size: 12px; color: var(--text-secondary); }
+.req-option__remark {
+    font-size: 12px; color: var(--danger-color);
+    margin-top: 3px; line-height: 1.4;
+}
+.req-option .status-badge { flex-shrink: 0; align-self: flex-start; }
+/* A chosen requirement stands out. */
+.req-option:has(input:checked) { border-color: var(--primary-color); background: rgba(45,122,62,.05); }
+
+/* Drop zone states. */
+.file-upload-area.dragging { border-color: var(--primary-color); background: rgba(45,122,62,.06); }
+.file-upload-area.has-file { border-style: solid; border-color: var(--success-color); }
+
+/* Search box on the Submit Document form — filters the applicant list, the
+   requirement picker, or the document-type list as you type. */
+.submit-search { position: relative; }
+.submit-search i {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-secondary); font-size: 14px; pointer-events: none;
+}
+.submit-search .form-control { padding-left: 34px; }
+
+/* "Other document" — the staff option to file a type outside the checklist. */
+.req-option--other { border-left-color: var(--primary-color); border-style: dashed; }
+.req-option--other .status-badge { background: rgba(45,122,62,.10); color: var(--primary-color); }
+.other-type {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+/* Prescribed-form download link inside a requirement option. */
+.req-option__download {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bs-info, #0aa2c0);
+  text-decoration: none;
+}
+.req-option__download:hover { text-decoration: underline; }
+
+/* Services catalogue cards */
+.svc-card { transition: box-shadow .15s ease, transform .15s ease; }
+.svc-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); transform: translateY(-2px); }
+.svc-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.svc-slot-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bs-secondary-bg, #e9ecef);
+  overflow: hidden;
+}
+.svc-slot-fill { height: 100%; border-radius: 3px; transition: width .3s ease; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE HARDENING  (ui-ux-pro-max §5 — Layout & Responsive; built-in
+   defaults, not a database match — the search tool needs Python, absent here.)
+
+   The app was already mobile-aware (fixed-navbar clearance, a scroll-capped
+   mobile menu, chat channels as tabs on phones, tables in .table-responsive,
+   body{overflow-x:hidden}). These are the systemic gaps that remained: media
+   with no width cap, long unbroken URLs auto-posted to chat forcing width, and
+   16px table cells making tables wider than a phone needs.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Belt-and-suspenders with body{overflow-x:hidden}: the page never scrolls
+   sideways on any device; genuinely wide content scrolls inside .table-responsive. */
+html { overflow-x: hidden; }
+
+/* No image, video or chart may exceed its column. Leaflet's own CSS keeps
+   `.leaflet-container img { max-width:none !important }`, so map tiles are
+   unaffected by this global cap. */
+img, video, canvas { max-width: 100%; }
+img { height: auto; }
+
+/* Long unbroken tokens — a URL pasted or auto-posted to Community Chat, a long
+   farm or operator name — wrap instead of pushing their container off-screen. */
+body { overflow-wrap: break-word; }
+.message-text,
+.chat-message .message-content { overflow-wrap: anywhere; min-width: 0; }
+
+/* Phones: tables are the widest thing on most pages. Trim the 16px cell padding
+   so fewer columns overflow, and tighten the outer gutters. What still overflows
+   scrolls in its own .table-responsive, never the page body. */
+@media (max-width: 575.98px) {
+    .table thead th,
+    .table tbody td { padding: 10px 12px; }
+    .page-content { padding: 24px 14px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELECT / DROPDOWN POLISH
+   Native <select> is kept everywhere (registration, filters, the location
+   cascades) — it gives the best keyboard and mobile behaviour and needs no
+   dependency. Only the control's look and states are refined so the dropdowns
+   read as designed rather than as browser defaults. The open option list is
+   drawn by the OS and is intentionally left to it.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.form-select {
+    /* A crisp brand-green chevron, replacing Bootstrap's grey caret. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%232d7a3e' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.85rem center;
+    background-size: 15px 15px;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.form-select:hover:not(:disabled):not(:focus) { border-color: var(--primary-light, #3d814b); }
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(45, 122, 62, 0.18);
+}
+/* A disabled cascade step (Province before Region, etc.) should read as
+   "waiting its turn", not broken: muted, full-opacity, not-allowed cursor. */
+.form-select:disabled {
+    background-color: var(--bg-primary, #f4f6f4);
+    color: var(--text-secondary);
+    opacity: 1;
+    cursor: not-allowed;
+}
+/* Group headers (Farming LSA / Agri-Processing LSA) read as headings, not
+   greyed-out italic — as far as each browser lets the option list be styled. */
+.form-select optgroup { font-weight: 700; font-style: normal; color: var(--text-primary); }
+.form-select option { color: var(--text-primary); }
+/* An unchosen required select shows its placeholder in muted ink, so "Select
+   classification…" does not look like a real value. */
+.form-select:required:invalid { color: var(--text-secondary); }
+
+/* Show/hide password toggle on the login and registration fields. The button
+   sits inside .form-floating (position:relative); the input reserves right
+   padding so the value never slides under the eye icon. */
+.form-floating .pw-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    cursor: pointer;
+    z-index: 5;
+}
+.form-floating .pw-toggle:hover { color: var(--brand-green, #1e7e34); }
+.form-floating .pw-toggle:focus-visible {
+    outline: 2px solid var(--brand-green, #1e7e34);
+    outline-offset: -2px;
+    border-radius: 4px;
+}
+.form-control.has-pw-toggle { padding-right: 3rem; }

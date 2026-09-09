@@ -1,0 +1,239 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<%
+// One tone/icon per status, shared by the score legend, the filter chips and
+// every item, so nothing disagrees.
+const TONE = { compliant: 'success', partial: 'warning', non_compliant: 'danger', not_applicable: 'secondary', pending: 'secondary' };
+const ICON = { compliant: 'check-circle-fill', partial: 'exclamation-circle-fill', non_compliant: 'x-circle-fill', not_applicable: 'slash-circle', pending: 'dash-circle' };
+function toneOf(s) { return TONE[s] || 'secondary'; }
+function iconOf(s) { return ICON[s] || 'dash-circle'; }
+// Which filter bucket an item falls in.
+function groupOf(it) {
+    if (it.status === 'not_applicable') return 'na';
+    if (it.status === 'compliant') return 'ok';
+    if (it.status === 'partial' || it.status === 'non_compliant') return 'attention';
+    return 'unchecked';
+}
+const allItems = categories.reduce((a, c) => a.concat(c.items), []);
+const g = { attention: 0, unchecked: 0, ok: 0, na: 0 };
+allItems.forEach((it) => { g[groupOf(it)] += 1; });
+const scoreTone = score.score >= 80 ? 'success' : score.score >= 50 ? 'warning' : 'danger';
+const FILTERS = [
+    { key: 'all',        label: 'All',            tone: 'secondary', n: allItems.length },
+    { key: 'attention',  label: 'Needs attention', tone: 'danger',   n: g.attention },
+    { key: 'unchecked',  label: 'Not checked',     tone: 'secondary', n: g.unchecked },
+    { key: 'ok',         label: 'Compliant',       tone: 'success',  n: g.ok },
+    { key: 'na',         label: 'Not applicable',  tone: 'secondary', n: g.na },
+];
+%>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title mb-1"><%= farm.name %></h1>
+            <p class="page-subtitle mb-0">
+                <i class="bi bi-person me-1"></i><%= farm.operator %>
+                <span class="mx-1">·</span><i class="bi bi-geo-alt me-1"></i><%= farm.municipality %>, <%= farm.province %>
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <% if (canRecord) { %>
+            <a href="/compliance" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>All Farms</a>
+            <% } %>
+            <a href="/farms/<%= farm.id %>" class="btn btn-outline-primary"><i class="bi bi-tree me-1"></i>Farm Profile</a>
+        </div>
+    </div>
+
+    <% if (query.recorded) { %>
+    <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle-fill me-2"></i>Check recorded.<button class="btn-close" data-bs-dismiss="alert"></button></div>
+    <% } %>
+
+    <!-- Score + status breakdown -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Compliance score</h5>
+                <span class="fs-3 fw-bold text-<%= scoreTone %>"><%= score.score %>%</span>
+            </div>
+            <div class="progress mb-3" style="height:12px;border-radius:6px;">
+                <div class="progress-bar bg-<%= scoreTone %>" style="width: <%= score.score %>%"
+                     role="progressbar" aria-valuenow="<%= score.score %>" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="d-flex flex-wrap gap-4">
+                <span class="small d-inline-flex align-items-center gap-1"><span class="comp-dot bg-success"></span><span class="fw-semibold"><%= g.ok %></span><span class="text-muted">Compliant</span></span>
+                <span class="small d-inline-flex align-items-center gap-1"><span class="comp-dot bg-danger"></span><span class="fw-semibold"><%= g.attention %></span><span class="text-muted">Need attention</span></span>
+                <span class="small d-inline-flex align-items-center gap-1"><span class="comp-dot bg-secondary"></span><span class="fw-semibold"><%= g.unchecked %></span><span class="text-muted">Never checked</span></span>
+                <span class="small d-inline-flex align-items-center gap-1"><span class="comp-dot bg-light border"></span><span class="fw-semibold"><%= g.na %></span><span class="text-muted">Not applicable</span></span>
+            </div>
+            <p class="small text-muted mb-0 mt-2">
+                <%= score.compliant %> of <%= score.applicable %> applicable requirements compliant.
+                Items marked "not applicable" are excluded from the score.
+            </p>
+        </div>
+    </div>
+
+    <!-- Focus filter -->
+    <div class="d-flex flex-wrap gap-1 mb-3" role="group" aria-label="Filter requirements">
+        <% FILTERS.forEach(function (f) { %>
+        <button type="button" class="btn btn-sm btn-outline-<%= f.tone %> comp-chip <%= f.key === 'all' ? 'active' : '' %>"
+                data-group="<%= f.key %>" aria-pressed="<%= f.key === 'all' ? 'true' : 'false' %>" <%= f.n ? '' : 'disabled' %>>
+            <%= f.label %> <span class="comp-chip__n"><%= f.n %></span>
+        </button>
+        <% }); %>
+    </div>
+
+    <% categories.forEach(function (cat) {
+         var catApplicable = cat.items.filter(function (i) { return i.status !== 'not_applicable'; }).length;
+         var catCompliant = cat.items.filter(function (i) { return i.status === 'compliant'; }).length; %>
+    <div class="comp-category" data-category>
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+            <h5 class="mb-0"><%= cat.label %></h5>
+            <span class="small text-muted"><%= catCompliant %>/<%= catApplicable %> compliant</span>
+        </div>
+        <div class="card mb-3">
+            <div class="list-group list-group-flush">
+                <% cat.items.forEach(function (item) {
+                     var tone = toneOf(item.status); %>
+                <div class="list-group-item comp-item comp-item--<%= tone %>" data-group="<%= groupOf(item) %>">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                <span class="badge bg-<%= tone %>-subtle text-<%= tone %> border border-<%= tone %>-subtle">
+                                    <i class="bi bi-<%= iconOf(item.status) %> me-1"></i><%= item.statusLabel %>
+                                </span>
+                                <strong><%= item.title %></strong>
+                            </div>
+                            <p class="small text-muted mb-1"><%= item.description %></p>
+                            <p class="small text-secondary mb-1">
+                                <i class="bi bi-journal-text me-1"></i><em>LSA Guidelines — <%= item.sourceReference %></em>
+                                · <%= item.frequency.replace('_', ' ') %>
+                            </p>
+                            <% if (item.check) { %>
+                            <div class="small comp-check">
+                                <i class="bi bi-clock-history me-1 text-muted"></i>Checked <%= item.check.checkedAt %><%= item.check.checkedByName ? ' by ' + item.check.checkedByName : '' %>.
+                                <% if (item.check.remarks) { %><br><span class="text-muted">Remarks: <%= item.check.remarks %></span><% } %>
+                                <% if (item.check.correctiveAction) { %><br><span class="text-danger"><i class="bi bi-arrow-return-right me-1"></i>Corrective action: <%= item.check.correctiveAction %></span><% } %>
+                                <% if (item.check.nextCheckDate) { %><br><span class="text-muted">Next check: <%= item.check.nextCheckDate %></span><% } %>
+                            </div>
+                            <% } else { %>
+                            <div class="small text-muted"><i class="bi bi-dash-circle me-1"></i>Not yet checked.</div>
+                            <% } %>
+                        </div>
+
+                        <% if (canRecord) { %>
+                        <div class="flex-shrink-0">
+                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#chk<%= item.id %>">
+                                <i class="bi bi-clipboard-check me-1"></i>Record check
+                            </button>
+                        </div>
+                        <% } %>
+                    </div>
+
+                    <% if (canRecord) { %>
+                    <div class="collapse mt-3" id="chk<%= item.id %>">
+                        <form method="POST" action="/compliance/farm/<%= farm.id %>/check" class="row g-2 pt-3 border-top">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <input type="hidden" name="requirementId" value="<%= item.id %>">
+                            <div class="col-md-3">
+                                <label class="form-label small" for="status<%= item.id %>">Status</label>
+                                <select class="form-select form-select-sm" id="status<%= item.id %>" name="status" required>
+                                    <% statuses.forEach(function (st) { %>
+                                    <option value="<%= st %>" <%= item.status === st ? 'selected' : '' %>><%= statusLabels[st] %></option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small" for="checkedAt<%= item.id %>">Date checked</label>
+                                <input type="date" class="form-control form-control-sm" id="checkedAt<%= item.id %>"
+                                       name="checkedAt" value="<%= new Date().toLocaleDateString('en-CA') %>">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small" for="nextCheckDate<%= item.id %>">Next check</label>
+                                <input type="date" class="form-control form-control-sm" id="nextCheckDate<%= item.id %>" name="nextCheckDate">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small" for="remarks<%= item.id %>">Remarks</label>
+                                <input type="text" class="form-control form-control-sm" id="remarks<%= item.id %>" name="remarks"
+                                       placeholder="What was observed">
+                            </div>
+                            <div class="col-md-10">
+                                <label class="form-label small" for="corrective<%= item.id %>">Corrective action</label>
+                                <input type="text" class="form-control form-control-sm" id="corrective<%= item.id %>"
+                                       name="correctiveAction" placeholder="What the operator must do — sent to them as a notification">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-save me-1"></i>Save</button>
+                            </div>
+                        </form>
+                    </div>
+                    <% } %>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+    <% }); %>
+
+    <p id="compNoMatch" class="text-center text-muted py-4" hidden>
+        <i class="bi bi-search d-block mb-2 opacity-50"></i>No requirements in this filter.
+    </p>
+</div>
+
+<style nonce="<%= cspNonce %>">
+.comp-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.comp-chip { border-radius: var(--radius-pill, 999px); }
+.comp-chip__n { opacity: .7; font-variant-numeric: tabular-nums; }
+.comp-chip.active { color: #fff; }
+.comp-chip[data-group="all"].active { background: var(--text-secondary); border-color: var(--text-secondary); }
+.comp-item { border-left: 4px solid var(--border-color); }
+.comp-item--success   { border-left-color: var(--success-color); }
+.comp-item--warning   { border-left-color: var(--warning-color, #f39c12); }
+.comp-item--danger    { border-left-color: var(--danger-color); }
+.comp-item--secondary { border-left-color: var(--border-color); }
+</style>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.comp-chip'));
+    var items = Array.prototype.slice.call(document.querySelectorAll('.comp-item[data-group]'));
+    var cats = Array.prototype.slice.call(document.querySelectorAll('[data-category]'));
+    var noMatch = document.getElementById('compNoMatch');
+    if (!chips.length) return;
+
+    function apply(group) {
+        var shown = 0;
+        items.forEach(function (it) {
+            var show = group === 'all' || it.getAttribute('data-group') === group;
+            it.hidden = !show;
+            if (show) shown += 1;
+        });
+        // Hide a category whose items are all filtered out.
+        cats.forEach(function (c) {
+            var any = c.querySelector('.comp-item[data-group]:not([hidden])');
+            c.hidden = !any;
+        });
+        if (noMatch) noMatch.hidden = shown !== 0;
+    }
+
+    chips.forEach(function (c) {
+        c.addEventListener('click', function () {
+            if (c.disabled) return;
+            chips.forEach(function (o) {
+                var on = o === c;
+                o.classList.toggle('active', on);
+                o.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+            apply(c.getAttribute('data-group'));
+        });
+    });
+}());
+</script>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

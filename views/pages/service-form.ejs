@@ -1,0 +1,132 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><%= service && service.id ? 'Edit Service' : 'New Service' %></h1>
+            <p class="page-subtitle">
+                Components follow the LSA guidelines: Training, Demonstration Services,
+                Information Support, Technical Assistance and Complementary Projects.
+            </p>
+        </div>
+        <a href="/services" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back to Services</a>
+    </div>
+
+    <% if (error) { %>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="<%= action %>" class="card">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="card-body">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label" for="serviceType">Component <span class="text-danger">*</span></label>
+                    <select class="form-select" id="serviceType" name="serviceType" required>
+                        <% serviceTypes.forEach(function (t) { %>
+                        <option value="<%= t %>" <%= service && service.serviceType === t ? 'selected' : '' %>><%= typeLabels[t] %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label" for="name">Service Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name"
+                           value="<%= service ? (service.name || '') : '' %>" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"><%= service ? (service.description || '') : '' %></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="provider">Provider</label>
+                    <input type="text" class="form-control" id="provider" name="provider"
+                           value="<%= service ? (service.provider || 'ATI-RTC V') : 'ATI-RTC V' %>">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="targetBeneficiaries">Target Beneficiaries</label>
+                    <input type="text" class="form-control" id="targetBeneficiaries" name="targetBeneficiaries"
+                           value="<%= service ? (service.targetBeneficiaries || '') : '' %>"
+                           placeholder="e.g. LSA operators, 4-H youth, farmer-trainers">
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="eligibility">Eligibility</label>
+                    <input type="text" class="form-control" id="eligibility" name="eligibility"
+                           value="<%= service ? (service.eligibility || '') : '' %>"
+                           placeholder="Minimum requirements set for this service">
+                </div>
+            </div>
+
+            <h5 class="section-title mb-3"><i class="bi bi-calendar3 me-2"></i>Schedule and venue</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label" for="scheduleStart">Start Date</label>
+                    <input type="date" class="form-control" id="scheduleStart" name="scheduleStart"
+                           value="<%= service ? (service.scheduleStart || '') : '' %>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="scheduleEnd">End Date</label>
+                    <input type="date" class="form-control" id="scheduleEnd" name="scheduleEnd"
+                           value="<%= service ? (service.scheduleEnd || '') : '' %>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="slots">Slots</label>
+                    <input type="number" class="form-control" id="slots" name="slots" min="1"
+                           value="<%= service && service.slots ? service.slots : '' %>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="status">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <% statuses.forEach(function (st) { %>
+                        <option value="<%= st %>" <%= service && service.status === st ? 'selected' : '' %>><%= st.charAt(0).toUpperCase() + st.slice(1) %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="venue">Venue</label>
+                    <input type="text" class="form-control" id="venue" name="venue"
+                           value="<%= service ? (service.venue || '') : '' %>"
+                           placeholder="e.g. Green Valley Organic Farm training hall">
+                </div>
+
+                <%- include('../partials/location-select', {
+                    prefix: 'svc',
+                    required: false,
+                    cols: 'col-md-3',
+                    selected: locationSelection
+                }) %>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label" for="remarks">Remarks</label>
+                    <textarea class="form-control" id="remarks" name="remarks" rows="2"><%= service ? (service.remarks || '') : '' %></textarea>
+                </div>
+                <% if (!service || !service.id) { %>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="announce" name="announce" checked>
+                        <label class="form-check-label" for="announce">
+                            Notify LSA operators and applicants that this service is available
+                        </label>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex gap-2 justify-content-end">
+            <a href="/services" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-1"></i><%= service && service.id ? 'Save Changes' : 'Create Service' %>
+            </button>
+        </div>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

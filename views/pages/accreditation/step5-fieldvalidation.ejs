@@ -1,0 +1,235 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/accreditation/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Step 5: Field Validation</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <span class="step-badge bg-danger">Step 5 of 7</span>
+        <h1 class="page-title mt-1">Field / Virtual Validation</h1>
+        <p class="page-subtitle">Record the field validation and upload the report · <strong>ATI-QF-PAD-165</strong></p>
+    </div>
+    <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">Overview</a>
+</div>
+
+<% if (validationResult === 'compliant') { %>
+<div class="alert alert-success mb-4">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    Farm validated as <strong>compliant</strong> on <strong><%= applicant.step5_validationDate %></strong>
+    by <strong><%= applicant.step5_inspectedBy %></strong>.
+    <% if (report) { %>
+    <a href="/documents/<%= report.id %>/file" class="ms-2" target="_blank" rel="noopener">
+        <i class="bi bi-file-earmark-arrow-down me-1"></i>View report
+    </a>
+    <% } %>
+    <a href="/accreditation/<%= applicant.id %>/step/6" class="btn btn-sm btn-success ms-3">Continue to Step 6 →</a>
+</div>
+<% } %>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="section-title mb-3">
+                    <i class="bi bi-clipboard2-check me-2 text-danger"></i>Field Validation Report (ATI-QF-PAD-165)
+                </h5>
+                <p class="text-muted">
+                    Download the prescribed Field Validation Report, conduct the field or virtual
+                    visit, complete the form, and upload it here with your findings. The applicant
+                    does not submit this — it is prepared by ATI.
+                </p>
+
+                <% if (reportForm) { %>
+                <a href="/forms/lsa1_field_validation_report" class="btn btn-outline-danger mb-3">
+                    <i class="bi bi-download me-1"></i>Download Report Form
+                </a>
+                <% } %>
+
+                <% if (report) { %>
+                <div class="alert alert-info py-2 px-3 small">
+                    <i class="bi bi-file-earmark-check me-1"></i>
+                    A completed report is on file.
+                    <a href="/documents/<%= report.id %>/file" target="_blank" rel="noopener">View current report</a>.
+                </div>
+                <% } %>
+
+                <% if (typeof fileError !== 'undefined' && fileError) { %>
+                <div class="alert alert-danger py-2 px-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    A completed report must be uploaded before a compliant result can be recorded.
+                </div>
+                <% } %>
+
+                <% if (validationResult !== 'compliant') { %>
+                <form action="/accreditation/<%= applicant.id %>/step/5" method="POST"
+                      enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="validationType" class="form-label fw-semibold">Validation Type</label>
+                            <select id="validationType" class="form-select" name="validationType">
+                                <option value="Field" selected>Field Visit (On-site)</option>
+                                <option value="Virtual">Virtual Validation</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="validationResult" class="form-label fw-semibold">Result</label>
+                            <select id="validationResult" class="form-select" name="validationResult">
+                                <option value="compliant">Compliant — proceed to endorsement</option>
+                                <option value="non-compliant">Non-compliant — return to applicant</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="reportFile" class="form-label fw-semibold">Completed report</label>
+                            <input type="file" class="form-control" id="reportFile" name="file"
+                                   accept=".pdf,.jpg,.jpeg,.png,.webp">
+                            <div class="form-text">Required for a compliant result. PDF or clear scan (max 10 MB).</div>
+                        </div>
+                        <div class="col-12">
+                            <label for="twgRemarks" class="form-label fw-semibold">Remarks / schedule</label>
+                            <textarea id="twgRemarks" class="form-control" name="twgRemarks" rows="2"
+                                      placeholder="Findings, or the arranged validation schedule…"><%= applicant.step5_twgRemarks || '' %></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="fw-semibold d-flex align-items-center justify-content-between mb-1">
+                                <span><i class="bi bi-geo-alt-fill text-danger me-1"></i>Farm Geo-tag</span>
+                                <button type="button" id="useMyLocation" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-crosshair me-1"></i>Use my location
+                                </button>
+                            </div>
+                            <p class="text-muted small mb-2">
+                                Click the map to drop a pin on the farm, or drag the marker. The
+                                coordinates fill in below and are saved with the validation.
+                            </p>
+                            <div id="step5Map" class="mb-3"
+                                 style="height:320px;border-radius:8px;border:1px solid var(--bs-border-color,#dee2e6);"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="latitude" class="form-label">Latitude</label>
+                            <input id="latitude" type="text" class="form-control" name="latitude"
+                                   value="<%= applicant.latitude || '' %>" placeholder="e.g. 13.6218">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="longitude" class="form-label">Longitude</label>
+                            <input id="longitude" type="text" class="form-control" name="longitude"
+                                   value="<%= applicant.longitude || '' %>" placeholder="e.g. 123.1948">
+                        </div>
+
+                        <% if (typeof facilities !== 'undefined' && facilities.length) { %>
+                        <div class="col-12">
+                            <div class="fw-semibold mb-1"><i class="bi bi-buildings text-danger me-1"></i>Basic facilities — confirm on site</div>
+                            <p class="text-muted small mb-2">
+                                Tick each facility present at the Learning Site. Pre-ticked from the
+                                applicant's Step 2 declaration; correct it to what you actually found.
+                            </p>
+                            <div class="row">
+                                <% facilities.forEach(function (f) {
+                                     var declared = facilityClaimed && facilityClaimed[f.id]; %>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="on"
+                                               id="<%= f.id %>" name="<%= f.id %>"
+                                               <%= facilityAnswers && facilityAnswers[f.id] ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="<%= f.id %>">
+                                            <%= f.label %>
+                                            <% if (declared) { %><span class="badge bg-success-subtle text-success ms-1" style="font-size:9px;">declared</span><% } %>
+                                        </label>
+                                    </div>
+                                </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                        <% } %>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger btn-lg mt-4">
+                        <i class="bi bi-clipboard-check me-2"></i>Record Field Validation
+                    </button>
+                </form>
+                <% } %>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+        <%- include('../../partials/acred-sidebar', { applicant, currentStep: 5 }) %>
+    </div>
+</div>
+
+</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+<script nonce="<%= cspNonce %>">
+// Interactive geo-tag for the field validation (ATI TWG records the farm's
+// location). Click or drag to place the pin; the coordinates sync to the form
+// inputs and are saved with the validation. Same OpenStreetMap tiles used on the
+// application page — no API key.
+(function () {
+    var mapEl = document.getElementById('step5Map');
+    var latEl = document.getElementById('latitude');
+    var lngEl = document.getElementById('longitude');
+    if (!mapEl || !latEl || !lngEl || typeof L === 'undefined') return;
+
+    var has = latEl.value && lngEl.value && !isNaN(parseFloat(latEl.value)) && !isNaN(parseFloat(lngEl.value));
+    var start = has ? [parseFloat(latEl.value), parseFloat(lngEl.value)] : [13.62, 123.19]; // Bicol
+    var map = L.map('step5Map').setView(start, has ? 15 : 9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a>', maxZoom: 19,
+    }).addTo(map);
+
+    var marker = null;
+    function place(lat, lng, recenter) {
+        latEl.value = lat.toFixed(4);
+        lngEl.value = lng.toFixed(4);
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+            marker.on('dragend', function (e) { var p = e.target.getLatLng(); place(p.lat, p.lng, false); });
+        }
+        if (recenter) map.setView([lat, lng], 15);
+    }
+    if (has) place(start[0], start[1], false);
+
+    map.on('click', function (e) { place(e.latlng.lat, e.latlng.lng, false); });
+    latEl.addEventListener('change', function () {
+        var la = parseFloat(latEl.value), ln = parseFloat(lngEl.value);
+        if (!isNaN(la) && !isNaN(ln)) place(la, ln, true);
+    });
+    lngEl.addEventListener('change', function () {
+        var la = parseFloat(latEl.value), ln = parseFloat(lngEl.value);
+        if (!isNaN(la) && !isNaN(ln)) place(la, ln, true);
+    });
+
+    var geoBtn = document.getElementById('useMyLocation');
+    if (geoBtn && navigator.geolocation) {
+        geoBtn.addEventListener('click', function () {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                place(pos.coords.latitude, pos.coords.longitude, true);
+            });
+        });
+    } else if (geoBtn) {
+        geoBtn.disabled = true;
+    }
+
+    // The map is inside a card that lays out after load; size it once visible.
+    setTimeout(function () { map.invalidateSize(); }, 200);
+}());
+</script>
+</body>
+</html>

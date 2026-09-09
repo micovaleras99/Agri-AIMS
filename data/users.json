@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "firstName": "Joey",
+    "lastName": "Belarmino",
+    "email": "admin@ati-bicol.da.gov.ph",
+    "password": "admin123",
+    "role": "admin",
+    "position": "Center Director",
+    "office": "ATI-RTC V Bicol",
+    "region": "Region V",
+    "avatar": "JB",
+    "phone": "054-477-1579"
+  },
+  {
+    "id": 2,
+    "firstName": "Justine Rose",
+    "lastName": "Tubig",
+    "email": "evaluator@ati-bicol.da.gov.ph",
+    "password": "eval123",
+    "role": "evaluator",
+    "position": "Chief, Partnerships and Accreditation Section",
+    "office": "ATI-RTC V Bicol",
+    "region": "Region V",
+    "avatar": "JT",
+    "phone": "0960-418-7951"
+  },
+  {
+    "id": 3,
+    "firstName": "Pedro",
+    "lastName": "Reyes",
+    "email": "operator@lsa.ph",
+    "password": "operator123",
+    "role": "operator",
+    "position": "LSA Operator",
+    "office": "Reyes Integrated Farm",
+    "farmId": 1,
+    "region": "Region V",
+    "avatar": "PR",
+    "phone": "09345678901"
+  },
+  {
+    "id": 4,
+    "firstName": "Juan",
+    "lastName": "Dela Cruz",
+    "email": "applicant@email.com",
+    "password": "applicant123",
+    "role": "applicant",
+    "position": "Applicant",
+    "office": "Green Valley Organic Farm",
+    "applicationId": "LSA-2026-0001",
+    "region": "Region V",
+    "avatar": "JD",
+    "phone": "09123456789"
+  }
+]

@@ -1,0 +1,321 @@
+<%- include('../partials/header') %>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+    <div class="page-content">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <% if (role === 'operator') { %>My LSA Farm
+                    <% } else { %>LSA Farms & GIS Map<% } %>
+                </h1>
+                <p class="page-subtitle">
+                    Showing <%= farms.length %> of <%= total %> accredited farms ·
+                    <span class="text-success fw-semibold">
+                        <i class="bi bi-geo-alt-fill me-1"></i><%= geoTagged.length %> geo-tagged
+                    </span>
+                    <% if (geoPending.length > 0 && ['admin','evaluator'].includes(role)) { %>
+                    · <span class="text-warning fw-semibold"><%= geoPending.length %> pending tag</span>
+                    <% } %>
+                </p>
+            </div>
+            <!-- View toggle (admin/evaluator) -->
+            <% if (['admin','evaluator'].includes(role)) { %>
+            <div class="btn-group">
+                <a href="/farms?view=cards" class="btn btn-sm <%= filters.view==='cards' ? 'btn-primary' : 'btn-outline-primary' %>">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>Cards
+                </a>
+                <a href="/farms?view=map" class="btn btn-sm <%= filters.view==='map' ? 'btn-primary' : 'btn-outline-primary' %>">
+                    <i class="bi bi-map me-1"></i>GIS Map
+                </a>
+            </div>
+            <% } %>
+        </div>
+
+        <!-- Filter bar -->
+        <% if (['admin','evaluator'].includes(role)) { %>
+        <div class="card mb-4 p-3">
+            <form method="GET" action="/farms" class="row g-3 align-items-end">
+                <input type="hidden" name="view" value="<%= filters.view %>">
+                <div class="col-md-4">
+                    <label for="search" class="form-label small fw-semibold">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input id="search" type="text" class="form-control" name="search"
+                               placeholder="Farm name or operator..."
+                               value="<%= filters.search || '' %>">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="province" class="form-label small fw-semibold">Province</label>
+                    <select id="province" class="form-select" name="province">
+                        <option value="">All Provinces</option>
+                        <% provinces.forEach(p => { %>
+                        <option value="<%= p %>" <%= filters.province===p?'selected':'' %>><%= p %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="classification" class="form-label small fw-semibold">Classification</label>
+                    <select id="classification" class="form-select" name="classification">
+                        <option value="">All Types</option>
+                        <% classifications.forEach(c => { %>
+                        <option value="<%= c.value %>" <%= filters.classification===c.value?'selected':'' %>><%= c.label %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                    <a href="/farms" class="btn btn-outline-secondary" aria-label="Clear search and filters" title="Clear search and filters"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
+                </div>
+            </form>
+        </div>
+        <% } %>
+
+
+        <!-- ══════════════════════════════════════════════════
+             GIS MAP VIEW (Admin + Evaluator only)
+             Shows all tagged farms on Leaflet.js map
+             Pending-tag farms shown with orange markers
+             ══════════════════════════════════════════════════ -->
+        <% if (filters.view === 'map' && ['admin','evaluator'].includes(role)) { %>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body p-0" style="overflow:hidden; border-radius:inherit;">
+                        <div id="gisMap" class="gis-full-map"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Map Legend -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-map me-2 text-primary"></i>Map Legend
+                        </h6>
+                        <div class="map-legend-item">
+                            <div class="legend-dot" style="background:#27ae60;"></div>
+                            <span>Accredited LSA Farm</span>
+                            <span class="badge bg-success-subtle text-success border ms-auto">
+                                <%= geoTagged.filter(a => a.status==='approved').length %>
+                            </span>
+                        </div>
+                        <div class="map-legend-item">
+                            <div class="legend-dot" style="background:#3498db;"></div>
+                            <span>Under Review / Tagged</span>
+                            <span class="badge bg-primary-subtle text-primary border ms-auto">
+                                <%= geoTagged.filter(a => a.status!=='approved').length %>
+                            </span>
+                        </div>
+                        <div class="map-legend-item">
+                            <div class="legend-dot" style="background:#f39c12;border:2px dashed #e67e22;"></div>
+                            <span>Pending Geo-Tag</span>
+                            <span class="badge bg-warning-subtle text-warning border ms-auto">
+                                <%= geoPending.length %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending geo-tags list -->
+                <% if (geoPending.length > 0) { %>
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-hourglass-split me-2 text-warning"></i>
+                            Pending Geo-Tag
+                        </h6>
+                        <% geoPending.forEach(a => { %>
+                        <div class="pending-geotag-row">
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold small"><%= a.farmName %></div>
+                                <div class="text-muted" style="font-size:11px">
+                                    <%= a.municipality %>, <%= a.province %>
+                                </div>
+                                <div class="text-muted" style="font-size:11px">
+                                    <span class="app-id-link"><%= a.applicationId %></span>
+                                </div>
+                            </div>
+                            <a href="/applicants/<%= a.id %>"
+                               class="btn btn-xs btn-warning text-dark">
+                                <i class="bi bi-geo-alt me-1"></i>Tag
+                            </a>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════════════════════════════════
+             CARDS VIEW
+             ══════════════════════════════════════════════════ -->
+        <% } else { %>
+
+        <div class="row g-4">
+            <% if (farms.length === 0) { %>
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-tree fs-1 text-muted d-block mb-2"></i>
+                <p class="text-muted">No farms found matching your filters.</p>
+                <a href="/farms" class="btn btn-outline-secondary">Clear filters</a>
+            </div>
+            <% } %>
+            <% farms.forEach(f => { %>
+            <div class="col-md-6 col-xl-4">
+                <div class="farm-card">
+                    <div class="farm-card-header">
+                        <div>
+                            <h5 class="mb-1"><%= f.name %></h5>
+                            <small class="text-muted">
+                                <i class="bi bi-person me-1"></i><%= f.operator %>
+                            </small>
+                        </div>
+                        <span class="badge bg-success"><%= f.accreditationLevel %></span>
+                    </div>
+                    <div class="farm-card-body">
+                        <div class="farm-info-row">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <span><%= f.municipality %>, <%= f.province %></span>
+                        </div>
+                        <div class="farm-info-row">
+                            <i class="bi bi-tag-fill text-primary"></i>
+                            <span><%= classificationLabel(f.classification) %></span>
+                        </div>
+                        <div class="farm-info-row">
+                            <i class="bi bi-rulers text-secondary"></i>
+                            <span><%= f.farmArea.toLocaleString() %> sq.m.</span>
+                        </div>
+                        <div class="farm-info-row">
+                            <i class="bi bi-crosshair text-<%= f.latitude ? 'success' : 'warning' %>"></i>
+                            <span class="<%= f.latitude ? 'text-success' : 'text-warning' %>" style="font-size:12px;">
+                                <% if (f.latitude) { %>
+                                <i class="bi bi-check-circle-fill me-1"></i>
+                                <%= f.latitude.toFixed(4) %>°N, <%= f.longitude.toFixed(4) %>°E
+                                <% } else { %>
+                                Geo-tag pending
+                                <% } %>
+                            </span>
+                        </div>
+                        <div class="compliance-bar mt-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="fw-semibold">Compliance Score</small>
+                                <small class="fw-bold text-<%= f.complianceScore == null ? 'muted' : f.complianceScore >= 80 ? 'success' : f.complianceScore >= 60 ? 'warning' : 'danger' %>">
+                                    <%= f.complianceScore == null ? 'Not yet assessed' : f.complianceScore + '%' %>
+                                </small>
+                            </div>
+                            <div class="progress" style="height:6px;">
+                                <div class="progress-bar bg-<%= f.complianceScore == null ? 'secondary' : f.complianceScore >= 80 ? 'success' : f.complianceScore >= 60 ? 'warning' : 'danger' %>"
+                                     style="width:<%= f.complianceScore == null ? 0 : f.complianceScore %>%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="farm-card-footer">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar-check me-1"></i>Since <%= f.accreditedSince %>
+                        </small>
+                        <a href="/farms/<%= f.id %>" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+
+        <% } %>
+
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+
+<% if (filters.view === 'map') { %>
+<script nonce="<%= cspNonce %>">
+// ── GIS Map — all tagged farms ────────────────────────────────
+const allFarms   = <%- allFarmsJson %>;
+const geoTagged  = <%- geoTaggedJson %>;
+
+// Center on Region V Bicol
+const gisMap = L.map('gisMap').setView([13.2, 123.7], 9);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    maxZoom: 19
+}).addTo(gisMap);
+
+// ── Plot accredited farms ─────────────────────────────────────
+allFarms.forEach(farm => {
+    if (!farm.latitude || !farm.longitude) return;
+
+    const icon = L.divIcon({
+        html: `<div class="gis-farm-pin approved">
+                 <i class="bi bi-tree-fill"></i>
+               </div>`,
+        className: '', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -36]
+    });
+
+    L.marker([farm.latitude, farm.longitude], { icon })
+        .addTo(gisMap)
+        .bindPopup(`
+            <div style="min-width:200px;font-size:13px;">
+                <div style="font-weight:700;margin-bottom:4px;">${farm.name}</div>
+                <div style="color:#666;margin-bottom:6px;">${farm.municipality}, ${farm.province}</div>
+                <span style="background:#e8f5e9;color:#27ae60;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">
+                    ${farm.accreditationLevel} Accredited
+                </span><br><br>
+                <div style="font-size:11px;color:#888;">
+                    📍 ${farm.latitude.toFixed(4)}°N, ${farm.longitude.toFixed(4)}°E<br>
+                    🌿 ${farm.classification}<br>
+                    👥 ${farm.visitorsThisYear} visitors this year
+                </div>
+            </div>
+        `);
+});
+
+// ── Plot applications with geo-tags ──────────────────────────
+geoTagged.forEach(app => {
+    if (!app.latitude || !app.longitude) return;
+
+    const isApproved = app.status === 'approved';
+    const icon = L.divIcon({
+        html: `<div class="gis-farm-pin ${isApproved ? 'approved' : 'review'}">
+                 <i class="bi bi-${isApproved ? 'patch-check' : 'hourglass-split'}"></i>
+               </div>`,
+        className: '', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -36]
+    });
+
+    L.marker([app.latitude, app.longitude], { icon })
+        .addTo(gisMap)
+        .bindPopup(`
+            <div style="min-width:200px;font-size:13px;">
+                <div style="font-weight:700;margin-bottom:4px;">${app.farmName}</div>
+                <div style="color:#666;margin-bottom:6px;">${app.municipality}, ${app.province}</div>
+                <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;
+                             background:${isApproved ? '#e8f5e9' : '#fff3e0'};
+                             color:${isApproved ? '#27ae60' : '#f39c12'};">
+                    ${app.status.replace(/_/g,' ')}
+                </span><br><br>
+                <div style="font-size:11px;color:#888;">
+                    🆔 ${app.applicationId}<br>
+                    📍 ${app.latitude.toFixed(4)}°N, ${app.longitude.toFixed(4)}°E<br>
+                    🏷️ Tagged by ${app.geoTaggedBy || 'Evaluator'}
+                </div>
+            </div>
+        `);
+});
+</script>
+<% } %>
+</body>
+</html>

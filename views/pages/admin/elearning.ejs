@@ -1,0 +1,193 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">e-Learning Monitoring</h1>
+            <p class="page-subtitle">
+                New courses and announcements from the ATI e-Learning site are recorded here,
+                posted to the <code>#e-learning</code> Community Chat channel, and members are notified.
+            </p>
+        </div>
+        <a href="/community" class="btn btn-outline-secondary"><i class="bi bi-chat-dots me-1"></i>Community Chat</a>
+    </div>
+
+    <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+    <% if (notice) { %><div class="alert alert-success"><%= notice %></div><% } %>
+
+    <% if (result) { %>
+    <div class="alert alert-info">
+        <div class="fw-semibold mb-1">Sync finished (<%= result.driver %> driver)</div>
+        <div class="small">
+            Fetched <%= result.fetched %> · new <%= result.added %> · already seen <%= result.skipped %>
+            · posted <%= result.posted %> · notifications <%= result.notified %>
+        </div>
+        <% if (result.errors && result.errors.length) { %>
+        <ul class="small mt-2 mb-0">
+            <% result.errors.forEach(function (e) { %><li><%= e %></li><% }); %>
+        </ul>
+        <% } %>
+    </div>
+    <% } %>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-plug me-2"></i>Source</h5>
+                    <dl class="row small mb-3">
+                        <dt class="col-5">Mode</dt>
+                        <dd class="col-7">
+                            <% var _mode = source.driver === 'moodle' ? 'Moodle Web Services'
+                                 : source.driver === 'ati' || source.driver === 'ati_website' ? 'ATI Bicol website'
+                                 : 'Manual entry'; %>
+                            <span class="badge bg-<%= _mode === 'Manual entry' ? 'secondary' : 'success' %>-subtle
+                                         text-<%= _mode === 'Manual entry' ? 'secondary' : 'success' %>">
+                                <%= _mode %>
+                            </span>
+                        </dd>
+                        <dt class="col-5">Site</dt>
+                        <dd class="col-7"><%= source.siteUrl %></dd>
+                        <% if (!source.isAti) { %>
+                        <dt class="col-5">Token</dt>
+                        <dd class="col-7"><%= source.configured ? 'Configured' : 'Not configured' %></dd>
+                        <dt class="col-5">Announcement forum</dt>
+                        <dd class="col-7"><%= source.forumConfigured ? 'Configured' : 'Not set' %></dd>
+                        <% } %>
+                        <dt class="col-5">Recorded</dt>
+                        <dd class="col-7"><%= stats.total %> item(s), <%= stats.posted %> posted</dd>
+
+                        <dt class="col-5">Automatic</dt>
+                        <dd class="col-7">
+                            <% if (typeof schedule !== 'undefined' && schedule.intervalMinutes > 0) { %>
+                            <span class="badge bg-success-subtle text-success">
+                                every <%= Math.max(schedule.minMinutes, schedule.intervalMinutes) %> min
+                            </span>
+                            <% } else { %>
+                            <span class="badge bg-secondary-subtle text-secondary">Off</span>
+                            <div class="form-text">
+                                Set <code>SYNC_INTERVAL_MINUTES</code> in <code>.env</code> to run it on a timer,
+                                or schedule <code>npm run sync:elearning</code>.
+                            </div>
+                            <% } %>
+                        </dd>
+
+                        <% if (typeof schedule !== 'undefined' && schedule.lastRun && schedule.lastRun.at) { %>
+                        <dt class="col-5">Last automatic run</dt>
+                        <dd class="col-7">
+                            <%= new Date(schedule.lastRun.at).toLocaleString('en-PH') %><br>
+                            <span class="text-muted">
+                                posted <%= schedule.lastRun.posted %>, recorded <%= schedule.lastRun.added %>
+                            </span>
+                            <% if (schedule.lastRun.errors && schedule.lastRun.errors.length) { %>
+                            <div class="text-danger small"><%= schedule.lastRun.errors.join('; ') %></div>
+                            <% } %>
+                        </dd>
+                        <% } %>
+                    </dl>
+
+                    <% if (!source.configured && !source.isAti) { %>
+                    <div class="alert alert-warning small mb-3">
+                        <strong>No Moodle token yet.</strong>
+                        The e-Learning site's Web Services endpoint is live, but a token can only be
+                        issued by its administrator (Site administration → Plugins → Web services →
+                        Manage tokens). Until then, add announcements by hand below — they follow the
+                        same path: recorded, posted to chat, members notified.
+                    </div>
+                    <% } %>
+
+                    <form method="POST" action="/admin/elearning/sync">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="dryRun" name="dryRun">
+                            <label class="form-check-label small" for="dryRun">Dry run — report only, change nothing</label>
+                        </div>
+                        <button class="btn btn-outline-primary w-100" type="submit">
+                            <i class="bi bi-arrow-repeat me-1"></i>Check for new items now
+                        </button>
+                    </form>
+                    <p class="form-text mb-0 mt-2">
+                        For unattended checks, schedule <code>npm run sync:elearning</code>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-pencil-square me-2"></i>Add an announcement</h5>
+                    <form method="POST" action="/admin/elearning/manual">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <div class="mb-2">
+                            <label class="form-label" for="title">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="title" name="title" required
+                                   placeholder="New e-Learning Course: Training Management">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="summary">Summary</label>
+                            <textarea class="form-control" id="summary" name="summary" rows="3"></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="url">Link</label>
+                            <input type="url" class="form-control" id="url" name="url"
+                                   placeholder="https://elearn.e-extension.gov.ph/course/view.php?id=...">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="publishedAt">Published</label>
+                            <input type="date" class="form-control" id="publishedAt" name="publishedAt">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="notifyMembers" name="notifyMembers" checked>
+                            <label class="form-check-label small" for="notifyMembers">Notify members</label>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="bi bi-send me-1"></i>Post to Community Chat
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-collection me-2"></i>Recorded items</h5>
+                    <% if (!articles.length) { %>
+                    <p class="text-muted mb-0">Nothing recorded yet. Run a check or add an announcement.</p>
+                    <% } else { %>
+                    <div class="list-group list-group-flush">
+                        <% articles.forEach(function (a) { %>
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <div class="fw-semibold"><%= a.title %></div>
+                                    <% if (a.summary) { %>
+                                    <div class="small text-muted"><%= a.summary.length > 160 ? a.summary.slice(0, 160) + '…' : a.summary %></div>
+                                    <% } %>
+                                    <div class="small text-secondary mt-1">
+                                        <%= a.source.replace('_', ' ') %>
+                                        <% if (a.url) { %> · <a href="<%= a.url %>" target="_blank" rel="noopener noreferrer">open</a><% } %>
+                                        <% if (a.notifiedCount) { %> · notified <%= a.notifiedCount %><% } %>
+                                    </div>
+                                </div>
+                                <span class="badge bg-<%= a.isPosted ? 'success' : 'secondary' %>-subtle
+                                             text-<%= a.isPosted ? 'success' : 'secondary' %> flex-shrink-0">
+                                    <%= a.isPosted ? 'posted' : 'recorded' %>
+                                </span>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+<%- include('../../partials/chatbot') %>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="bi bi-person-plus me-2"></i>Register Farmer</h1>
+            <p class="page-subtitle">
+                Record an application for a farmer who applied in person or on paper.
+                Give them a login as well and they can sign in to follow the accreditation
+                steps themselves; leave it off for a farmer with no email address.
+            </p>
+        </div>
+        <a href="/applicants" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Applications
+        </a>
+    </div>
+
+    <% if (error) { %>
+    <div class="alert alert-danger d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i><span><%= error %></span>
+    </div>
+    <% } %>
+
+    <% if (notice) { %>
+    <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i><span><%= notice %></span>
+    </div>
+    <% } %>
+
+    <% if (createdUser) { %>
+    <div class="card mb-4 border-success">
+        <div class="card-body">
+            <h5 class="card-title mb-3">
+                <i class="bi bi-<%= createdUser.hasAccount === false ? 'file-earmark-check' : 'key' %> me-2"></i>
+                <%= createdUser.hasAccount === false ? 'Application recorded' : 'Sign-in details' %>
+            </h5>
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Application ID</dt>
+                <dd class="col-sm-9"><code><%= createdUser.applicationId %></code></dd>
+                <% if (createdUser.email) { %>
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9"><code><%= createdUser.email %></code></dd>
+                <% } %>
+                <% if (createdUser.hasAccount === false) { %>
+                <dt class="col-sm-3">Login</dt>
+                <dd class="col-sm-9">
+                    None. This farmer cannot sign in; ATI staff progress the application on their behalf.
+                    A login can be added later by registering them again with an email address.
+                </dd>
+                <% } %>
+                <% if (createdUser.password) { %>
+                <dt class="col-sm-3">Temporary password</dt>
+                <dd class="col-sm-9">
+                    <code class="fs-5"><%= createdUser.password %></code>
+                    <div class="form-text text-danger">
+                        Shown only on this screen — it is stored as a hash and cannot be displayed again.
+                        Give it to the farmer and ask them to change it after signing in.
+                    </div>
+                </dd>
+                <% } %>
+            </dl>
+        </div>
+    </div>
+    <% } %>
+
+    <form method="POST" action="/admin/farmers" class="card">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="card-body">
+
+            <h5 class="section-title mb-3"><i class="bi bi-person me-2"></i>Farmer</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label" for="firstName">First Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="firstName" name="firstName"
+                           value="<%= values.firstName || '' %>" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="lastName">Last Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="lastName" name="lastName"
+                           value="<%= values.lastName || '' %>" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="email">
+                        Email Address <span class="text-danger" id="emailRequiredMark">*</span>
+                    </label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           value="<%= values.email || '' %>" required>
+                    <div class="form-text" id="emailHint">Used as the sign-in name.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="phone">Contact Number</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" value="<%= values.phone || '' %>">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="rsbsaNumber">RSBSA / NCFRS Number</label>
+                    <input type="text" class="form-control" id="rsbsaNumber" name="rsbsaNumber"
+                           value="<%= values.rsbsaNumber || '' %>">
+                    <div class="form-text">DA RSBSA registration, or PCA NCFRS for coconut-based farmers.</div>
+                </div>
+            </div>
+
+            <h5 class="section-title mb-3"><i class="bi bi-tree me-2"></i>Farm</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label" for="farmName">Farm / Enterprise Name</label>
+                    <input type="text" class="form-control" id="farmName" name="farmName" value="<%= values.farmName || '' %>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="farmArea">Farm Area (sq.m.)</label>
+                    <input type="number" class="form-control" id="farmArea" name="farmArea" min="0"
+                           value="<%= values.farmArea || '' %>">
+                    <div class="form-text">Minimum 1,000 sq.m., except urban and peri-urban gardens.</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="lsaType">LSA Type</label>
+                    <select class="form-select" id="lsaType" name="lsaType">
+                        <option value="regular" <%= values.lsaType === 'regular' ? 'selected' : '' %>>Regular LSA</option>
+                        <option value="rcef"    <%= values.lsaType === 'rcef'    ? 'selected' : '' %>>RCEF-LSA</option>
+                        <option value="coco"    <%= values.lsaType === 'coco'    ? 'selected' : '' %>>Coco-LSA</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="farmAddress">Complete Farm Address</label>
+                    <textarea class="form-control" id="farmAddress" name="farmAddress" rows="2"><%= values.farmAddress || '' %></textarea>
+                </div>
+
+                <%- include('../../partials/location-select', {
+                    prefix: 'farmer',
+                    required: false,
+                    cols: 'col-md-3',
+                    selected: locationSelection
+                }) %>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="category">Applicant Category</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="private"      <%= values.category === 'private'      ? 'selected' : '' %>>Private-owned</option>
+                        <option value="organization" <%= values.category === 'organization' ? 'selected' : '' %>>Farmers/Fishers Organization</option>
+                        <option value="government"   <%= values.category === 'government'   ? 'selected' : '' %>>Government-owned</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="classification">LSA Classification</label>
+                    <select class="form-select" id="classification" name="classification">
+                        <option value="">Select classification</option>
+                        <option value="gap_crops"         <%= values.classification === 'gap_crops'         ? 'selected' : '' %>>GAP — Crops</option>
+                        <option value="gahp_animals"      <%= values.classification === 'gahp_animals'      ? 'selected' : '' %>>GAHP — Animals</option>
+                        <option value="natural_farming"   <%= values.classification === 'natural_farming'   ? 'selected' : '' %>>Natural Farming</option>
+                        <option value="organic"           <%= values.classification === 'organic'           ? 'selected' : '' %>>Organic Agriculture</option>
+                        <option value="integrated"        <%= values.classification === 'integrated'        ? 'selected' : '' %>>Integrated / Diversified Farming</option>
+                        <option value="cut_flowers"       <%= values.classification === 'cut_flowers'       ? 'selected' : '' %>>Cut Flowers, Ornamentals &amp; Succulents</option>
+                        <option value="halal"             <%= values.classification === 'halal'             ? 'selected' : '' %>>Halal</option>
+                        <option value="urban_agriculture" <%= values.classification === 'urban_agriculture' ? 'selected' : '' %>>Urban / Peri-Urban Agriculture</option>
+                        <option value="agri_processing"   <%= values.classification === 'agri_processing'   ? 'selected' : '' %>>Agri-Processing Enterprise</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="status">Application Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="submitted"       <%= values.status === 'submitted'       ? 'selected' : '' %>>Submitted</option>
+                        <option value="document_review" <%= values.status === 'document_review' ? 'selected' : '' %>>Document Review</option>
+                        <option value="under_review"    <%= values.status === 'under_review'    ? 'selected' : '' %>>Under Review</option>
+                    </select>
+                </div>
+            </div>
+
+            <h5 class="section-title mb-3"><i class="bi bi-lock me-2"></i>Sign-in</h5>
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="createAccount" name="createAccount"
+                               <%= values.createAccount === 'on' || values.createAccount === undefined ? 'checked' : '' %>>
+                        <label class="form-check-label" for="createAccount">
+                            <strong>Create a login account for this farmer</strong>
+                        </label>
+                        <div class="form-text">
+                            Ticked, the farmer signs in with their email address to track their own
+                            application and upload documents. Unticked, only the application record is
+                            created and ATI staff act on it for them — use this when the farmer has no
+                            email address.
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" id="passwordSection">
+                <div class="row g-3">
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="generatePassword" name="generatePassword"
+                               <%= values.generatePassword === 'on' || values.generatePassword === undefined ? 'checked' : '' %>>
+                        <label class="form-check-label" for="generatePassword">
+                            Generate a temporary password and show it once after saving
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6" id="manualPasswordWrap">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="text" class="form-control" id="password" name="password" autocomplete="off">
+                    <div class="form-text">
+                        At least 8 characters with uppercase, lowercase, a number, and a special character.
+                    </div>
+                </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex gap-2 justify-content-end">
+            <a href="/applicants" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                Register Farmer
+            </button>
+        </div>
+    </form>
+</div>
+
+<script nonce="<%= cspNonce %>">
+    (function () {
+        const account = document.getElementById('createAccount');
+        const section = document.getElementById('passwordSection');
+        const toggle = document.getElementById('generatePassword');
+        const wrap = document.getElementById('manualPasswordWrap');
+        const input = document.getElementById('password');
+        const email = document.getElementById('email');
+        const mark = document.getElementById('emailRequiredMark');
+        const hint = document.getElementById('emailHint');
+        const submit = document.getElementById('submitBtn');
+
+        function sync() {
+            const wantsAccount = account.checked;
+
+            // Without an account there is nothing to sign in with, so the whole
+            // password block goes away and the email address becomes optional.
+            section.style.display = wantsAccount ? '' : 'none';
+            email.required = wantsAccount;
+            mark.style.display = wantsAccount ? '' : 'none';
+            hint.textContent = wantsAccount
+                ? 'Used as the sign-in name.'
+                : 'Optional — recorded for contact only, since no login is being created.';
+            if (submit) {
+                submit.textContent = wantsAccount ? 'Register Farmer & Create Login' : 'Register Farmer';
+            }
+
+            const auto = toggle.checked;
+            wrap.style.display = auto ? 'none' : '';
+            // Never leave a hidden field required, or the form cannot submit.
+            input.required = wantsAccount && !auto;
+            if (auto) input.value = '';
+        }
+
+        account.addEventListener('change', sync);
+        toggle.addEventListener('change', sync);
+        sync();
+    })();
+</script>
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+<%- include('../../partials/chatbot') %>
+</body>
+</html>

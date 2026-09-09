@@ -1,0 +1,12 @@
+<%
+/* One user's face, drawn the same way everywhere.
+   Locals: user (object|null), cls (size class), color (Bootstrap colour name).
+   Falls back to the two-letter `avatar` when there is no picture — ATI
+   registers farmers who have no photo to give. */
+-%>
+<% if (user && user.photo) { %>
+<img class="<%= cls %> avatar-photo" src="/profile/photo/<%= user.id %>"
+     alt="<%= user.firstName %> <%= user.lastName %>">
+<% } else { %>
+<div class="<%= cls %> bg-<%= color %>"><%= (user && user.avatar) || '' %></div>
+<% } %>

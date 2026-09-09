@@ -1,0 +1,2529 @@
+/* ============================================
+   AGRI-AIMS CUSTOM STYLES
+   Modern Agricultural Management System
+   ============================================ */
+
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+/* CSS Variables */
+:root {
+    /* Colors - Agricultural Theme
+     *
+     * Contrast note. These were measured against the two grounds the app
+     * actually paints — the page (#f8faf9) and cards (#ffffff) — and several
+     * failed WCAG 1.4.3, which asks 4.5:1 of normal text. The accent green was
+     * 2.87:1 and the muted grey 3.48:1, and both carry real reading text.
+     * Each hue below is the same hue darkened to the first value clearing
+     * 4.5:1 both as text AND as a fill under white text, so one value fixes
+     * both directions. Previous values are kept in the comments. */
+    --primary-color: #2d7a3e;
+    --primary-dark: #1f5a2d;
+    --primary-light: #3d814b;  /* was #4a9c5a — 3.39:1 under white text */
+    --secondary-color: #f39c12;
+    --accent-color: #1c7d45;   /* was #27ae60 — 2.87:1 on white, 4.24:1 on its badge tint */
+    
+    /* Status Colors */
+    --success-color: #1c7d45; /* was #27ae60 — 2.87:1 on white, 4.24:1 on its badge tint */
+    --warning-color: #f39c12;  /* kept: used as a fill, which must carry dark text */
+    --warning-text: #8a5a0b;   /* amber as *text* — #f39c12 on white is 2.19:1 */
+    --danger-color: #c03f32;   /* was #e74c3c — 3.82:1 on white, 4.11:1 on its badge tint */
+    --info-color: #2772a4;     /* was #3498db — 3.15:1 on white, 4.23:1 on its badge tint */
+    
+    /* Neutrals */
+    --bg-primary: #f8faf9;
+    --bg-secondary: #ffffff;
+    --bg-dark: #1a1a1a;
+    --text-primary: #2c3e50;
+    --text-secondary: #697475; /* was #7f8c8d — 3.48:1, used 59 times */
+    --border-color: #e0e7e4;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(45, 122, 62, 0.05);
+    --shadow-md: 0 4px 12px rgba(45, 122, 62, 0.08);
+    --shadow-lg: 0 8px 24px rgba(45, 122, 62, 0.12);
+    --shadow-xl: 0 16px 48px rgba(45, 122, 62, 0.15);
+    
+    /* Spacing */
+    --navbar-height: 70px;
+    
+    /* Transitions */
+    --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* ============================================
+   LOADING SCREEN
+   ============================================ */
+
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+
+.loading-content {
+    text-align: center;
+    color: white;
+}
+
+.loading-logo {
+    font-size: 80px;
+    animation: pulse 2s ease-in-out infinite;
+    margin-bottom: 20px;
+}
+
+.loading-screen h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+}
+
+.loading-bar {
+    width: 300px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loading-progress {
+    height: 100%;
+    background: white;
+    border-radius: 2px;
+    animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes loading {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* ============================================
+   NAVIGATION BAR
+   ============================================ */
+
+.navbar {
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow-md);
+    padding: 15px 0;
+    height: var(--navbar-height);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition-base);
+}
+
+.navbar-brand:hover {
+    color: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.navbar-brand i {
+    font-size: 32px;
+    color: var(--accent-color);
+}
+
+.brand-text {
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 8px 16px;
+    margin: 0 4px;
+    border-radius: 8px;
+    transition: var(--transition-base);
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+    background: rgba(45, 122, 62, 0.05);
+}
+
+.notification-bell {
+    position: relative;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--danger-color);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.user-dropdown {
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+    position: fixed;
+    top: var(--navbar-height);
+    right: 20px;
+    width: 400px;
+    max-height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-xl);
+    display: none;
+    z-index: 999;
+    overflow: hidden;
+}
+
+.notification-dropdown.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+.notification-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.notification-item:hover {
+    background: var(--bg-primary);
+}
+
+.notification-item.unread {
+    background: rgba(45, 122, 62, 0.03);
+    border-left: 3px solid var(--primary-color);
+}
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+.main-container {
+    margin-top: var(--navbar-height);
+    min-height: calc(100vh - var(--navbar-height));
+}
+
+.page-content {
+    padding: 40px 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+}
+
+/* The chat panel fills whatever is left under the page header instead of
+   guessing at it. A fixed calc() on .chat-container assumed nothing sat above
+   it, so on a phone the page header pushed the composer below the fold. */
+.page-content.chat-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--navbar-height));
+    height: calc(100dvh - var(--navbar-height));
+    overflow: hidden;
+}
+
+.page-content.chat-page .chat-container {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-title {
+    font-size: 36px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: 100lvh;              /* cover the tallest the viewport can become */
+    /* cover scales the frame to fill whatever shape the screen is, cropping
+       rather than stretching, so the picture is never distorted. */
+    object-fit: cover;
+    object-position: center;
+    z-index: -2;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* ============================================
+   AUTH PAGES
+   ============================================ */
+
+.auth-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    overflow-x: hidden;
+    z-index: 0;
+    padding: 40px 20px;
+}
+
+
+.auth-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: 100lvh;              /* mobile chrome retracting must not expose a gap */
+    background-image: url('/images/auth-backdrop.jpeg');
+    background-size: cover;      /* fills any shape of screen, never stretches */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #dfe7e3;   /* shows for the instant before the jpeg paints */
+    z-index: -3;                 /* behind the video, which is -2 */
+    pointer-events: none;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    .auth-container::before {
+        background-position: 27% center;
+    }
+
+    .video-background {
+        object-position: 27% center;
+    }
+}
+
+.auth-container::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100lvh;
+    background: linear-gradient(180deg, rgba(12, 40, 20, 0.28), rgba(12, 40, 20, 0.42));
+    z-index: -1;                 /* over the backdrop and video, under the card */
+    pointer-events: none;
+}
+
+.auth-box {
+    background: white;
+    padding: 50px 40px;
+    border-radius: 24px;
+    box-shadow: var(--shadow-xl);
+    max-width: 500px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.auth-icon {
+    font-size: 64px;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    display: block;
+}
+
+.auth-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(45, 122, 62, 0.15));
+    transition: height 0.3s ease;
+}
+
+.auth-header h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+    font-family: 'Space Mono', monospace;
+}
+
+.auth-header p {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.auth-tabs {
+    display: flex;
+    margin-bottom: 30px;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 4px;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.auth-tab.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.auth-form .form-control {
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: var(--transition-base);
+}
+
+.auth-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(45, 122, 62, 0.1);
+}
+
+.form-floating label {
+    color: var(--text-secondary);
+}
+
+.forgot-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: var(--transition-base);
+    border: none;
+}
+
+/* This rule and Bootstrap's .btn-sm have the same specificity, and this file
+   loads second — so .btn-sm has never done anything and every small button in
+   the app rendered at full size. The row action buttons in the applications
+   table measured 62x48 each, which is why that column claimed 237px for three
+   icons and pushed the table past its container. Restoring the size ladder
+   after the override, rather than per-page width tweaks.
+
+   31px still clears the 24x24 WCAG 2.2 target minimum. */
+.btn-sm {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.btn-lg {
+    padding: 16px 32px;
+    border-radius: 14px;
+    font-size: 1.125rem;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #229954;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: var(--text-secondary);
+    color: white;
+}
+
+.btn-outline-secondary {
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    background: white;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--bg-primary);
+    border-color: var(--primary-color);
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card {
+    background: white;
+    border-radius: 16px;
+    border: none;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-card {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: var(--transition-base);
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+}
+
+.stat-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+}
+
+.stat-icon.bg-primary { background: var(--primary-color); }
+.stat-icon.bg-success { background: var(--success-color); }
+.stat-icon.bg-warning { background: var(--warning-color); }
+.stat-icon.bg-danger { background: var(--danger-color); }
+.stat-icon.bg-info { background: var(--info-color); }
+
+.stat-info h3 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.stat-info p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 14px;
+}
+
+/* ============================================
+   QUICK ACTIONS
+   ============================================ */
+
+.quick-actions-card {
+    background: linear-gradient(135deg, rgba(45, 122, 62, 0.03) 0%, rgba(39, 174, 96, 0.03) 100%);
+    border: 1px solid var(--border-color);
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.quick-action-btn {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition-base);
+    text-decoration: none;
+    color: var(--text-primary);
+    display: block;
+}
+
+.quick-action-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(45, 122, 62, 0.02);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.quick-action-btn i {
+    font-size: 32px;
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 12px;
+}
+
+.quick-action-btn span {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* ============================================
+   ACTIVITY TIMELINE
+   ============================================ */
+
+.activity-timeline {
+    position: relative;
+    padding-left: 40px;
+}
+
+.activity-item {
+    position: relative;
+    padding: 16px 0;
+    border-left: 2px solid var(--border-color);
+    padding-left: 24px;
+    margin-left: 8px;
+}
+
+.activity-item::before {
+    content: '';
+    position: absolute;
+    left: -9px;
+    top: 20px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--border-color);
+}
+
+.activity-item:last-child {
+    border-left-color: transparent;
+}
+
+.activity-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.activity-content h6 {
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.activity-content p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ============================================
+   APPLICATION WIZARD
+   ============================================ */
+
+.application-wizard {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.wizard-header {
+    margin-bottom: 40px;
+}
+
+.wizard-progress {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    margin-top: 20px;
+}
+
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+
+.wizard-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border-color);
+    z-index: 0;
+}
+
+.wizard-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    transition: var(--transition-base);
+}
+
+.wizard-step.active .step-circle {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.wizard-step.completed .step-circle {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.wizard-step span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.wizard-step.active span {
+    color: var(--primary-color);
+}
+
+.wizard-content {
+    margin: 30px 0;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.wizard-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    gap: 16px;
+}
+
+/* Briefer Content */
+.briefer-content {
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.info-box {
+    background: var(--bg-primary);
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.info-box h6 {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.info-box ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.info-box ul li {
+    padding: 6px 0;
+    position: relative;
+    padding-left: 24px;
+}
+
+.info-box ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--success-color);
+    font-weight: 700;
+}
+
+/* Assessment Questions */
+.assessment-questions {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.assessment-question {
+    background: var(--bg-primary);
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.assessment-question h6 {
+    margin-bottom: 16px;
+    font-size: 15px;
+}
+
+.assessment-options {
+    display: flex;
+    gap: 12px;
+}
+
+.assessment-option {
+    flex: 1;
+}
+
+.assessment-option input[type="radio"] {
+    display: none;
+}
+
+.assessment-option label {
+    display: block;
+    padding: 12px;
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-weight: 600;
+}
+
+.assessment-option input[type="radio"]:checked + label {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Form Sections */
+.form-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-color);
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* Document Checklist */
+.document-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.document-item {
+    background: var(--bg-primary);
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid var(--border-color);
+    transition: var(--transition-base);
+}
+
+.document-item:hover {
+    border-color: var(--primary-color);
+}
+
+.document-info {
+    flex: 1;
+}
+
+.document-info h6 {
+    margin-bottom: 4px;
+    font-size: 15px;
+}
+
+.document-info p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.document-status {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.pending {
+    background: rgba(241, 196, 15, 0.1);
+    color: var(--status-yellow);   /* was #f1c40f — 1.72:1 */
+}
+
+.status-badge.uploaded {
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--info-color);      /* was #3498db — 2.79:1 */
+}
+
+.status-badge.approved {
+    background: rgba(39, 174, 96, 0.1);
+    color: var(--success-color);   /* was #27ae60 — 2.55:1 */
+}
+
+.status-badge.rejected {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);    /* was #e74c3c — 3.28:1 */
+}
+
+/* File Upload */
+.file-upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.file-upload-area:hover {
+    border-color: var(--primary-color);
+    background: rgba(45, 122, 62, 0.02);
+}
+
+.file-upload-area i {
+    font-size: 48px;
+    color: var(--primary-color);
+    margin-bottom: 16px;
+}
+
+/* ============================================
+   APPLICATION CARDS
+   ============================================ */
+
+.application-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+    border-left: 4px solid transparent;
+}
+
+.application-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+}
+
+.application-card.draft {
+    border-left-color: var(--text-secondary);
+}
+
+.application-card.submitted {
+    border-left-color: var(--info-color);
+}
+
+.application-card.approved {
+    border-left-color: var(--success-color);
+}
+
+.application-card.rejected {
+    border-left-color: var(--danger-color);
+}
+
+.application-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 16px;
+}
+
+.application-id {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'Space Mono', monospace;
+}
+
+.application-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.application-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.application-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.application-progress {
+    margin-bottom: 16px;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg-primary);
+}
+
+.progress-bar {
+    border-radius: 4px;
+    background: var(--primary-color);
+}
+
+.application-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ============================================
+   CHAT SYSTEM
+   ============================================ */
+
+.chat-container {
+    display: flex;
+    height: calc(100vh - var(--navbar-height) - 80px);
+    height: calc(100dvh - var(--navbar-height) - 80px);
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.chat-sidebar {
+    width: 300px;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-channel {
+    position: relative;
+}
+
+.channel-actions {
+    display: flex;
+    gap: 2px;
+    margin-top: 6px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.chat-channel:hover .channel-actions,
+.channel-actions:focus-within {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .channel-actions { opacity: 1; }
+}
+
+.chat-add-channel {
+    border-radius: 8px;
+    padding: 2px 8px;
+    line-height: 1.4;
+}
+
+.chat-channel-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.chat-channel-form[hidden] { display: none; }
+
+.chat-channels {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.chat-channel {
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: var(--transition-base);
+    border-left: 3px solid transparent;
+}
+
+.chat-channel:hover {
+    background: var(--bg-primary);
+}
+
+.chat-channel.active {
+    background: rgba(45, 122, 62, 0.05);
+    border-left-color: var(--primary-color);
+}
+
+.channel-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.channel-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* A flex item defaults to min-height:auto — its content height. That kept this
+       column as tall as every message loaded (3864px against a 512px container),
+       so .chat-messages never scrolled and .chat-container clipped the composer. */
+    min-height: 0;
+    min-width: 0;
+}
+
+.chat-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-primary);
+}
+
+.chat-messages {
+    flex: 1;
+    min-height: 0;                 /* see .chat-main — without it overflow-y never engages */
+    padding: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;  /* reaching the top must not scroll the page behind it */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Sits between the message list and the composer rather than floating over
+   them, so it can never cover the newest message or the input. */
+.chat-jump {
+    align-self: center;
+    margin: -14px 0 6px;
+    padding: 6px 16px;
+    border: none;
+    border-radius: 999px;
+    background: var(--primary-color);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+}
+
+.chat-jump[hidden] { display: none; }
+
+.chat-message {
+    display: flex;
+    gap: 12px;
+    max-width: 70%;
+}
+
+.chat-message.own {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* Here the avatar box is the parent and the picture fills it, unlike the
+   navbar where the size class is on the image itself. */
+.message-avatar .avatar-photo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: block;
+}
+
+.message-content {
+    background: var(--bg-primary);
+    padding: 12px 16px;
+    border-radius: 12px;
+    border-top-left-radius: 4px;
+}
+
+.chat-message.own .message-content {
+    background: var(--primary-color);
+    color: white;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 4px;
+}
+
+.message-sender {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.message-text {
+    margin: 0;
+    word-wrap: break-word;
+}
+
+.message-time {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.chat-message.own .message-time {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Edit and delete, and the state a deleted message leaves behind. */
+.message-content {
+    position: relative;
+}
+
+.message-actions {
+    display: flex;
+    gap: 2px;
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+/* Revealed on hover for a mouse, always visible for a finger: a touch device
+   has no hover, so hidden controls there are simply controls that do not
+   exist. */
+.chat-message:hover .message-actions,
+.message-actions:focus-within {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .message-actions { opacity: 1; }
+}
+
+.msg-action {
+    border: none;
+    background: transparent;
+    color: inherit;
+    opacity: 0.75;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.msg-action:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.chat-message.own .msg-action:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.msg-action:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 1px;
+}
+
+.chat-message.grouped.is-edited .message-time {
+    opacity: 0.7;
+}
+
+.message-deleted {
+    font-style: italic;
+    opacity: 0.72;
+}
+
+.message-editor {
+    margin-top: 6px;
+    min-width: 220px;
+}
+
+.message-editor textarea {
+    width: 100%;
+    resize: vertical;
+    font-size: 14px;
+}
+
+.message-editor-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.chat-input {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 12px;
+    background: white;
+}
+
+.chat-input input {
+    flex: 1;
+    border: 2px solid var(--border-color);
+    border-radius: 24px;
+    padding: 12px 20px;
+    font-size: 14px;
+}
+
+.chat-input input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.chat-input button {
+    /* .btn brings padding: 12px 24px, which is 48px of horizontal padding inside a
+       48px box: no content width is left and the glyph spilled 8px to the right of
+       centre. Flex centring ignores the text box entirely. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    flex: 0 0 auto;          /* a circle must never be squashed into an oval */
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.chat-input button .bi {
+    display: block;          /* an inline glyph carries baseline leading; a block one does not */
+    font-size: 18px;
+}
+
+.chat-input button:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.chat-input button:active:not(:disabled) {
+    transform: scale(0.92);   /* a press should feel like a press */
+}
+
+.chat-input button:focus-visible {
+    outline: 3px solid var(--primary-dark);
+    outline-offset: 2px;
+}
+
+/* Nothing to send, or a send already in flight. */
+.chat-input button:disabled {
+    background: var(--border-color);
+    color: var(--text-secondary);
+    cursor: default;
+    transform: none;
+}
+
+/* On a fast connection this never shows. On a slow one it is the only thing
+   telling the sender their message has not been swallowed. */
+.chat-input button.sending .bi {
+    animation: chat-sending 0.8s ease-in-out infinite;
+}
+
+@keyframes chat-sending {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-input button,
+    .chat-input button:hover:not(:disabled),
+    .chat-input button:active:not(:disabled) { transition: none; transform: none; }
+    .chat-input button.sending .bi { animation: none; opacity: 0.5; }
+}
+
+/* ============================================
+   AI CHATBOT WIDGET
+   ============================================ */
+
+/* ============================================
+   AI CHATBOT WIDGET - Bubble Style (Meta-like)
+   ============================================ */
+
+/* ---- Floating Bubble ---- */
+.chatbot-bubble {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1100;
+    box-shadow: 0 4px 20px rgba(45, 122, 62, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* On the chat page the composer also ends in a round button in the bottom-right
+   corner, and the AgriBot bubble sat on top of it — 44x28px of overlap on a
+   1366x768 laptop, 30x14 on a phone. Lift the bubble clear of the composer,
+   which is ~128px tall from the bottom of the window on every width because the
+   chat panel is sized to the window. */
+.page-content.chat-page ~ .chatbot-bubble,
+body:has(.chat-page) .chatbot-bubble {
+    bottom: 140px;
+}
+
+.chatbot-bubble:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(45, 122, 62, 0.55);
+}
+
+.chatbot-bubble:active {
+    transform: scale(0.95);
+}
+
+.chatbot-bubble-icon {
+    font-size: 28px;
+    pointer-events: none;
+}
+
+/* Unread badge */
+.chatbot-bubble-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    background: var(--danger-color);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    border: 2px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+/* Tooltip label */
+.chatbot-bubble-tooltip {
+    position: absolute;
+    right: 72px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.75);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.chatbot-bubble:hover .chatbot-bubble-tooltip {
+    opacity: 1;
+}
+
+/* Pulse ring animation */
+.chatbot-bubble::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 3px solid rgba(45, 122, 62, 0.35);
+    animation: chatPulse 2.5s ease-out infinite;
+    pointer-events: none;
+}
+
+@keyframes chatPulse {
+    0%   { transform: scale(1);   opacity: 0.8; }
+    70%  { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* ---- Expanded Chat Panel ---- */
+.chatbot-widget {
+    position: fixed;
+    bottom: 100px;
+    right: 28px;
+    width: 360px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(45, 122, 62, 0.18);
+    z-index: 1099;
+    overflow: hidden;
+    animation: chatOpen 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom right;
+}
+
+@keyframes chatOpen {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.chatbot-widget.dragging {
+    box-shadow: 0 20px 60px rgba(45, 122, 62, 0.3);
+    opacity: 0.95;
+    cursor: grabbing;
+}
+
+/* ---- Chat Panel Header ---- */
+.chatbot-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: grab;
+    user-select: none;
+}
+
+.chatbot-header:active {
+    cursor: grabbing;
+}
+
+.chatbot-header-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.chatbot-header-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.chatbot-title {
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.chatbot-status {
+    font-size: 11px;
+    opacity: 0.85;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.chatbot-status i {
+    font-size: 8px;
+    color: #7dff9e;
+}
+
+.chatbot-close-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.chatbot-close-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* ---- Chat Body ---- */
+.chatbot-body {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chatbot-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #f8faf9;
+}
+
+.chatbot-message {
+    display: flex;
+    gap: 10px;
+    max-width: 85%;
+}
+
+.chatbot-message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.chatbot-message .message-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.chatbot-message.bot .message-avatar {
+    background: var(--primary-color);
+}
+
+.chatbot-message.user .message-avatar {
+    background: var(--text-secondary);
+}
+
+.chatbot-message .message-content {
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.chatbot-message.user .message-content {
+    background: var(--primary-color);
+    color: white;
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 4px !important;
+}
+
+/* A small clock under each bubble so the thread reads as a real conversation. */
+.chatbot-message .message-time {
+    display: block;
+    font-size: 10px;
+    opacity: 0.6;
+    margin-top: 4px;
+    text-align: right;
+}
+.chatbot-message.bot .message-time {
+    text-align: left;
+}
+
+/* "AgriBot is typing" — three blinking dots shown while a reply is in flight. */
+.chatbot-typing {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 2px 0;
+}
+.chatbot-typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-secondary, #8a8a8a);
+    opacity: 0.4;
+    animation: chatbotBlink 1.4s infinite both;
+}
+.chatbot-typing span:nth-child(2) { animation-delay: 0.2s; }
+.chatbot-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes chatbotBlink {
+    0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .chatbot-typing span { animation: none; opacity: 0.6; }
+}
+
+.quick-replies {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.quick-reply {
+    padding: 8px 12px;
+    background: white;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    color: var(--primary-color);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-base);
+    text-align: left;
+}
+
+.quick-reply:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.chatbot-input {
+    display: flex;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border-color);
+    background: white;
+}
+
+.chatbot-input input {
+    flex: 1;
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.chatbot-input input:focus {
+    border-color: var(--primary-color);
+}
+
+.chatbot-input button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+    flex-shrink: 0;
+}
+
+.chatbot-input button:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    .chatbot-bubble {
+        bottom: 20px;
+        right: 20px;
+        width: 54px;
+        height: 54px;
+    }
+
+    .chatbot-bubble-icon {
+        font-size: 24px;
+    }
+
+    .chatbot-widget {
+        width: calc(100vw - 24px);
+        right: 12px;
+        bottom: 88px;
+        border-radius: 16px;
+    }
+
+    .chatbot-body {
+        height: 320px;
+    }
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+.table {
+    background: white;
+}
+
+.table thead th {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-weight: 700;
+    border: none;
+    padding: 16px;
+}
+
+.table tbody td {
+    padding: 16px;
+    vertical-align: middle;
+    border-color: var(--border-color);
+}
+
+.table-hover tbody tr:hover {
+    background: rgba(45, 122, 62, 0.02);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 992px) {
+    .wizard-steps {
+        flex-wrap: wrap;
+    }
+    
+    .wizard-step {
+        flex-basis: 33.333%;
+        margin-bottom: 20px;
+    }
+    
+    .chat-container {
+        flex-direction: column;
+    }
+
+    .chat-sidebar {
+        width: 100%;
+        flex: 0 0 auto;                 /* the strip keeps its height; messages take the rest */
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .chat-sidebar-header {
+        display: none;                  /* "Channels" is obvious once they are tabs */
+    }
+
+    /* Except when it carries the add-channel button, which an administrator
+       still needs on a phone. Compact, because the strip below is the star. */
+    .chat-sidebar-header:has(.chat-add-channel) {
+        display: flex;
+        padding: 8px 12px 0;
+        border: none;
+    }
+
+    .chat-sidebar-header:has(.chat-add-channel) h5 {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .chat-channel-form {
+        padding: 10px 12px;
+    }
+
+    .chat-channels {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+    }
+
+    .chat-channels::-webkit-scrollbar { display: none; }
+
+    .chat-channel {
+        flex: 0 0 auto;
+        padding: 8px 14px;
+        border-left: none;
+        border-radius: 999px;
+        background: var(--bg-primary);
+        white-space: nowrap;
+    }
+
+    .chat-channel.active {
+        background: var(--primary-color);
+        color: #fff;
+    }
+
+    .channel-name { margin-bottom: 0; }
+
+    .channel-desc { display: none; }    /* already shown in the chat header */
+    
+    .chatbot-widget {
+        width: calc(100vw - 32px);
+        right: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 28px;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .wizard-step {
+        flex-basis: 50%;
+    }
+    
+    .notification-dropdown {
+        width: calc(100vw - 32px);
+        right: 16px;
+    }
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.text-primary { color: var(--primary-color); }
+.text-success { color: var(--success-color); }
+/* Amber reads as a block of colour and fails as text: #f39c12 on white is
+   2.19:1. The fill keeps the bright value; the text takes the dark one. */
+.text-warning { color: var(--warning-text); }
+.text-danger { color: var(--danger-color); }
+.text-info { color: var(--info-color); }
+
+.bg-light-primary { background: rgba(45, 122, 62, 0.05); }
+.bg-light-success { background: rgba(39, 174, 96, 0.05); }
+.bg-light-warning { background: rgba(243, 156, 18, 0.05); }
+.bg-light-danger { background: rgba(231, 76, 60, 0.05); }
+.bg-light-info { background: rgba(52, 152, 219, 0.05); }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   PROFILE PAGE
+   ============================================ */
+
+.profile-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    font-size: 36px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: var(--shadow-md);
+}
+
+.profile-meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.profile-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.profile-meta-item i {
+    width: 18px;
+    text-align: center;
+    color: var(--primary-color);
+}
+
+.status-row {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.status-row:last-child {
+    border-bottom: none;
+}
+
+/* ============================================
+   SETTINGS PAGE
+   ============================================ */
+
+.settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition-base);
+    width: 100%;
+}
+
+.settings-nav-item i {
+    font-size: 16px;
+}
+
+.settings-nav-item:hover {
+    background: var(--bg-primary);
+    color: var(--primary-color);
+}
+
+.settings-nav-item.active {
+    background: rgba(45, 122, 62, 0.08);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-item-info h6 {
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.settings-item-info p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+    cursor: pointer;
+    margin: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border-color);
+    border-radius: 26px;
+    transition: 0.3s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--primary-color);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(22px);
+}
+
+/* Theme Options */
+.theme-options {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    transition: var(--transition-base);
+    min-width: 90px;
+}
+
+.theme-option:hover {
+    border-color: var(--primary-color);
+}
+
+.theme-option.active {
+    border-color: var(--primary-color);
+    background: rgba(45, 122, 62, 0.05);
+}
+
+.theme-preview {
+    width: 64px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.light-preview  { background: linear-gradient(135deg, #f8faf9 50%, #e0e7e4 50%); }
+.dark-preview   { background: linear-gradient(135deg, #1a1a2e 50%, #16213e 50%); }
+.system-preview { background: linear-gradient(135deg, #f8faf9 50%, #1a1a2e 50%); }
+
+.theme-option span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   DIRECTORY PAGE
+   ============================================ */
+
+.directory-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition-base);
+}
+
+.directory-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+}
+
+.directory-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 20px 16px;
+    background: linear-gradient(135deg, rgba(45,122,62,0.04), rgba(39,174,96,0.04));
+    border-bottom: 1px solid var(--border-color);
+}
+
+.directory-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.directory-card-body {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.directory-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.directory-info-row i {
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.directory-card-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 8px;
+    background: var(--bg-primary);
+}
+
+/* Nav active link highlight */
+.nav-link.active {
+    color: var(--primary-color) !important;
+    background: rgba(45, 122, 62, 0.08);
+    font-weight: 600;
+}
+/* ============================================
+   ACCESSIBILITY BASELINE
+   Added after an audit against the ui-ux-pro-max guidance for
+   "Government Portal / Civic Services", whose named requirements are
+   skip-link focus states, plain contrast, and restrained motion.
+   ============================================ */
+
+/* ---- Skip link ----
+   Keyboard and screen-reader users otherwise walk the whole navigation on
+   every page before reaching the content. Visible only when focused. */
+.skip-link {
+    position: absolute;
+    left: 12px;
+    top: -100px;
+    z-index: 2000;
+    padding: 12px 20px;
+    background: var(--primary-dark);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 0 0 10px 10px;
+    text-decoration: none;
+    transition: top .15s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+    color: #fff;
+}
+
+/* The landing point. tabindex="-1" lets focus move here without adding the
+   element to the tab order. */
+#main-content:focus {
+    outline: none;
+}
+
+/* ---- Focus rings ----
+   Only three controls in the app declared one. Bootstrap covers .btn and
+   .form-control; everything custom — nav items, cards that act as buttons,
+   the notification bell, the chat channels — had nothing, so a keyboard user
+   could not see where they were. :focus-visible means a mouse click does not
+   draw the ring. */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible,
+.nav-item:focus-visible,
+.role-card:focus-visible,
+.chat-channel:focus-visible,
+.file-upload-area:focus-visible,
+.chatbot-bubble:focus-visible,
+summary:focus-visible {
+    outline: 3px solid var(--primary-dark);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+/* On a dark ground the dark-green ring disappears. */
+.navbar :focus-visible,
+.sidebar :focus-visible,
+.chatbot-header :focus-visible {
+    outline-color: #fff;
+}
+
+/* ---- Motion ----
+   The app declares 58 transitions and animations; the only honoured
+   reduced-motion request was on one chat button. This covers the rest.
+   Durations go to 1ms rather than 0 so transitionend still fires and any
+   handler waiting on it is not stranded. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Hover lifts and slides are the motion people actually report as
+       uncomfortable; removing the transform matters more than its duration. */
+    .stat-card:hover,
+    .feature-card:hover,
+    .farm-card:hover,
+    .role-card:hover,
+    .card:hover {
+        transform: none !important;
+    }
+}
+
+/* ---- Touch targets ----
+   WCAG 2.2 asks 24x24 CSS px of any control; the platform guidance the skill
+   cites is 44pt on iOS and 48dp on Android. The bell and the chat message
+   actions were smaller than either. */
+.nav-bell,
+.msg-action {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---- Status is never colour alone ----
+   A badge that says "Approved" in green and "Rejected" in red is unreadable
+   to the ~8% of men with a red/green deficiency if the colour is the only
+   difference. Every status badge carries its word already; this keeps the
+   icon beside it from being dropped as decoration. */
+.status-badge i,
+.badge i {
+    flex-shrink: 0;
+}
+
+/* ============================================
+   CONTRAST — the two things the token pass missed
+   ============================================ */
+
+/* ---- 1. Bootstrap's utilities carry !important ----
+   .text-warning and friends are declared as
+       color: rgba(var(--bs-warning-rgb), var(--bs-text-opacity)) !important;
+   so a plain override loses and the page kept rendering Bootstrap's #ffc107
+   at 1.63:1. Measured on the running dashboard, not inferred.
+
+   Only the *text* utilities are redirected. Bootstrap's fills (.bg-warning and
+   the -subtle backgrounds) are left alone: amber is legible as a block of
+   colour and the icon tiles depend on it. */
+.text-primary   { color: var(--primary-color) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+.text-success   { color: var(--success-color) !important; }
+.text-danger    { color: var(--danger-color) !important; }
+.text-warning   { color: var(--warning-text) !important; }
+.text-info      { color: var(--info-color) !important; }
+
+/* The .btn rule above sets border:none, which cancelled the outline on every
+   outline button except -secondary, which declares its own. So the view and
+   delete buttons in every table rendered as bare icons with no button around
+   them, beside an edit button that did have one. Restoring the border is what
+   makes the variant mean anything.
+
+   The colours come from the tokens for the same reason as the text utilities:
+   Bootstrap's own are #0d6efd and #dc3545, which are neither on-brand nor
+   readable enough. */
+.btn[class*="btn-outline-"]:not(.btn-outline-secondary) {
+    border: 1.6px solid var(--bs-btn-border-color, currentColor);
+}
+
+.btn-outline-primary { --bs-btn-color: var(--primary-color); --bs-btn-border-color: var(--primary-color); --bs-btn-hover-bg: var(--primary-color); --bs-btn-hover-border-color: var(--primary-color); }
+.btn-outline-success { --bs-btn-color: var(--success-color); --bs-btn-border-color: var(--success-color); --bs-btn-hover-bg: var(--success-color); --bs-btn-hover-border-color: var(--success-color); }
+.btn-outline-danger  { --bs-btn-color: var(--danger-color);  --bs-btn-border-color: var(--danger-color);  --bs-btn-hover-bg: var(--danger-color);  --bs-btn-hover-border-color: var(--danger-color); }
+.btn-outline-warning { --bs-btn-color: var(--warning-text);  --bs-btn-border-color: var(--warning-text);  --bs-btn-hover-bg: var(--warning-text);  --bs-btn-hover-border-color: var(--warning-text); }
+.btn-outline-info    { --bs-btn-color: var(--info-color);    --bs-btn-border-color: var(--info-color);    --bs-btn-hover-bg: var(--info-color);    --bs-btn-hover-border-color: var(--info-color); }
+
+/* ---- 2. Status badges were written as raw hex ----
+   Eleven of them, none referring to a token, so the token pass could not
+   reach them. Two hues appear here and nowhere else, so they become tokens
+   rather than another pair of loose values. Each is the original hue darkened
+   until it clears 4.5:1 against its own 12%-tinted background. */
+:root {
+    --status-purple: #9053a9;  /* was #9b59b6 — 4.01:1 */
+    --status-orange: #a65b18;  /* was #e67e22 — 2.60:1 */
+    --status-yellow: #876e08;  /* was #f1c40f — 1.72:1 */
+}
+
+/* The .status-badge colours these tokens feed are declared in ejs-styles.css,
+   which loads after this file — so they are set there, at the declaration,
+   rather than overridden from here where they would lose the cascade. */
+
+/* A tinted "-subtle" background is light, but not white, and the plain status
+   colour is not dark enough on it. Bootstrap ships a text-emphasis value for
+   exactly this pairing; the role badge in the navigation is the one place the
+   app uses it. */
+.role-badge.text-danger    { color: var(--bs-danger-text-emphasis) !important; }
+.role-badge.text-warning   { color: var(--bs-warning-text-emphasis) !important; }
+.role-badge.text-success   { color: var(--bs-success-text-emphasis) !important; }
+.role-badge.text-primary   { color: var(--bs-primary-text-emphasis) !important; }
+.role-badge.text-secondary { color: var(--bs-secondary-text-emphasis) !important; }

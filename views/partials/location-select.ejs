@@ -1,0 +1,61 @@
+<%
+// ═══════════════════════════════════════════════════════════════
+// PARTIAL: location-select.ejs — Region → Province → Municipality → Barangay
+// Params:
+//   prefix   (string)  id prefix shared by the four selects, e.g. 'app'
+//   required (boolean) whether a barangay must be chosen
+//   selected (object)  optional { regionId, provinceId, municipalityId, barangayId }
+//   cols     (string)  optional Bootstrap column class, defaults to col-md-3
+// The barangay select posts as barangayId; the three hidden inputs keep the
+// legacy region/province/municipality text columns in step.
+// ═══════════════════════════════════════════════════════════════
+const sel  = typeof selected !== 'undefined' && selected ? selected : {};
+const req  = typeof required !== 'undefined' ? required : false;
+const col  = typeof cols !== 'undefined' && cols ? cols : 'col-md-3';
+const cap  = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+%>
+
+<div class="<%= col %>">
+    <label class="form-label" for="<%= prefix %>Region">Region <% if (req) { %><span class="text-danger">*</span><% } %></label>
+    <select class="form-select" id="<%= prefix %>Region" <%= req ? 'required' : '' %>>
+        <option value="">Loading…</option>
+    </select>
+</div>
+
+<div class="<%= col %>">
+    <label class="form-label" for="<%= prefix %>Province">Province <% if (req) { %><span class="text-danger">*</span><% } %></label>
+    <select class="form-select" id="<%= prefix %>Province" <%= req ? 'required' : '' %> disabled>
+        <option value="">Select region first</option>
+    </select>
+</div>
+
+<div class="<%= col %>">
+    <label class="form-label" for="<%= prefix %>Municipality">Municipality / City <% if (req) { %><span class="text-danger">*</span><% } %></label>
+    <select class="form-select" id="<%= prefix %>Municipality" <%= req ? 'required' : '' %> disabled>
+        <option value="">Select province first</option>
+    </select>
+</div>
+
+<div class="<%= col %>">
+    <label class="form-label" for="<%= prefix %>Barangay">Barangay <% if (req) { %><span class="text-danger">*</span><% } %></label>
+    <select class="form-select" id="<%= prefix %>Barangay" name="barangayId" <%= req ? 'required' : '' %> disabled>
+        <option value="">Select municipality first</option>
+    </select>
+</div>
+
+<input type="hidden" name="region"       id="<%= prefix %>RegionName">
+<input type="hidden" name="province"     id="<%= prefix %>ProvinceName">
+<input type="hidden" name="municipality" id="<%= prefix %>MunicipalityName">
+
+<script src="/js/location-select.js"></script>
+<script nonce="<%= cspNonce %>">
+    initLocationSelect({
+        prefix: '<%= prefix %>',
+        selected: <%- safeJson({
+            regionId: sel.regionId || null,
+            provinceId: sel.provinceId || null,
+            municipalityId: sel.municipalityId || null,
+            barangayId: sel.barangayId || null
+        }) %>
+    });
+</script>

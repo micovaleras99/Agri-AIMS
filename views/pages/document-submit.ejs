@@ -1,0 +1,358 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page }) %>
+
+<div class="main-wrapper">
+    <div class="page-content">
+
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/documents">Documents</a></li>
+                <li class="breadcrumb-item active">Submit Document</li>
+            </ol>
+        </nav>
+
+        <div class="page-header mb-2">
+            <div>
+                <h1 class="page-title">Submit a Document</h1>
+                <p class="page-subtitle">Choose the requirement, attach the file, and send it for review.</p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <% if (query.error === 'type' && query.pick) { %>
+                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Choose which document type you are submitting.</div>
+                <% } else if (query.error === 'type') { %>
+                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>That file type is not accepted. Upload a PDF, JPG, PNG or WebP.</div>
+                <% } else if (query.error === 'missing') { %>
+                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Choose a file to upload.</div>
+                <% } else if (query.error === 'size') { %>
+                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>That file is larger than 10 MB.</div>
+                <% } %>
+
+                <form action="/documents/submit" method="POST" enctype="multipart/form-data" id="submitForm">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="docName" id="docNameHidden"
+                           value="<%= query.type && docLabels[query.type] ? docLabels[query.type] : '' %>">
+
+                    <!-- ── STEP 1 — who ─────────────────────────────────────── -->
+                    <section class="submit-step">
+                        <div class="submit-step__no">1</div>
+                        <div class="submit-step__body">
+                            <h2 class="submit-step__title">Whose application?</h2>
+                            <% if (submittingFor) { %>
+                            <!-- The applicant is fixed: for an applicant/operator it is
+                                 themselves; for staff it is the person they chose. Shown,
+                                 not asked, so there is nothing to get wrong. -->
+                            <input type="hidden" name="applicantId" value="<%= submittingFor.id %>">
+                            <div class="submit-who">
+                                <span class="submit-who__avatar">
+                                    <%= (submittingFor.firstName[0] || '') + (submittingFor.lastName[0] || '') %>
+                                </span>
+                                <div>
+                                    <div class="fw-semibold"><%= submittingFor.firstName %> <%= submittingFor.lastName %></div>
+                                    <div class="text-muted small"><span class="app-id-link"><%= submittingFor.applicationId %></span></div>
+                                </div>
+                            </div>
+                            <% if (!lockApplicant) { %>
+                            <a href="/documents/submit" class="btn btn-sm btn-outline-secondary mt-2">
+                                <i class="bi bi-arrow-left-right me-1"></i>Change applicant
+                            </a>
+                            <% } %>
+                            <% } else { %>
+                            <!-- Staff, no applicant chosen yet. Choosing one reloads with
+                                 that applicant's own requirements in Step 2. -->
+                            <label for="applicantId" class="form-label">Applicant</label>
+                            <% if (applicants.length > 8) { %>
+                            <div class="submit-search mb-2">
+                                <i class="bi bi-search"></i>
+                                <input type="text" class="form-control" id="applicantSearch"
+                                       data-filter="#applicantId" placeholder="Search by name or application ID…"
+                                       autocomplete="off">
+                            </div>
+                            <% } %>
+                            <select id="applicantId" class="form-select" data-choose-applicant size="<%= applicants.length > 8 ? 8 : 1 %>">
+                                <% if (applicants.length <= 8) { %><option value="">Select applicant…</option><% } %>
+                                <% applicants.forEach(a => { %>
+                                <option value="<%= a.id %>"><%= a.firstName %> <%= a.lastName %> — <%= a.applicationId %></option>
+                                <% }) %>
+                            </select>
+                            <div class="form-text">Choose the applicant — their requirements then appear below.</div>
+                            <% } %>
+                        </div>
+                    </section>
+
+                    <!-- ── STEP 2 — which requirement ───────────────────────── -->
+                    <section class="submit-step">
+                        <div class="submit-step__no">2</div>
+                        <div class="submit-step__body">
+                            <h2 class="submit-step__title">Which requirement is this?</h2>
+
+                            <% if (requirements) { %>
+                            <p class="text-muted small mb-3">
+                                Your requirements are listed below. Pick the one you are uploading —
+                                the ones marked <strong>Needs revision</strong> or <strong>Not submitted</strong>
+                                are what still need your attention.
+                            </p>
+                            <% if (requirements.length > 6) { %>
+                            <div class="submit-search mb-2">
+                                <i class="bi bi-search"></i>
+                                <input type="text" class="form-control" id="reqSearch"
+                                       data-filter=".req-picker" data-item=".req-option"
+                                       placeholder="Search requirements…" autocomplete="off">
+                            </div>
+                            <% } %>
+                            <div class="req-picker" role="radiogroup" aria-label="Requirement">
+                                <% requirements.forEach(function (r) {
+                                     var verified = r.status === 'verified';
+                                     var tone = r.status === 'verified' ? 'verified'
+                                              : r.status === 'incomplete' ? 'incomplete'
+                                              : r.status === 'pending_review' ? 'pending_review' : 'missing';
+                                     var label = r.status === 'verified' ? 'Accepted'
+                                               : r.status === 'incomplete' ? 'Needs revision'
+                                               : r.status === 'pending_review' ? 'Pending review' : 'Not submitted';
+                                     var checked = query.type === r.type;
+                                %>
+                                <label class="req-option req-option--<%= tone %> <%= verified ? 'req-option--done' : '' %>">
+                                    <input type="radio" name="docType" value="<%= r.type %>"
+                                           data-label="<%= r.label %>"
+                                           <%= checked ? 'checked' : '' %> <%= verified ? 'disabled' : '' %>>
+                                    <span class="req-option__mark"></span>
+                                    <span class="req-option__text">
+                                        <span class="req-option__name"><%= r.label %></span>
+                                        <% if (r.form) { %><span class="req-option__form"><%= r.form %></span><% } %>
+                                        <% if (r.hasForm) { %>
+                                        <a class="req-option__download" href="/forms/<%= r.type %>">
+                                            <i class="bi bi-download me-1"></i>Download form
+                                        </a>
+                                        <% } %>
+                                        <% if (r.status === 'incomplete' && r.remarks) { %>
+                                        <span class="req-option__remark"><i class="bi bi-arrow-return-right me-1"></i><%= r.remarks %></span>
+                                        <% } %>
+                                    </span>
+                                    <span class="status-badge <%= tone %>"><%= label %></span>
+                                </label>
+                                <% }); %>
+
+                                <% if (!lockApplicant) { %>
+                                <!-- Staff only: file a document outside this applicant's
+                                     standard checklist. The real type comes from the
+                                     catalogue revealed below. -->
+                                <label class="req-option req-option--other">
+                                    <input type="radio" name="docType" value="__other__" data-label="Document"
+                                           <%= query.type === '__other__' ? 'checked' : '' %>>
+                                    <span class="req-option__text">
+                                        <span class="req-option__name">Other document</span>
+                                        <span class="req-option__form">A type not in the list above</span>
+                                    </span>
+                                    <span class="status-badge"><i class="bi bi-plus-lg"></i></span>
+                                </label>
+                                <% } %>
+                            </div>
+
+                            <% if (!lockApplicant) { %>
+                            <div id="otherType" class="other-type mt-2" hidden>
+                                <label for="docTypeOther" class="form-label small">Document type</label>
+                                <div class="submit-search mb-2">
+                                    <i class="bi bi-search"></i>
+                                    <input type="text" class="form-control" id="docTypeSearch"
+                                           data-filter="#docTypeOther" placeholder="Search document type…" autocomplete="off">
+                                </div>
+                                <select id="docTypeOther" name="docTypeOther" class="form-select" size="6">
+                                    <% docTypes.forEach(function (d) { %>
+                                    <option value="<%= d.type %>"><%= d.label %></option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            <% } %>
+
+                            <p class="req-picker__empty text-muted small mt-2" hidden>No requirement matches your search.</p>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="reqChange" hidden>
+                                <i class="bi bi-arrow-left-right me-1"></i>Choose a different requirement
+                            </button>
+                            <p class="form-text mt-2" id="reqHint">
+                                Uploading for a requirement that already has a file replaces it and sends the new one for review.
+                            </p>
+                            <% } else { %>
+                            <div class="req-awaiting text-muted">
+                                <i class="bi bi-arrow-up me-1"></i>Choose an applicant above to see their requirements.
+                            </div>
+                            <% } %>
+                        </div>
+                    </section>
+
+                    <!-- ── STEP 3 — the file ────────────────────────────────── -->
+                    <section class="submit-step">
+                        <div class="submit-step__no">3</div>
+                        <div class="submit-step__body">
+                            <h2 class="submit-step__title">Attach the file</h2>
+                            <div class="file-upload-area" id="dropZone" role="button" tabindex="0"
+                                 aria-label="Choose a file to upload">
+                                <i class="bi bi-cloud-upload"></i>
+                                <p class="mb-1 fw-semibold">Click to browse, or drag &amp; drop your file here</p>
+                                <small class="text-muted">PDF, JPG, PNG or WebP — up to 10&nbsp;MB</small>
+                                <input type="file" id="fileInput" name="file" required style="display:none"
+                                       accept=".pdf,.jpg,.jpeg,.png,.webp">
+                            </div>
+                            <div id="filePreview" class="mt-2" hidden>
+                                <div class="alert alert-success py-2 d-flex align-items-center gap-2 mb-0">
+                                    <i class="bi bi-file-earmark-check fs-5"></i>
+                                    <span id="fileName" class="fw-semibold"></span>
+                                    <span class="ms-auto text-muted small" id="fileSize"></span>
+                                    <button type="button" class="btn-close" id="clearFile" aria-label="Remove file"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="d-flex gap-3 justify-content-end mt-4">
+                        <a href="/documents" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-upload me-2"></i>Submit for review
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+  var labels = <%- safeJson(docLabels) %>;
+  var nameField = document.getElementById('docNameHidden');
+  var input = document.getElementById('fileInput');
+  var zone = document.getElementById('dropZone');
+  var preview = document.getElementById('filePreview');
+
+  // Keep the stored document name in step with the chosen requirement, whether
+  // it comes from the radio picker or the fallback dropdown.
+  function setName(type, label) { nameField.value = label || labels[type] || ''; }
+  window.syncName = function (sel) { setName(sel.value); };
+
+  document.querySelectorAll('input[name="docType"][type="radio"]').forEach(function (r) {
+    r.addEventListener('change', function () { setName(r.value, r.getAttribute('data-label')); });
+  });
+  var pre = document.querySelector('input[name="docType"][type="radio"]:checked');
+  if (pre) setName(pre.value, pre.getAttribute('data-label'));
+
+  // Once a requirement is chosen, hide the others so only the selection shows —
+  // less to read, nothing to mis-click. "Choose a different requirement" brings
+  // the full list back.
+  var picker = document.querySelector('.req-picker');
+  if (picker) {
+    var options = Array.prototype.slice.call(picker.querySelectorAll('.req-option'));
+    var searchWrap = document.querySelector('#reqSearch') ? document.querySelector('#reqSearch').closest('.submit-search') : null;
+    var change = document.getElementById('reqChange');
+    var hint = document.getElementById('reqHint');
+    var empty = document.querySelector('.req-picker__empty');
+    var otherType = document.getElementById('otherType');
+    var otherSelect = document.getElementById('docTypeOther');
+
+    // Reveal the full catalogue only when "Other document" is the choice.
+    function syncOther() {
+      var picked = picker.querySelector('input[type="radio"]:checked');
+      var isOther = picked && picked.value === '__other__';
+      if (otherType) otherType.hidden = !isOther;
+      if (isOther && otherSelect) setName(otherSelect.value);
+    }
+    if (otherSelect) otherSelect.addEventListener('change', function () { setName(otherSelect.value); });
+
+    function collapse() {
+      options.forEach(function (o) { o.hidden = !o.querySelector('input').checked; });
+      if (searchWrap) searchWrap.hidden = true;
+      if (empty) empty.hidden = true;
+      if (change) change.hidden = false;
+      if (hint) hint.hidden = false;
+      syncOther();
+    }
+    function expand() {
+      options.forEach(function (o) { o.hidden = false; });
+      if (searchWrap) { searchWrap.hidden = false; var s = document.getElementById('reqSearch'); if (s) s.value = ''; }
+      if (change) change.hidden = true;
+      if (otherType) otherType.hidden = true;
+    }
+    picker.querySelectorAll('input[type="radio"]').forEach(function (r) {
+      r.addEventListener('change', function () { if (r.checked) collapse(); });
+    });
+    if (change) change.addEventListener('click', expand);
+    // Arriving with a requirement pre-selected (e.g. from a Re-submit link)
+    // starts collapsed on that one.
+    if (picker.querySelector('input:checked')) collapse();
+  }
+
+  // File selection — click, keyboard, and a real drag & drop (the old form
+  // advertised drag & drop but never wired it).
+  function show(file) {
+    if (!file) return;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent =
+      file.size >= 1048576 ? (file.size / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(file.size / 1024)) + ' KB';
+    preview.hidden = false;
+    zone.classList.add('has-file');
+  }
+  zone.addEventListener('click', function () { input.click(); });
+  zone.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+  });
+  input.addEventListener('change', function () { show(input.files[0]); });
+
+  ['dragover', 'dragenter'].forEach(function (ev) {
+    zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('dragging'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove('dragging'); });
+  });
+  zone.addEventListener('drop', function (e) {
+    if (e.dataTransfer.files && e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      show(input.files[0]);
+    }
+  });
+
+  var clear = document.getElementById('clearFile');
+  if (clear) clear.addEventListener('click', function () {
+    input.value = ''; preview.hidden = true; zone.classList.remove('has-file');
+  });
+
+  // Staff choosing an applicant reloads the page with that applicant, so Step 2
+  // can show their own requirements.
+  var chooser = document.querySelector('[data-choose-applicant]');
+  if (chooser) chooser.addEventListener('change', function () {
+    if (chooser.value) window.location = '/documents/submit?applicant=' + encodeURIComponent(chooser.value);
+  });
+
+  // Search boxes: each [data-filter] input filters the rows of its target as
+  // you type. A <select> hides non-matching <option>s; the requirement picker
+  // (data-item) hides non-matching rows and shows a "nothing matches" note.
+  document.querySelectorAll('input[data-filter]').forEach(function (box) {
+    var target = document.querySelector(box.getAttribute('data-filter'));
+    if (!target) return;
+    var itemSel = box.getAttribute('data-item');
+    box.addEventListener('input', function () {
+      var q = box.value.trim().toLowerCase();
+      var items = itemSel ? target.querySelectorAll(itemSel) : target.querySelectorAll('option');
+      var shown = 0;
+      items.forEach(function (el) {
+        // Keep a select's empty placeholder always visible.
+        if (el.tagName === 'OPTION' && el.value === '') return;
+        var hit = el.textContent.toLowerCase().indexOf(q) !== -1;
+        el.hidden = !hit;
+        if (hit) shown += 1;
+      });
+      if (itemSel) {
+        var empty = document.querySelector('.req-picker__empty');
+        if (empty) empty.hidden = shown !== 0;
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

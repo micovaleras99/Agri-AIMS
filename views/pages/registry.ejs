@@ -1,0 +1,154 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<% function titleCase(s){ return String(s).replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase()); } %>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title mb-1">LSA Registry Export</h1>
+            <p class="page-subtitle mb-0">
+                The accredited Learning Site registry, in one stable shape, ready to hand to ATI
+                Services as JSON, XML or CSV.
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="/api/export/lsa-registry?format=json" download="lsa-registry.json" class="btn btn-primary">
+                <i class="bi bi-filetype-json me-1"></i>JSON
+            </a>
+            <a href="/api/export/lsa-registry?format=xml" class="btn btn-outline-primary">
+                <i class="bi bi-filetype-xml me-1"></i>XML
+            </a>
+            <a href="/api/export/lsa-registry?format=csv" class="btn btn-outline-primary">
+                <i class="bi bi-filetype-csv me-1"></i>CSV
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Summary -->
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="stat-icon bg-primary flex-shrink-0"><i class="bi bi-diagram-3"></i></span>
+                        <div>
+                            <div class="fs-3 fw-bold" style="line-height:1;"><%= records.length %></div>
+                            <div class="text-muted small">Learning Site<%= records.length !== 1 ? 's' : '' %> in the registry</div>
+                        </div>
+                    </div>
+                    <dl class="row small mb-0">
+                        <dt class="col-4 text-muted">Schema</dt>
+                        <dd class="col-8"><code><%= schema %></code></dd>
+                        <dt class="col-4 text-muted">Source</dt>
+                        <dd class="col-8"><%= source %></dd>
+                        <dt class="col-4 text-muted">Generated</dt>
+                        <dd class="col-8"><%= new Date(generatedAt).toLocaleString('en-PH') %></dd>
+                        <dt class="col-4 text-muted">Formats</dt>
+                        <dd class="col-8">JSON · XML · CSV — identical fields</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration endpoint -->
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-2"><i class="bi bi-plug me-2 text-primary"></i>Integration endpoint</h5>
+                    <p class="small text-muted mb-2">
+                        A staff-authenticated GET that returns the same records. An ATI integration
+                        can read this as-is; when ATI publishes an endpoint to receive it, the payload
+                        below is already the thing to send — nothing is pushed until then.
+                    </p>
+                    <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">GET</span>
+                        <input type="text" class="form-control font-monospace" id="endpointUrl"
+                               value="<%= endpoint %>?format=json" readonly aria-label="Registry endpoint URL">
+                        <button class="btn btn-outline-secondary" type="button" id="copyEndpoint">
+                            <i class="bi bi-clipboard me-1"></i>Copy
+                        </button>
+                    </div>
+                    <p class="small text-muted mb-1"><code>?format=</code> accepts <code>json</code> (default), <code>xml</code> or <code>csv</code>.</p>
+                    <% if (records.length) { %>
+                    <details>
+                        <summary class="small text-primary" style="cursor:pointer;">Preview one record (JSON)</summary>
+                        <pre class="registry-sample mt-2 mb-0"><code><%= JSON.stringify(records[0], null, 2) %></code></pre>
+                    </details>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What gets exported -->
+    <div class="card">
+        <div class="card-body pb-0">
+            <h5 class="card-title mb-1"><i class="bi bi-table me-2 text-primary"></i>What gets exported</h5>
+            <p class="small text-muted">Every accredited Learning Site, with the fields each format carries.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <% fields.forEach(function (f) { %><th class="small text-nowrap"><%= titleCase(f) %></th><% }); %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% records.forEach(function (r) { %>
+                    <tr>
+                        <% fields.forEach(function (f) { %>
+                        <td class="small <%= (r[f] === null || r[f] === undefined || r[f] === '') ? 'text-muted' : '' %>">
+                            <%= (r[f] === null || r[f] === undefined || r[f] === '') ? '—' : r[f] %>
+                        </td>
+                        <% }); %>
+                    </tr>
+                    <% }); %>
+                    <% if (!records.length) { %>
+                    <tr><td colspan="<%= fields.length %>" class="text-center text-muted py-5">
+                        <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>No accredited Learning Sites to export yet.
+                    </td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style nonce="<%= cspNonce %>">
+.registry-sample {
+    background: var(--bg-primary, #f6f8f6);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    max-height: 320px;
+    overflow: auto;
+}
+</style>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+    var btn = document.getElementById('copyEndpoint');
+    var url = document.getElementById('endpointUrl');
+    if (!btn || !url) return;
+    btn.addEventListener('click', function () {
+        url.select();
+        var done = function () {
+            var html = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Copied';
+            setTimeout(function () { btn.innerHTML = html; }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url.value).then(done, function () { document.execCommand('copy'); done(); });
+        } else { document.execCommand('copy'); done(); }
+    });
+}());
+</script>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

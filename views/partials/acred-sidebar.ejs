@@ -1,0 +1,84 @@
+<!-- ═══════════════════════════════════════════════════════════
+     PARTIAL: acred-sidebar.ejs — Step progress sidebar
+     Variables: applicant, currentStep (1-7)
+     ═══════════════════════════════════════════════════════════ -->
+<%
+const sidebarSteps = [
+    { n: 1, label: 'Briefing',              who: 'Applicant', icon: 'book',          color: 'primary' },
+    { n: 2, label: 'Self-Assessment',       who: 'Applicant', icon: 'clipboard-check',color: 'info'   },
+    { n: 3, label: 'Submit Documents',      who: 'Applicant', icon: 'folder-plus',   color: 'warning' },
+    { n: 4, label: 'Document Evaluation',   who: 'Evaluator', icon: 'search',        color: 'warning' },
+    { n: 5, label: 'Field Validation',      who: 'Evaluator', icon: 'geo-alt',       color: 'danger'  },
+    { n: 6, label: 'Endorsement to ATI-CO', who: 'Evaluator', icon: 'send-check',    color: 'info'    },
+    { n: 7, label: 'Certificate & MOA',     who: 'Admin',     icon: 'award',         color: 'success' }
+];
+%>
+<div class="card mb-4">
+    <div class="card-body p-3">
+        <h6 class="fw-bold mb-3 text-muted">7-STEP PROCESS</h6>
+        <% sidebarSteps.forEach(s => {
+            const done    = s.n < applicant.accreditationStep;
+            const active  = s.n === currentStep;
+            const pending = s.n > applicant.accreditationStep;
+        %>
+        <a href="<%= done || active ? '/accreditation/' + applicant.id + '/step/' + s.n : '#' %>"
+           class="sidebar-step-link <%= done ? 'done' : active ? 'active' : 'pending' %>">
+            <div class="sidebar-step-icon bg-<%= done ? 'success' : active ? s.color : 'secondary' %>-subtle
+                                            text-<%= done ? 'success' : active ? s.color : 'secondary' %>">
+                <% if (done) { %>
+                <i class="bi bi-check-lg"></i>
+                <% } else { %>
+                <i class="bi bi-<%= s.icon %>"></i>
+                <% } %>
+            </div>
+            <div class="flex-grow-1">
+                <div class="sidebar-step-num">Step <%= s.n %></div>
+                <div class="sidebar-step-name"><%= s.label %></div>
+                <div class="sidebar-step-who"><i class="bi bi-person me-1"></i><%= s.who %></div>
+            </div>
+            <% if (active) { %>
+            <i class="bi bi-chevron-right text-<%= s.color %>"></i>
+            <% } else if (done) { %>
+            <i class="bi bi-check-circle-fill text-success small"></i>
+            <% } %>
+        </a>
+        <% }) %>
+    </div>
+</div>
+
+<!-- Application info card -->
+<div class="card">
+    <div class="card-body p-3">
+        <h6 class="fw-bold mb-3 text-muted">APPLICATION</h6>
+        <div class="detail-info-list">
+            <div class="detail-info-item">
+                <i class="bi bi-hash"></i>
+                <span class="app-id-link"><%= applicant.applicationId %></span>
+            </div>
+            <div class="detail-info-item">
+                <i class="bi bi-building"></i>
+                <span style="font-size:13px"><%= applicant.farmName %></span>
+            </div>
+            <div class="detail-info-item">
+                <i class="bi bi-geo-alt"></i>
+                <span style="font-size:13px"><%= applicant.municipality %>, <%= applicant.province %></span>
+            </div>
+            <div class="detail-info-item">
+                <i class="bi bi-tag"></i>
+                <span style="font-size:12px"><%= classificationLabel(applicant.classification) %></span>
+            </div>
+        </div>
+        <div class="mt-3">
+            <div class="d-flex justify-content-between mb-1">
+                <small class="fw-semibold">Progress</small>
+                <small class="fw-bold"><%= applicant.progress %>%</small>
+            </div>
+            <div class="progress" style="height:6px;">
+                <div class="progress-bar" style="width:<%= applicant.progress %>%"></div>
+            </div>
+        </div>
+        <a href="/accreditation/<%= applicant.id %>" class="btn btn-sm btn-outline-primary w-100 mt-3">
+            View All Steps
+        </a>
+    </div>
+</div>

@@ -1,0 +1,213 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/accreditation/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Step 1: Briefing</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <span class="step-badge bg-primary">Step 1 of 7</span>
+        <h1 class="page-title mt-1">Briefing</h1>
+        <p class="page-subtitle">Read and acknowledge the LSA Briefer · <strong>ATI-QF-PAD-162 Rev. 00</strong></p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+        <% if (applicant.step1_brieferSigned) { %>
+        <span class="badge bg-success px-3 py-2">
+            <i class="bi bi-check-circle-fill me-1"></i>Briefer Signed
+        </span>
+        <% } %>
+        <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Overview
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <!-- Briefer Content (ATI-QF-PAD-162) -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="briefer-header mb-4">
+                    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                            <img src="/images/logo.png" alt="ATI LSA Logo" class="auth-logo">
+                        </div>
+                    <div>
+                        <div class="text-muted small">Republic of the Philippines · Department of Agriculture</div>
+                        <div class="fw-bold">Agricultural Training Institute — RTC V (Bicol)</div>
+                        <div class="text-muted small">ATI-QF-PAD-162 Rev. 00 · Effectivity Date: August 2, 2022</div>
+                    </div>
+                </div>
+
+                <h3 class="briefer-title">Learning Site for Agriculture</h3>
+                <h4 class="briefer-subtitle">HOW TO BECOME A LEARNING SITE FOR AGRICULTURE</h4>
+
+                <!-- Overview -->
+                <div class="briefer-section">
+                    <h5 class="briefer-section-title">Overview</h5>
+                    <p>A farm that practices applicable agricultural technologies, employs doable farming strategies, and operates successfully, thus worthy of emulation. The Farmer/Farm Family is relatively advanced compared to the rest of the farmers.</p>
+                    <p>The LSA includes a successful agri-processing enterprise owned by a processor who is not necessarily a farmer/farm family.</p>
+                </div>
+
+                <!-- LSA Classifications -->
+                <div class="briefer-section">
+                    <h5 class="briefer-section-title">LSA Classification</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="briefer-class-card">
+                                <h6><i class="bi bi-tree me-2 text-success"></i>1. Farming LSAs</h6>
+                                <ul class="briefer-list">
+                                <% lsaClassifications.farming.forEach(c => { %>
+                                <li><strong><%= c.code !== c.label ? c.code + ' — ' : '' %></strong><%= c.label %><% if (c.desc) { %><br><small class="text-muted"><%= c.desc %></small><% } %></li>
+                                <% }) %>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="briefer-class-card">
+                                <h6><i class="bi bi-gear me-2 text-primary"></i>2. Agri-Processing LSA</h6>
+                                <p class="small text-muted">Farmers and non-farmers engaged in processing of fruits & vegetables, meat, fish, and agricultural products including by-products.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Farm Requirements -->
+                <div class="briefer-section">
+                    <h5 class="briefer-section-title">Farm / Enterprise Requirements</h5>
+                    <% farmRequirements.forEach(r => { %>
+                    <div class="briefer-req-item">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <div>
+                            <span class="fw-semibold"><%= r.item %></span>
+                            <% if (r.note) { %><br><small class="text-muted"><%= r.note %></small><% } %>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+
+                <!-- Operator Requirements -->
+                <div class="briefer-section">
+                    <h5 class="briefer-section-title">Farmer / Operator Requirements</h5>
+                    <% operatorRequirements.forEach(r => { %>
+                    <div class="briefer-req-item">
+                        <i class="bi bi-person-check text-primary"></i>
+                        <div>
+                            <span class="fw-semibold"><%= r.item %></span>
+                            <% if (r.doc) { %><br><small class="text-muted"><i class="bi bi-file-earmark me-1"></i><%= r.doc %></small><% } %>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+
+                <!-- Not Qualified -->
+                <div class="alert alert-danger mt-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>NOT QUALIFIED to apply as LSA:</strong>
+                    <% disqualified.forEach(d => { %>
+                    <div class="mt-1 ms-3">• <%= d %></div>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acknowledgment & Signature Form -->
+        <% if (!readonly) { %>
+        <div class="card">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-pen me-2 text-primary"></i>Acknowledgment & Signature
+                </h5>
+                <% if (applicant.step1_brieferSigned) { %>
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Briefer acknowledged and signed on <strong><%= applicant.step1_brieferDate %></strong>
+                    by <strong><%= applicant.step1_acknowledgedBy %></strong>.
+                    <a href="/accreditation/<%= applicant.id %>/step/2" class="btn btn-sm btn-success ms-3">
+                        Continue to Step 2 →
+                    </a>
+                </div>
+                <% } else { %>
+                <% if (typeof declarationError !== 'undefined' && declarationError) { %>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    All three certifications must be ticked before the briefer can be signed.
+                    The disqualification declaration in particular is an eligibility requirement,
+                    not a formality.
+                </div>
+                <% } %>
+                <% if (typeof fileError !== 'undefined' && fileError) { %>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Attach your signed Briefer form before submitting. Download the form,
+                    sign it, then upload the completed copy.
+                </div>
+                <% } %>
+                <form action="/accreditation/<%= applicant.id %>/step/1" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="readBriefer" name="readBriefer" required>
+                        <label class="form-check-label" for="readBriefer">
+                            I have read and fully understood the LSA Briefer, including the qualifications, requirements, and responsibilities of an LSA I operator.
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="notDisqualified" name="notDisqualified" required>
+                        <label class="form-check-label" for="notDisqualified">
+                            I certify that I am <strong>not</strong> a public official/employee, and that my spouse and children (under 18) are also not public officials/employees.
+                        </label>
+                    </div>
+                    <div class="form-check mb-4">
+                        <input type="checkbox" class="form-check-input" id="agreeResponsibilities" name="agreeResponsibilities" required>
+                        <label class="form-check-label" for="agreeResponsibilities">
+                            I am willing to fulfill all responsibilities of an LSA I operator for five (5) years as stated in this briefer.
+                        </label>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" for="brieferFile">Signed Briefer form (ATI-QF-PAD-162)</label>
+                        <p class="text-muted small mb-2">
+                            Download the official Briefer, sign it where required, then upload the
+                            completed copy for submission.
+                        </p>
+                        <a href="/forms/signed_briefer" class="btn btn-outline-primary mb-3">
+                            <i class="bi bi-download me-1"></i>Download Briefer Form
+                        </a>
+                        <input type="file" class="form-control" id="brieferFile" name="file"
+                               accept=".pdf,.jpg,.jpeg,.png,.webp" required>
+                        <div class="form-text">
+                            Upload the signed briefer as a PDF or a clear photo/scan (max 10 MB).
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-upload me-2"></i>Submit Signed Briefer & Proceed to Step 2
+                    </button>
+                </form>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+
+    </div>
+
+    <!-- Right sidebar: Step guide -->
+    <div class="col-lg-4">
+        <%- include('../../partials/acred-sidebar', { applicant, currentStep: 1 }) %>
+    </div>
+</div>
+
+</div>
+</div>
+
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

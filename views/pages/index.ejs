@@ -1,0 +1,511 @@
+<%- include('../partials/header') %>
+
+
+<div class="auth-container farm-background">
+    <!-- Video Background -->
+<video
+  autoplay
+  muted
+  loop
+  playsinline
+  preload="none"
+  poster="/images/auth-backdrop.jpeg"
+  disablePictureInPicture
+  controlsList="nodownload nofullscreen noremoteplayback"
+  class="video-background"
+  id="authBackgroundVideo"
+  data-src="/videos/ati-web.mp4"></video>
+
+
+    <div class="auth-box">
+
+        <!-- Brand Header -->
+        <div class="auth-header">
+            <!-- ATI Logo -->
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <img src="/images/logo.png" alt="ATI LSA Logo" class="auth-logo">
+            </div>
+            <h1>ATI LSA - AIMS</h1>
+            <p style="font-weight: 600; color: rgba(45, 122, 62, 0.9); margin-bottom: 12px;">Agricultural Training Institute<br>Learning Site Accreditation</p>
+            <div class="auth-badge">
+                <i class="bi bi-geo-alt-fill me-1"></i>ATI-RTC V · Bicol Region
+            </div>
+        </div>
+
+        <!-- Auth Tabs -->
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-call="switchAuthTab" data-args='["login","@this"]'>Login</button>
+            <button class="auth-tab"        data-call="switchAuthTab" data-args='["register","@this"]'>Register</button>
+        </div>
+
+        <!-- ── Login Form ── -->
+        <form id="loginForm" class="auth-form">
+            <input type="hidden" name="role" id="loginRoleField" value="admin">
+            
+            <!-- Scrollable Content -->
+            <div class="auth-form-content">
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="loginEmail"
+                           placeholder="email" value="<%= demoLogin ? 'admin@ati-bicol.da.gov.ph' : '' %>" required>
+                    <label for="loginEmail"><i class="bi bi-envelope me-1"></i>Email Address</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control has-pw-toggle" id="loginPassword"
+                           placeholder="Password" value="<%= demoLogin ? 'admin123' : '' %>" required>
+                    <label for="loginPassword"><i class="bi bi-lock me-1"></i>Password</label>
+                    <button type="button" class="pw-toggle" data-target="loginPassword"
+                            aria-label="Show password"><i class="bi bi-eye"></i></button>
+                </div>
+
+                <!-- ── Role Selector (development demo only) ── -->
+                <% if (demoLogin) { %>
+                <div class="role-selector mb-4">
+                    <p class="role-selector-label">
+                        <i class="bi bi-person-badge me-1"></i>Login as:
+                    </p>
+                    <div class="role-cards" id="roleCards" role="radiogroup" aria-label="Login as">
+
+                        <div class="role-card active" data-role="admin"
+                             role="radio" tabindex="0" aria-checked="true"
+                             aria-label="Sign in as Administrator"
+                             data-call="selectRole" data-args='["admin","admin@ati-bicol.da.gov.ph","admin123","@this"]'>
+                            <div class="role-card-icon bg-danger">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                            <div class="role-card-info">
+                                <div class="role-card-name">Administrator</div>
+                                <div class="role-card-desc">ATI Staff · Full Access</div>
+                            </div>
+                            <i class="bi bi-check-circle-fill role-check text-danger"></i>
+                        </div>
+
+                        <div class="role-card" data-role="evaluator"
+                             role="radio" tabindex="0" aria-checked="false"
+                             aria-label="Sign in as Evaluator"
+                             data-call="selectRole" data-args='["evaluator","evaluator@ati-bicol.da.gov.ph","eval123","@this"]'>
+                            <div class="role-card-icon bg-warning">
+                                <i class="bi bi-clipboard2-check-fill"></i>
+                            </div>
+                            <div class="role-card-info">
+                                <div class="role-card-name">Evaluator</div>
+                                <div class="role-card-desc">TWG · Review & Validate</div>
+                            </div>
+                            <i class="bi bi-check-circle-fill role-check text-warning" style="display:none;"></i>
+                        </div>
+
+                        <div class="role-card" data-role="operator"
+                             role="radio" tabindex="0" aria-checked="false"
+                             aria-label="Sign in as LSA Operator"
+                             data-call="selectRole" data-args='["operator","operator@lsa.ph","operator123","@this"]'>
+                            <div class="role-card-icon bg-success">
+                                <i class="bi bi-tree-fill"></i>
+                            </div>
+                            <div class="role-card-info">
+                                <div class="role-card-name">LSA Operator</div>
+                                <div class="role-card-desc">Certified Farm Operator</div>
+                            </div>
+                            <i class="bi bi-check-circle-fill role-check text-success" style="display:none;"></i>
+                        </div>
+
+                        <div class="role-card" data-role="applicant"
+                             role="radio" tabindex="0" aria-checked="false"
+                             aria-label="Sign in as Applicant"
+                             data-call="selectRole" data-args='["applicant","applicant@email.com","applicant123","@this"]'>
+                            <div class="role-card-icon bg-primary">
+                                <i class="bi bi-person-fill-add"></i>
+                            </div>
+                            <div class="role-card-info">
+                                <div class="role-card-name">Applicant</div>
+                                <div class="role-card-desc">New LSA Application</div>
+                            </div>
+                            <i class="bi bi-check-circle-fill role-check text-primary" style="display:none;"></i>
+                        </div>
+
+                    </div>
+                </div>
+                <% } %>
+            </div>
+
+            <!-- Fixed Button at Bottom -->
+            <button type="submit" class="btn btn-primary w-100 btn-lg auth-form-button" id="loginSubmitBtn">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </button>
+        </form>
+
+        <!-- ── Register Form ── -->
+        <form id="registerForm" class="auth-form" style="display:none;">
+            
+            <!-- Scrollable Content -->
+            <div class="auth-form-content">
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="regFirst" placeholder="First Name" required>
+                            <label for="regFirst">First Name</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="regLast" placeholder="Last Name" required>
+                            <label for="regLast">Last Name</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="regEmail" placeholder="Email" required>
+                    <label for="regEmail"><i class="bi bi-envelope me-1"></i>Email Address</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="tel" class="form-control" id="regPhone" placeholder="Phone" required>
+                    <label for="regPhone"><i class="bi bi-phone me-1"></i>Contact Number</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <select class="form-select" id="regRole" required>
+                        <option value="">Select how you will register</option>
+                        <option value="applicant">Applicant — New LSA Application</option>
+                        <option value="operator">LSA Operator — Certified Operator</option>
+                    </select>
+                    <label for="regRole"><i class="bi bi-person-badge me-1"></i>Register As</label>
+                </div>
+                <div id="regApplicantExtra" class="d-none">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="regFarmName" placeholder="Farm name">
+                        <label for="regFarmName"><i class="bi bi-tree me-1"></i>Farm / enterprise name</label>
+                    </div>
+                    <!-- Asked for the "complete address", people typed the barangay and
+                         city they were about to select again below. This field is for
+                         what the location dropdowns cannot hold: the detail beneath
+                         the barangay. -->
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="regFarmAddress"
+                                   placeholder="Purok 3, Zone II">
+                            <label for="regFarmAddress">Street / purok / sitio</label>
+                        </div>
+                        <div class="form-text">Barangay, city and province are selected below.</div>
+                    </div>
+                    <!-- These four decide which documents the application will owe and
+                         whether the farm meets the minimum area, and the record was
+                         being created without ever asking for them. -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input type="number" min="0" step="1" class="form-control"
+                                       id="regFarmArea" placeholder="Farm area">
+                                <label for="regFarmArea">Farm area (sq.m.)</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="regLsaType">
+                                    <option value="regular">Regular LSA</option>
+                                    <option value="rcef">RCEF-LSA</option>
+                                    <option value="coco">Coco-LSA</option>
+                                </select>
+                                <label for="regLsaType">LSA type</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="regCategory">
+                                    <option value="private">Private-owned</option>
+                                    <option value="organization">Farmers/Fishers Organization</option>
+                                    <option value="government">Government-owned</option>
+                                </select>
+                                <label for="regCategory">Applicant category</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="regClassification">
+                                    <option value="">Select classification</option>
+                                    <optgroup label="Farming LSA">
+                                        <% classificationOptions.farming.forEach(function (c) { %>
+                                        <option value="<%= c.key %>"><%= c.label %></option>
+                                        <% }) %>
+                                    </optgroup>
+                                    <optgroup label="Agri-Processing LSA">
+                                        <% classificationOptions.processing.forEach(function (c) { %>
+                                        <option value="<%= c.key %>"><%= c.label %></option>
+                                        <% }) %>
+                                    </optgroup>
+                                </select>
+                                <label for="regClassification">LSA classification</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="regRsbsa"
+                               placeholder="RSBSA number">
+                        <label for="regRsbsa">RSBSA / NCFRS number <span class="text-muted">(optional)</span></label>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <%- include('../partials/location-select', {
+                            prefix: 'reg',
+                            required: false,
+                            cols: 'col-md-6',
+                            selected: null
+                        }) %>
+                    </div>
+                </div>
+                <div id="regOperatorExtra" class="d-none mb-3">
+                    <div class="form-floating">
+                        <select class="form-select" id="regFarmId">
+                            <option value="">Link to your LSA farm (optional)</option>
+                        </select>
+                        <label for="regFarmId"><i class="bi bi-geo-alt me-1"></i>Accredited farm</label>
+                    </div>
+                    <small class="text-muted">Choose the farm you operate so reports and maps match your account. You can leave this blank and an admin can link it later.</small>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control has-pw-toggle" id="regPass" placeholder="Password" required>
+                    <label for="regPass"><i class="bi bi-lock me-1"></i>Password</label>
+                    <button type="button" class="pw-toggle" data-target="regPass"
+                            aria-label="Show password"><i class="bi bi-eye"></i></button>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control has-pw-toggle" id="regConf" placeholder="Confirm" required>
+                    <label for="regConf"><i class="bi bi-lock-fill me-1"></i>Confirm Password</label>
+                    <button type="button" class="pw-toggle" data-target="regConf"
+                            aria-label="Show password"><i class="bi bi-eye"></i></button>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="agree" required>
+                    <label class="form-check-label small" for="agree">
+                        I agree to the <a href="#" class="text-primary">Terms and Conditions</a>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Fixed Button at Bottom -->
+            <button type="submit" class="btn btn-primary w-100 btn-lg auth-form-button" id="registerSubmitBtn">
+                <i class="bi bi-person-plus me-2"></i>Create Account
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script nonce="<%= cspNonce %>">
+/*
+ * The background is decoration, so it is attached from here rather than sitting
+ * in the markup where `autoplay` would fetch it before anything else.
+ *
+ * ati-web.mp4 is a 15-second silent loop, 1.3 MB, cut from the 416 MB original,
+ * so every device can afford it and the width test that used to keep phones out
+ * is gone. Two cases still skip it and keep the poster still instead: someone
+ * who has asked their browser to save data, and a connection reporting itself
+ * as 2G. Neither should spend their allowance on a backdrop.
+ */
+(function () {
+    const video = document.getElementById('authBackgroundVideo');
+    if (!video) return;
+
+    const link = navigator.connection || {};
+    const slow = /2g/.test(link.effectiveType || '');   // covers 'slow-2g' and '2g'
+    if (link.saveData || slow) { video.remove(); return; }
+
+    const source = document.createElement('source');
+    source.type = 'video/mp4';
+    source.src = video.dataset.src;
+    video.appendChild(source);
+    video.load();
+})();
+// Show/hide password. One delegated handler covers the login and both
+// registration fields; it flips the input type and swaps the eye icon.
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.pw-toggle');
+    if (!btn) return;
+    const input = document.getElementById(btn.dataset.target);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+});
+function switchAuthTab(tab, el) {
+    document.getElementById('loginForm').style.display    = tab==='login'    ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = tab==='register' ? 'block' : 'none';
+    document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    if (tab === 'register') loadFarmOptions();
+}
+
+<% if (demoLogin) { %>
+// Development-only: the role cards call this to fill in seeded demo credentials.
+function selectRole(role, email, password, el) {
+    // Update hidden role field & credentials
+    document.getElementById('loginRoleField').value = role;
+    document.getElementById('loginEmail').value     = email;
+    document.getElementById('loginPassword').value  = password;
+
+    // Update card highlight
+    document.querySelectorAll('.role-card').forEach(c => {
+        c.classList.remove('active');
+        c.querySelector('.role-check').style.display = 'none';
+        // The cards are a radio group; without this a screen reader announces
+        // every one of them as selected.
+        c.setAttribute('aria-checked', 'false');
+    });
+    el.classList.add('active');
+    el.querySelector('.role-check').style.display = 'inline-block';
+    el.setAttribute('aria-checked', 'true');
+}
+<% } %>
+
+function setRegisterRoleUI() {
+    const r = document.getElementById('regRole').value;
+    document.getElementById('regApplicantExtra').classList.toggle('d-none', r !== 'applicant');
+    document.getElementById('regOperatorExtra').classList.toggle('d-none', r !== 'operator');
+}
+
+let farmsLoaded = false;
+async function loadFarmOptions() {
+    if (farmsLoaded) return;
+    try {
+        const res = await fetch('/api/auth/farms-for-register');
+        const json = await res.json();
+        if (!json.success) return;
+        const sel = document.getElementById('regFarmId');
+        json.data.forEach((f) => {
+            const o = document.createElement('option');
+            o.value = f.id;
+            o.textContent = '#' + f.id + ' — ' + f.name + (f.province ? ' · ' + f.province : '');
+            sel.appendChild(o);
+        });
+        farmsLoaded = true;
+    } catch (err) {
+        console.warn('Could not load farm list', err);
+    }
+}
+
+// Send the user back to the page that bounced them to login, when it is a safe local path.
+function nextDestination() {
+    const next = new URLSearchParams(window.location.search).get('next');
+    if (next && next.startsWith('/') && !next.startsWith('//')) return next;
+    return '/dashboard';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const regRole = document.getElementById('regRole');
+    if (regRole) {
+        regRole.addEventListener('change', setRegisterRoleUI);
+        setRegisterRoleUI();
+    }
+
+    const inFlight = {};
+
+    /** Hold a submit button while its request is in flight. */
+    function busy(id, on, label) {
+        inFlight[id] = on;
+        const b = document.getElementById(id);
+        if (!b) return;
+        if (on) {
+            if (b.dataset.label === undefined) b.dataset.label = b.innerHTML;
+            b.disabled = true;
+            b.innerHTML = label;
+        } else {
+            b.disabled = false;
+            if (b.dataset.label !== undefined) {
+                b.innerHTML = b.dataset.label;
+                delete b.dataset.label;
+            }
+        }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        if (inFlight.loginSubmitBtn) return;
+        busy('loginSubmitBtn', true, 'Signing in…');
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+            const json = await res.json();
+            if (!res.ok) {
+                showNotification(json.error || 'Login failed', 'danger');
+                return;
+            }
+            // The server issues the session cookie (HttpOnly) on this response.
+            window.location.href = nextDestination();
+        } catch (err) {
+            showNotification('Network error — try again.', 'danger');
+        } finally {
+            busy('loginSubmitBtn', false);
+        }
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const role = document.getElementById('regRole').value;
+        if (!role) {
+            showNotification('Please choose Applicant or Operator.', 'warning');
+            return;
+        }
+        const pass = document.getElementById('regPass').value;
+        const conf = document.getElementById('regConf').value;
+        if (pass !== conf) {
+            showNotification('Passwords do not match.', 'warning');
+            return;
+        }
+        const body = {
+            firstName: document.getElementById('regFirst').value.trim(),
+            lastName: document.getElementById('regLast').value.trim(),
+            email: document.getElementById('regEmail').value.trim(),
+            phone: document.getElementById('regPhone').value.trim(),
+            password: pass,
+            role,
+        };
+        if (role === 'applicant') {
+            body.farmName = document.getElementById('regFarmName').value.trim();
+            body.farmAddress = document.getElementById('regFarmAddress').value.trim();
+            // The cascading selector fills these hidden fields with the chosen names.
+            body.province = document.getElementById('regProvinceName').value.trim();
+            body.municipality = document.getElementById('regMunicipalityName').value.trim();
+            body.region = document.getElementById('regRegionName').value.trim();
+            const regBarangay = document.getElementById('regBarangay');
+            if (regBarangay && regBarangay.value) body.barangayId = Number(regBarangay.value);
+            // Sent so the application is created on what the applicant actually
+            // has, rather than on 'private', no classification and zero area.
+            body.farmArea = document.getElementById('regFarmArea').value.trim();
+            body.lsaType = document.getElementById('regLsaType').value;
+            body.category = document.getElementById('regCategory').value;
+            body.classification = document.getElementById('regClassification').value;
+            body.rsbsaNumber = document.getElementById('regRsbsa').value.trim();
+        } else {
+            const fid = document.getElementById('regFarmId').value;
+            if (fid) body.farmId = parseInt(fid, 10);
+        }
+        if (inFlight.registerSubmitBtn) return;
+        busy('registerSubmitBtn', true, 'Creating account…');
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const json = await res.json();
+            if (!res.ok) {
+                showNotification(json.error || 'Registration failed', 'danger');
+                return;
+            }
+            // The server issues the session cookie (HttpOnly) on this response.
+            showNotification('Account created — welcome!', 'success');
+            window.location.href = '/dashboard';
+        } catch (err) {
+            showNotification('Network error — try again.', 'danger');
+        } finally {
+            busy('registerSubmitBtn', false);
+        }
+    });
+});
+</script>
+</body>
+</html>

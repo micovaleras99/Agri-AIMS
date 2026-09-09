@@ -1,0 +1,183 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page }) %>
+
+<div class="main-wrapper">
+    <div class="page-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Applications</h1>
+                <p class="page-subtitle">
+                    Showing <%= applicants.length %> of <%= total %> total applicants
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <% if (role === 'admin') { %>
+                <a href="/admin/farmers/new" class="btn btn-primary">
+                    <i class="bi bi-person-plus me-2"></i>Register Farmer
+                </a>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Success Toast -->
+        <% if (filters.success) { %>
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <% if (filters.success === 'added')   { %>Application added successfully.<% } %>
+            <% if (filters.success === 'updated') { %>Application updated successfully.<% } %>
+            <% if (filters.success === 'deleted') { %>Application deleted successfully.<% } %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <% } %>
+
+        <!-- ── Filter Bar ── -->
+        <div class="card mb-4 p-3">
+            <form method="GET" action="/applicants" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="search" class="form-label small fw-semibold">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input id="search" type="text" class="form-control" name="search"
+                               placeholder="Name, farm, or ID..."
+                               value="<%= filters.search || '' %>">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label small fw-semibold">Status</label>
+                    <select id="status" class="form-select" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="submitted"       <%= filters.status==='submitted'       ?'selected':'' %>>Submitted</option>
+                        <option value="document_review" <%= filters.status==='document_review' ?'selected':'' %>>Document Review</option>
+                        <option value="under_review"    <%= filters.status==='under_review'    ?'selected':'' %>>Under Review</option>
+                        <option value="approved"        <%= filters.status==='approved'        ?'selected':'' %>>Approved</option>
+                        <option value="rejected"        <%= filters.status==='rejected'        ?'selected':'' %>>Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="province" class="form-label small fw-semibold">Province</label>
+                    <select id="province" class="form-select" name="province">
+                        <option value="">All Provinces</option>
+                        <% provinces.forEach(p => { %>
+                        <option value="<%= p %>" <%= filters.province===p ?'selected':'' %>><%= p %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                    <a href="/applicants" class="btn btn-outline-secondary"
+                       aria-label="Clear search and filters" title="Clear search and filters">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Applicants Table ── -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">App ID</th>
+                                <th>Applicant</th>
+                                <th style="min-width:170px">Farm Name</th>
+                                <th>Province</th>
+                                <th style="max-width:200px">Classification</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Submitted</th>
+                                <th class="text-center pe-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (applicants.length === 0) { %>
+                            <tr>
+                                <td colspan="9" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No applications found.
+                                    <a href="/applicants" class="d-block mt-2">Clear filters</a>
+                                </td>
+                            </tr>
+                            <% } %>
+                            <% applicants.forEach(a => { %>
+                            <tr>
+                                <td class="ps-3">
+                                    <a href="/applicants/<%= a.id %>" class="app-id-link">
+                                        <%= a.applicationId %>
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="table-avatar">
+                                            <%= a.firstName[0] %><%= a.lastName[0] %>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold"><%= a.firstName %> <%= a.lastName %></div>
+                                            <div class="small text-muted"><%= a.email %></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><%= a.farmName %></td>
+                                <td><%= a.province %></td>
+                                <td>
+                                    <% const cls = classificationLabel(a.classification); %>
+                                    <% if (cls) { %>
+                                    <span class="badge bg-light text-dark border text-wrap text-start"><%= cls %></span>
+                                    <% } else { %>
+                                    <span class="text-muted">—</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="status-badge <%= a.status %>">
+                                        <%= a.status.replace(/_/g,' ') %>
+                                    </span>
+                                </td>
+                                <td style="min-width:90px">
+                                    <div class="progress mb-1" style="height:5px">
+                                        <div class="progress-bar" style="width:<%= a.progress %>%"></div>
+                                    </div>
+                                    <small class="text-muted"><%= a.progress %>%</small>
+                                </td>
+                                <td class="text-muted small date-cell"><%= a.submissionDate %></td>
+                                <td class="text-center pe-3">
+                                    <div class="d-flex gap-1 justify-content-center">
+                                        <a href="/applicants/<%= a.id %>"
+                                           class="btn btn-sm btn-outline-primary" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/applicants/edit/<%= a.id %>"
+                                           class="btn btn-sm btn-outline-secondary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="/applicants/delete/<%= a.id %>"
+                                              method="POST" style="display:inline"
+                                              data-confirm="Delete this application?">
+                                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

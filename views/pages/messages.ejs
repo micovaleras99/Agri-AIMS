@@ -1,0 +1,321 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title mb-1">Messages</h1>
+            <p class="page-subtitle mb-0">Direct messages between you and other members.</p>
+        </div>
+    </div>
+
+    <div class="card dm-shell" data-open-to="<%= openTo ? openTo.id : '' %>" data-open-name="<%= openTo ? openTo.name : '' %>">
+        <div class="dm-grid">
+            <!-- Conversation list -->
+            <aside class="dm-list" id="dmList" aria-label="Conversations">
+                <div class="dm-list__head">Conversations</div>
+                <div id="dmConversations">
+                    <div class="dm-empty small text-muted p-3">Loading…</div>
+                </div>
+            </aside>
+
+            <!-- Active thread -->
+            <section class="dm-thread" id="dmThread">
+                <div class="dm-thread__empty text-muted" id="dmPlaceholder">
+                    <i class="bi bi-chat-square-text fs-1 d-block mb-2 opacity-50"></i>
+                    <p class="mb-0">Select a conversation, or start one from the <a href="/directory">Directory</a>.</p>
+                </div>
+
+                <div class="dm-thread__pane" id="dmPane" hidden>
+                    <header class="dm-thread__head">
+                        <button type="button" class="btn btn-sm btn-link d-lg-none p-0 me-2" id="dmBack" aria-label="Back to conversations">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <span class="dm-avatar" id="dmPeerAvatar">?</span>
+                        <div class="min-w-0">
+                            <div class="fw-semibold text-truncate" id="dmPeerName">—</div>
+                            <div class="small text-muted" id="dmPeerRole"></div>
+                        </div>
+                    </header>
+
+                    <div class="dm-messages" id="dmMessages"></div>
+
+                    <form class="dm-composer" id="dmForm" autocomplete="off">
+                        <input type="text" class="form-control" id="dmInput" placeholder="Write a message…" maxlength="4000" aria-label="Message">
+                        <button type="submit" class="btn btn-primary" id="dmSend" aria-label="Send">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style nonce="<%= cspNonce %>">
+.dm-shell { overflow: hidden; }
+.dm-grid { display: grid; grid-template-columns: 300px 1fr; min-height: 60vh; height: calc(100vh - var(--navbar-height) - 190px); }
+.dm-list { border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto; }
+.dm-list__head { padding: 14px 16px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); }
+.dm-conv { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--border-color); padding: 12px 16px; cursor: pointer; }
+.dm-conv:hover { background: var(--bg-primary); }
+.dm-conv.active { background: rgba(45,122,62,.08); }
+.dm-conv__body { flex: 1; min-width: 0; }
+.dm-conv__name { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 6px; }
+.dm-conv__preview { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dm-unread { background: var(--primary-color); color: #fff; border-radius: 999px; font-size: 10px; font-weight: 700; padding: 1px 7px; flex-shrink: 0; }
+.dm-avatar { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: #fff; }
+.dm-thread { display: flex; flex-direction: column; min-width: 0; }
+.dm-thread__empty { margin: auto; text-align: center; padding: 40px; }
+.dm-thread__pane { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.dm-thread__head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+.dm-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.dm-msg { position: relative; max-width: 78%; padding: 8px 12px; border-radius: 12px; font-size: 14px; overflow-wrap: anywhere; }
+.dm-msg--in  { align-self: flex-start; background: var(--bg-primary); border-top-left-radius: 4px; }
+.dm-msg--out { align-self: flex-end; background: var(--primary-color); color: #fff; border-top-right-radius: 4px; }
+.dm-msg__text { white-space: pre-wrap; }
+.dm-msg__time { font-size: 10px; opacity: .7; margin-top: 3px; }
+.dm-msg--deleted .dm-msg__text { font-style: italic; opacity: .75; }
+.dm-deleted i { font-size: 11px; }
+.dm-actions { position: absolute; top: -12px; display: none; gap: 3px; }
+.dm-msg--out .dm-actions { right: 2px; }
+.dm-msg--in  .dm-actions { left: 2px; }
+.dm-msg:hover .dm-actions { display: flex; }
+.dm-action { width: 24px; height: 24px; border: 1px solid var(--border-color); background: var(--bg-secondary, #fff); color: var(--text-secondary); border-radius: 6px; font-size: 11px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.dm-action:hover { color: var(--primary-color); border-color: var(--primary-color); }
+.dm-editor { margin-top: 6px; }
+.dm-editor textarea { width: 100%; }
+.dm-editor__btns { display: flex; gap: 6px; margin-top: 6px; }
+.dm-composer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border-color); }
+.dm-day { align-self: center; font-size: 11px; color: var(--text-secondary); background: var(--bg-primary); border-radius: 999px; padding: 2px 10px; margin: 4px 0; }
+@media (max-width: 767.98px) {
+    .dm-grid { grid-template-columns: 1fr; height: calc(100dvh - var(--navbar-height) - 150px); }
+    .dm-shell.dm-shell--thread .dm-list { display: none; }
+    .dm-shell:not(.dm-shell--thread) .dm-thread { display: none; }
+}
+</style>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+    var CSRF = '<%= csrfToken %>';
+    var POLL_MS = 4000;
+    var shell = document.querySelector('.dm-shell');
+    var listEl = document.getElementById('dmConversations');
+    var pane = document.getElementById('dmPane');
+    var placeholder = document.getElementById('dmPlaceholder');
+    var msgsEl = document.getElementById('dmMessages');
+    var form = document.getElementById('dmForm');
+    var input = document.getElementById('dmInput');
+    var peerName = document.getElementById('dmPeerName');
+    var peerRole = document.getElementById('dmPeerRole');
+    var peerAvatar = document.getElementById('dmPeerAvatar');
+    var backBtn = document.getElementById('dmBack');
+
+    var activeId = null;
+    var lastId = 0;
+    var since = null;
+    var editingId = null;
+    var pollTimer = null;
+
+    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+    function timeOf(iso) { try { return new Date(iso).toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
+
+    function textHtml(m) {
+        if (m.deleted) return '<span class="dm-deleted"><i class="bi bi-slash-circle" aria-hidden="true"></i> This message was deleted</span>';
+        return esc(m.body);
+    }
+    function timeHtml(m) { return timeOf(m.createdAt) + (m.edited ? ' · edited' : ''); }
+    function actionsHtml(m) {
+        if (m.deleted || !m.mine) return '';
+        return '<div class="dm-actions">' +
+            '<button type="button" class="dm-action" data-act="edit" data-id="' + m.id + '" title="Edit" aria-label="Edit message"><i class="bi bi-pencil"></i></button>' +
+            '<button type="button" class="dm-action" data-act="delete" data-id="' + m.id + '" title="Delete" aria-label="Delete message"><i class="bi bi-trash"></i></button>' +
+            '</div>';
+    }
+    function messageEl(id) { return msgsEl.querySelector('[data-msg-id="' + id + '"]'); }
+    function currentText(el) { var t = el.querySelector('.dm-msg__text'); return t ? t.textContent : ''; }
+
+    async function api(url, opts) {
+        var res = await fetch(url, Object.assign({ credentials: 'same-origin' }, opts));
+        var json = await res.json().catch(function () { return {}; });
+        if (!res.ok) throw new Error((json && json.error) || 'Request failed');
+        return json.data;
+    }
+
+    function renderInbox(inbox) {
+        if (!inbox.length) { listEl.innerHTML = '<div class="dm-empty small text-muted p-3">No conversations yet. Start one from the Directory.</div>'; return; }
+        listEl.innerHTML = inbox.map(function (c) {
+            var badge = c.unread ? '<span class="dm-unread">' + c.unread + '</span>' : '';
+            var preview = c.lastDeleted
+                ? '<span class="dm-deleted"><i class="bi bi-slash-circle" aria-hidden="true"></i> Message deleted</span>'
+                : (c.lastFromMe ? 'You: ' : '') + esc(c.lastBody);
+            return '<button type="button" class="dm-conv' + (c.otherId === activeId ? ' active' : '') + '" data-id="' + c.otherId + '" data-name="' + esc(c.other.name) + '" data-role="' + esc(c.other.role || '') + '" data-initials="' + esc(c.other.initials) + '">' +
+                '<span class="dm-avatar">' + esc(c.other.initials) + '</span>' +
+                '<span class="dm-conv__body"><span class="dm-conv__name">' + esc(c.other.name) + badge + '</span>' +
+                '<span class="dm-conv__preview">' + preview + '</span></span></button>';
+        }).join('');
+        Array.prototype.forEach.call(listEl.querySelectorAll('.dm-conv'), function (b) {
+            b.addEventListener('click', function () {
+                openThread(Number(b.getAttribute('data-id')), b.getAttribute('data-name'), b.getAttribute('data-initials'), b.getAttribute('data-role'));
+            });
+        });
+    }
+
+    async function loadInbox() {
+        try { var d = await api('/api/messages/inbox'); renderInbox(d.inbox); } catch (e) { /* keep last view */ }
+    }
+
+    function appendMessages(list) {
+        var atBottom = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 60;
+        list.forEach(function (m) {
+            lastId = Math.max(lastId, m.id);
+            var div = document.createElement('div');
+            div.className = 'dm-msg ' + (m.mine ? 'dm-msg--out' : 'dm-msg--in') + (m.deleted ? ' dm-msg--deleted' : '');
+            div.setAttribute('data-msg-id', m.id);
+            div.innerHTML = '<div class="dm-msg__text">' + textHtml(m) + '</div>' +
+                            '<div class="dm-msg__time">' + timeHtml(m) + '</div>' + actionsHtml(m);
+            msgsEl.appendChild(div);
+        });
+        if (atBottom || list.some(function (m) { return m.mine; })) msgsEl.scrollTop = msgsEl.scrollHeight;
+    }
+
+    // Apply edits and deletions to bubbles already on screen, without rebuilding
+    // the thread (which would jump the reader's place).
+    function patch(changed) {
+        if (!changed || !changed.length) return;
+        changed.forEach(function (m) {
+            var el = messageEl(m.id);
+            if (!el || el.querySelector('.dm-editor')) return; // never clobber an open editor
+            var t = el.querySelector('.dm-msg__text');
+            var tm = el.querySelector('.dm-msg__time');
+            if (t) t.innerHTML = textHtml(m);
+            if (tm) tm.textContent = timeHtml(m);
+            el.classList.toggle('dm-msg--deleted', Boolean(m.deleted));
+            var old = el.querySelector('.dm-actions');
+            if (old) old.remove();
+            var html = actionsHtml(m);
+            if (html) el.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    function startEdit(id) {
+        var el = messageEl(id); if (!el || el.querySelector('.dm-editor')) return;
+        editingId = id;
+        var t = el.querySelector('.dm-msg__text'); var before = currentText(el);
+        t.hidden = true;
+        var act = el.querySelector('.dm-actions'); if (act) act.hidden = true;
+        t.insertAdjacentHTML('afterend',
+            '<div class="dm-editor"><textarea class="form-control form-control-sm" rows="2" maxlength="4000" aria-label="Edit message"></textarea>' +
+            '<div class="dm-editor__btns"><button type="button" class="btn btn-sm btn-primary" data-act="save" data-id="' + id + '">Save</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary" data-act="cancel" data-id="' + id + '">Cancel</button></div></div>');
+        var box = el.querySelector('.dm-editor textarea'); box.value = before; box.focus();
+        box.setSelectionRange(box.value.length, box.value.length);
+    }
+    function cancelEdit() {
+        if (editingId == null) return;
+        var el = messageEl(editingId); editingId = null; if (!el) return;
+        var ed = el.querySelector('.dm-editor'); if (ed) ed.remove();
+        var t = el.querySelector('.dm-msg__text'); if (t) t.hidden = false;
+        var act = el.querySelector('.dm-actions'); if (act) act.hidden = false;
+    }
+    async function saveEdit(id) {
+        var el = messageEl(id); if (!el) return;
+        var box = el.querySelector('.dm-editor textarea'); if (!box) return;
+        var body = box.value.trim();
+        if (!body) { if (window.showNotification) showNotification('An edit cannot be empty. Delete it instead.', 'danger'); return; }
+        if (body === currentText(el)) { cancelEdit(); return; }
+        try {
+            var m = await api('/api/messages/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-csrf-token': CSRF }, body: JSON.stringify({ body: body }) });
+            cancelEdit(); patch([m]);
+        } catch (err) { if (window.showNotification) showNotification(err.message || 'Could not save the edit', 'danger'); }
+    }
+    async function removeMessage(id) {
+        if (!window.confirm('Delete this message? The other person will see that it was deleted.')) return;
+        try {
+            var m = await api('/api/messages/' + id, { method: 'DELETE', headers: { 'x-csrf-token': CSRF } });
+            patch([m]);
+        } catch (err) { if (window.showNotification) showNotification(err.message || 'Could not delete the message', 'danger'); }
+    }
+
+    // One delegated listener — bubbles are rebuilt by the poll, so per-button
+    // handlers would leak.
+    msgsEl.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-act]'); if (!btn || !msgsEl.contains(btn)) return;
+        var id = Number(btn.getAttribute('data-id')); if (!id) return;
+        var act = btn.getAttribute('data-act');
+        if (act === 'edit') startEdit(id);
+        else if (act === 'delete') removeMessage(id);
+        else if (act === 'save') saveEdit(id);
+        else if (act === 'cancel') cancelEdit();
+    });
+
+    async function openThread(id, name, initials, roleLabel) {
+        activeId = id; lastId = 0; since = null; editingId = null;
+        msgsEl.innerHTML = '';
+        placeholder.hidden = true; pane.hidden = false;
+        peerName.textContent = name || 'User';
+        peerAvatar.textContent = initials || (name || '?').slice(0, 2).toUpperCase();
+        peerRole.textContent = roleLabel ? roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1) : '';
+        shell.classList.add('dm-shell--thread');
+        Array.prototype.forEach.call(listEl.querySelectorAll('.dm-conv'), function (b) {
+            b.classList.toggle('active', Number(b.getAttribute('data-id')) === id);
+        });
+        input.focus();
+        await poll(true);
+        loadInbox(); // clears the unread badge now the thread is read
+    }
+
+    async function poll(initial) {
+        if (activeId == null) return;
+        try {
+            var qs = [];
+            if (lastId) qs.push('afterId=' + lastId);
+            if (since) qs.push('since=' + encodeURIComponent(since));
+            var d = await api('/api/messages/with/' + activeId + (qs.length ? '?' + qs.join('&') : ''));
+            if (initial) { peerName.textContent = d.other.name; peerRole.textContent = d.other.role ? d.other.role.charAt(0).toUpperCase() + d.other.role.slice(1) : ''; peerAvatar.textContent = d.other.initials; }
+            if (d.messages.length) appendMessages(d.messages);
+            if (d.changed && d.changed.length) patch(d.changed);
+            since = d.serverTime || since;
+        } catch (e) { /* transient; next tick retries */ }
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var text = input.value.trim();
+        if (!text || activeId == null) return;
+        input.value = '';
+        try {
+            var m = await api('/api/messages/with/' + activeId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-csrf-token': CSRF },
+                body: JSON.stringify({ body: text }),
+            });
+            appendMessages([m]);
+            loadInbox();
+        } catch (err) {
+            input.value = text; // keep what they typed
+            if (window.showNotification) showNotification(err.message || 'Send failed', 'danger');
+        }
+    });
+
+    if (backBtn) backBtn.addEventListener('click', function () { shell.classList.remove('dm-shell--thread'); activeId = null; });
+
+    // Poll the open thread; refresh the inbox less often.
+    pollTimer = setInterval(function () { poll(false); }, POLL_MS);
+    setInterval(loadInbox, POLL_MS * 3);
+    if (typeof window !== 'undefined') window.addEventListener('beforeunload', function () { clearInterval(pollTimer); });
+
+    // First load, and open a conversation if the directory sent us here.
+    loadInbox().then(function () {
+        var toId = shell.getAttribute('data-open-to');
+        if (toId) openThread(Number(toId), shell.getAttribute('data-open-name'), '', '');
+    });
+}());
+</script>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

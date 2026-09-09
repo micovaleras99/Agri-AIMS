@@ -1,0 +1,171 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/applicants/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Accreditation Process</li>
+    </ol>
+</nav>
+
+<!-- Alerts -->
+<% if (query.certified) { %>
+<div class="alert alert-success alert-dismissible fade show mb-4">
+    <i class="bi bi-award-fill me-2"></i>
+    <strong>Congratulations!</strong> LSA Certificate has been issued. The application is now fully accredited.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<% } %>
+<% if (query.returned) { %>
+<div class="alert alert-warning alert-dismissible fade show mb-4">
+    <i class="bi bi-arrow-return-left me-2"></i>
+    Documents returned to applicant for revision/completion.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<% } %>
+<% if (query.noncompliant) { %>
+<div class="alert alert-danger alert-dismissible fade show mb-4">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    Farm did not pass field validation. Findings have been recorded. Applicant must address issues before proceeding.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<% } %>
+
+<% if (certificateDoc) { %>
+<div class="alert alert-success d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <span>
+        <i class="bi bi-patch-check-fill me-2"></i>
+        Your LSA Certificate is ready.
+    </span>
+    <a href="/documents/<%= certificateDoc.id %>/file" class="btn btn-sm btn-success" target="_blank" rel="noopener">
+        <i class="bi bi-download me-1"></i>Download Certificate
+    </a>
+</div>
+<% } %>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">7-Step LSA Accreditation</h1>
+        <p class="page-subtitle">
+            <strong><%= applicant.farmName %></strong> ·
+            <span class="app-id-link"><%= applicant.applicationId %></span> ·
+            <span class="status-badge <%= applicant.status %>"><%= applicant.status.replace(/_/g,' ') %></span>
+        </p>
+    </div>
+    <a href="/applicants/<%= applicant.id %>" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>Back to Application
+    </a>
+</div>
+
+<!-- Overall progress bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold">Overall Accreditation Progress</span>
+            <span class="fw-bold fs-5 text-primary"><%= applicant.progress %>%</span>
+        </div>
+        <div class="progress" style="height:14px;border-radius:7px;">
+            <div class="progress-bar" style="width:<%= applicant.progress %>%"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-1">
+            <small class="text-muted">Step <%= applicant.accreditationStep %> of 7</small>
+            <small class="text-muted">Submitted: <%= applicant.submissionDate %></small>
+        </div>
+    </div>
+</div>
+
+<!-- Step cards -->
+<div class="acred-steps-grid">
+<% steps.forEach(s => {
+    const isCompleted = s.step < applicant.accreditationStep;
+    const isActive    = s.step === applicant.accreditationStep;
+    const isPending   = s.step > applicant.accreditationStep;
+
+    // Role-based access for each step
+    const canAccess =
+        (s.step <= 3 && ['admin','applicant'].includes(role)) ||
+        (s.step === 4 && ['admin','evaluator'].includes(role)) ||
+        (s.step === 5 && ['admin','evaluator'].includes(role)) ||
+        (s.step === 6 && ['admin','evaluator'].includes(role)) ||
+        (s.step === 7 && role === 'admin');
+%>
+<div class="acred-step-card <%= isCompleted ? 'completed' : isActive ? 'active' : 'pending' %>">
+
+    <!-- Step number bubble -->
+    <div class="acred-step-number bg-<%= s.color %>">
+        <% if (isCompleted) { %>
+            <i class="bi bi-check-lg"></i>
+        <% } else { %>
+            <i class="bi bi-<%= s.icon %>"></i>
+        <% } %>
+    </div>
+
+    <!-- Connector line -->
+    <% if (s.step < 7) { %>
+    <div class="acred-connector <%= isCompleted ? 'done' : '' %>"></div>
+    <% } %>
+
+    <!-- Step content -->
+    <div class="acred-step-body">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+            <div>
+                <div class="acred-step-label">Step <%= s.step %></div>
+                <div class="acred-step-title"><%= s.label %></div>
+            </div>
+            <span class="badge bg-<%= isCompleted ? 'success' : isActive ? 'primary' : 'secondary' %>-subtle
+                               text-<%= isCompleted ? 'success' : isActive ? 'primary' : 'secondary' %> border">
+                <%= isCompleted ? '✓ Done' : isActive ? 'In Progress' : 'Pending' %>
+            </span>
+        </div>
+        <p class="text-muted small mb-2"><%= s.desc %></p>
+        <div class="d-flex align-items-center justify-content-between">
+            <span class="acred-who-badge">
+                <i class="bi bi-person me-1"></i><%= s.who %>
+            </span>
+            <% if (canAccess && (isActive || (isCompleted && role !== 'applicant'))) { %>
+            <a href="/accreditation/<%= applicant.id %>/step/<%= s.step %>"
+               class="btn btn-xs btn-<%= isActive ? s.color : 'outline-secondary' %>">
+                <%= isActive ? 'Continue →' : 'View' %>
+            </a>
+            <% } else if (isPending) { %>
+            <span class="text-muted small">Locked</span>
+            <% } %>
+        </div>
+
+        <!-- Step-specific completion info -->
+        <% if (isCompleted) { %>
+        <div class="acred-step-meta mt-2">
+            <% if (s.step === 1 && applicant.step1_brieferDate) { %>
+            <small><i class="bi bi-calendar3 me-1"></i>Signed: <%= applicant.step1_brieferDate %></small>
+            <% } else if (s.step === 2 && applicant.step2_selfAssessmentScore) { %>
+            <small><i class="bi bi-graph-up me-1"></i>Score: <%= applicant.step2_selfAssessmentScore %>%</small>
+            <% } else if (s.step === 3 && applicant.step3_submittedDate) { %>
+            <small><i class="bi bi-folder-check me-1"></i>Docs: <%= applicant.step3_docsSubmitted %>/<%= applicant.step3_docsRequired %> · <%= applicant.step3_submittedDate %></small>
+            <% } else if (s.step === 4 && applicant.step4_evalDate) { %>
+            <small><i class="bi bi-check-circle me-1"></i>Evaluated: <%= applicant.step4_evalDate %> by <%= applicant.step4_evalBy %></small>
+            <% } else if (s.step === 5 && applicant.step5_validationDate) { %>
+            <small><i class="bi bi-geo-alt me-1"></i><%= applicant.step5_validationType %> · <%= applicant.step5_validationDate %></small>
+            <% } else if (s.step === 6 && applicant.step6_endorsedDate) { %>
+            <small><i class="bi bi-send-check me-1"></i>No.: <%= applicant.step6_endorsementNo %> · <%= applicant.step6_endorsedDate %></small>
+            <% } else if (s.step === 7 && applicant.step7_certificateNo) { %>
+            <small><i class="bi bi-award me-1"></i>Cert: <%= applicant.step7_certificateNo %> · Valid until <%= applicant.step7_validUntil %></small>
+            <% } %>
+        </div>
+        <% } %>
+    </div>
+</div>
+<% }) %>
+</div>
+
+</div>
+</div>
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+<%- include('../../partials/chatbot') %>
+</body>
+</html>

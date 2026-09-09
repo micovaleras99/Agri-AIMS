@@ -1,0 +1,195 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<%
+// Colour and icon per service component and per status — used across the stat
+// cards and the service cards so a component is recognisable at a glance.
+const TYPE_META = {
+    training:              { icon: 'mortarboard',  color: 'primary'   },
+    demonstration:         { icon: 'easel',        color: 'success'   },
+    information_support:   { icon: 'info-circle',  color: 'info'      },
+    technical_assistance:  { icon: 'tools',        color: 'warning'   },
+    complementary_project: { icon: 'diagram-3',    color: 'secondary' },
+};
+const STATUS_META = {
+    open:      { color: 'success',   label: 'Open',      icon: 'unlock' },
+    ongoing:   { color: 'warning',   label: 'Ongoing',   icon: 'play-circle' },
+    planned:   { color: 'info',      label: 'Planned',   icon: 'calendar-plus' },
+    completed: { color: 'secondary', label: 'Completed', icon: 'check-circle' },
+    cancelled: { color: 'danger',    label: 'Cancelled', icon: 'x-circle' },
+};
+const tmeta = (t) => TYPE_META[t] || { icon: 'grid', color: 'secondary' };
+const smeta = (s) => STATUS_META[s] || { color: 'secondary', label: s, icon: 'dot' };
+%>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Services</h1>
+            <p class="page-subtitle">
+                Training, demonstration services, information support, technical assistance and
+                complementary projects available to LSA members.
+            </p>
+        </div>
+        <% if (canManage) { %>
+        <a href="/services/new" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>New Service
+        </a>
+        <% } %>
+    </div>
+
+    <!-- Counts by component -->
+    <div class="row g-3 mb-4">
+        <% serviceTypes.forEach(function (t) { const m = tmeta(t); %>
+        <div class="col-6 col-lg">
+            <a href="/services?serviceType=<%= t %>" class="text-decoration-none">
+                <div class="stat-card h-100 border-top border-3 border-<%= m.color %>">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-<%= m.icon %> text-<%= m.color %> fs-5"></i>
+                        <div class="stat-value mb-0"><%= stats.byType[t] || 0 %></div>
+                    </div>
+                    <div class="stat-label"><%= typeLabels[t] %></div>
+                </div>
+            </a>
+        </div>
+        <% }); %>
+        <div class="col-6 col-lg">
+            <div class="stat-card h-100 border-top border-3 border-dark-subtle">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-person-check text-secondary fs-5"></i>
+                    <div class="stat-value mb-0"><%= stats.attended %>/<%= stats.participants %></div>
+                </div>
+                <div class="stat-label">Attended / Enrolled</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" action="/services" class="card p-3 mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label" for="serviceType">Component</label>
+                <select class="form-select" id="serviceType" name="serviceType">
+                    <option value="">All components</option>
+                    <% serviceTypes.forEach(function (t) { %>
+                    <option value="<%= t %>" <%= filters.serviceType === t ? 'selected' : '' %>><%= typeLabels[t] %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="status">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Any status</option>
+                    <% statuses.forEach(function (st) { %>
+                    <option value="<%= st %>" <%= filters.status === st ? 'selected' : '' %>><%= st.charAt(0).toUpperCase() + st.slice(1) %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="search">Search</label>
+                <input type="search" class="form-control" id="search" name="search"
+                       value="<%= filters.search || '' %>" placeholder="Name, description or provider">
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <% if (!services.length) { %>
+    <div class="card p-5 text-center text-muted">
+        <i class="bi bi-calendar-x fs-1 mb-3"></i>
+        <p class="mb-0">No services match this view<%= canManage ? ' — add one to get started.' : ' yet.' %></p>
+    </div>
+    <% } else { %>
+    <div class="row g-3">
+        <% services.forEach(function (s) {
+             const m = tmeta(s.serviceType);
+             const st = smeta(s.status);
+             const full = s.slots && s.participantCount >= s.slots;
+             const pct = s.slots ? Math.min(100, Math.round((s.participantCount / s.slots) * 100)) : 0;
+        %>
+        <div class="col-md-6 col-xl-4">
+            <div class="card h-100 border-start border-4 border-<%= m.color %> svc-card">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-<%= m.color %>-subtle text-<%= m.color %> d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-<%= m.icon %>"></i><%= s.typeLabel %>
+                        </span>
+                        <span class="badge bg-<%= st.color %>-subtle text-<%= st.color %> d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-<%= st.icon %>"></i><%= st.label %>
+                        </span>
+                    </div>
+                    <h5 class="card-title mb-1"><a href="/services/<%= s.id %>" class="text-decoration-none"><%= s.name %></a></h5>
+                    <p class="text-muted small mb-2"><i class="bi bi-building me-1"></i><%= s.provider %></p>
+                    <% if (s.description) { %>
+                    <p class="small text-body-secondary mb-3 svc-clamp"><%= s.description %></p>
+                    <% } %>
+                    <ul class="list-unstyled small text-muted mb-3">
+                        <% if (s.scheduleStart) { %>
+                        <li class="mb-1"><i class="bi bi-calendar-event me-1 text-<%= m.color %>"></i><%= s.scheduleStart %><%= s.scheduleEnd && s.scheduleEnd !== s.scheduleStart ? ' – ' + s.scheduleEnd : '' %></li>
+                        <% } %>
+                        <% if (s.locationLabel) { %>
+                        <li class="mb-1"><i class="bi bi-geo-alt me-1 text-<%= m.color %>"></i><%= s.locationLabel %></li>
+                        <% } %>
+                        <li><i class="bi bi-people me-1 text-<%= m.color %>"></i><%= s.participantCount %> enrolled<%= s.slots ? ' of ' + s.slots + ' slots' : '' %></li>
+                    </ul>
+                    <% if (s.slots) { %>
+                    <div class="svc-slot-bar mb-3" title="<%= s.participantCount %> of <%= s.slots %> slots filled">
+                        <div class="svc-slot-fill bg-<%= full ? 'danger' : m.color %>" style="width:<%= pct %>%"></div>
+                    </div>
+                    <% } %>
+                    <div class="mt-auto d-flex gap-2 align-items-center">
+                        <a href="/services/<%= s.id %>" class="btn btn-sm btn-outline-<%= m.color %>">
+                            <i class="bi bi-arrow-right-short"></i>Details
+                        </a>
+                        <% if (joinedIds.has(s.id)) { %>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check2 me-1"></i>Enrolled</span>
+                        <% } else if (full) { %>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Full</span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+    <% } %>
+
+    <% if (myParticipation.length) { %>
+    <h5 class="mt-5 mb-3"><i class="bi bi-person-check me-2"></i>My participation</h5>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Service</th><th>Component</th><th>Schedule</th>
+                        <th>Application</th><th>Attended</th><th>Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% myParticipation.forEach(function (p) { %>
+                    <tr>
+                        <td><a href="/services/<%= p.serviceId %>"><%= p.name %></a></td>
+                        <td><%= p.typeLabel %></td>
+                        <td><%= p.scheduleStart || '—' %></td>
+                        <td><span class="badge bg-secondary-subtle text-secondary"><%= p.applicationStatus %></span></td>
+                        <td><%= p.attended ? 'Yes' : 'No' %></td>
+                        <td><%= p.completedAt || '—' %></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

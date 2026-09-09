@@ -1,0 +1,26 @@
+# Environment / secrets — never commit these
+.env
+.env.local
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Uploaded documents (LSA applicant files)
+uploads/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+uploads/
+
+# Timestamped copies of .env made before edits — they hold the same secrets.
+.env.backup-*
+
+assets-source/ati.mp4

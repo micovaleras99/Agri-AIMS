@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "farmId": 1,
+    "farmName": "Reyes Integrated Farm",
+    "operator": "Pedro Reyes",
+    "period": "Semester 1 2026",
+    "submissionDate": "2026-01-15",
+    "visitors": 95,
+    "trainingSessions": 7,
+    "techDemos": 4,
+    "status": "approved",
+    "reviewedBy": "ATI Evaluator A"
+  },
+  {
+    "id": 2,
+    "farmId": 2,
+    "farmName": "Bautista Coconut Farm",
+    "operator": "Carlos Bautista",
+    "period": "Semester 1 2026",
+    "submissionDate": "2026-01-18",
+    "visitors": 72,
+    "trainingSessions": 5,
+    "techDemos": 3,
+    "status": "approved",
+    "reviewedBy": "ATI Evaluator B"
+  },
+  {
+    "id": 3,
+    "farmId": 3,
+    "farmName": "Green Valley Organic Farm",
+    "operator": "Juan Dela Cruz",
+    "period": "Semester 1 2026",
+    "submissionDate": "2026-01-22",
+    "visitors": 48,
+    "trainingSessions": 4,
+    "techDemos": 2,
+    "status": "pending",
+    "reviewedBy": null
+  },
+  {
+    "id": 4,
+    "farmId": 1,
+    "farmName": "Reyes Integrated Farm",
+    "operator": "Pedro Reyes",
+    "period": "Semester 2 2025",
+    "submissionDate": "2025-07-20",
+    "visitors": 94,
+    "trainingSessions": 7,
+    "techDemos": 5,
+    "status": "approved",
+    "reviewedBy": "ATI Evaluator A"
+  },
+  {
+    "id": 5,
+    "farmId": 5,
+    "farmName": "Villanueva Natural Farm",
+    "operator": "Ramon Villanueva",
+    "period": "Semester 1 2026",
+    "submissionDate": "2026-01-30",
+    "visitors": 61,
+    "trainingSessions": 5,
+    "techDemos": 3,
+    "status": "pending",
+    "reviewedBy": null
+  }
+]

@@ -1,0 +1,172 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/accreditation/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Step 6: Endorsement</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <span class="step-badge" style="background:#8e44ad;color:#fff;">Step 6 of 7</span>
+        <h1 class="page-title mt-1">Endorsement to ATI-CO</h1>
+        <p class="page-subtitle">RTC endorses application documents with RTWG endorsement to ATI Central Office</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/documents/package/<%= applicant.id %>" class="btn btn-outline-success"
+           title="Download all validated documents as a ZIP to email to ATI Central Office">
+            <i class="bi bi-file-earmark-zip me-1"></i>Download Validated Documents
+        </a>
+        <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">Overview</a>
+    </div>
+</div>
+
+<% if (endorsed) { %>
+<div class="alert alert-success mb-4">
+    <i class="bi bi-send-check-fill me-2"></i>
+    Endorsement submitted on <strong><%= applicant.step6_endorsedDate %></strong>.
+    Endorsement No.: <strong><%= applicant.step6_endorsementNo %></strong>
+</div>
+<% } %>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <!-- Endorsement Letter Preview -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-envelope-paper me-2 text-purple"></i>Endorsement Letter Preview
+                </h5>
+
+                <!-- Formal letter format -->
+                <div class="endorsement-letter">
+                    <div class="letter-header">
+                        <div class="letter-date"><%= new Date().toLocaleDateString('en-PH', {year:'numeric',month:'long',day:'numeric'}) %></div>
+                        <div class="letter-to">
+                            <strong><%= endorsementData.rtcDirector %></strong><br>
+                            Center Director<br>
+                            <%= endorsementData.rtcOffice %><br>
+                            <%= endorsementData.rtcAddress %>
+                        </div>
+                    </div>
+
+                    <div class="letter-body">
+                        <p><strong>Re: Endorsement of LSA Application — <%= applicant.applicationId %></strong></p>
+                        <p>
+                            We respectfully endorse for your favorable consideration the application of
+                            <strong><%= applicant.firstName %> <%= applicant.lastName %></strong>
+                            for accreditation as a Learning Site for Agriculture (LSA I) under the
+                            <strong><%= applicant.classification.replace(/_/g,' ') %></strong> classification.
+                        </p>
+                        <p>
+                            The farm, <strong><%= applicant.farmName %></strong>, located at
+                            <%= applicant.farmAddress %>, <%= applicant.municipality %>, <%= applicant.province %>,
+                            has been evaluated by the Regional Technical Working Group (RTWG) and has been found
+                            to have satisfactorily complied with the requirements of the ATI LSA Program.
+                        </p>
+                        <p>
+                            Attached herewith are the duly accomplished application documents for your review and
+                            approval:
+                        </p>
+                        <ul>
+                        <% verifiedDocs.forEach(d => { %>
+                        <li><%= d.name %></li>
+                        <% }) %>
+                        </ul>
+                        <p>
+                            We hereby certify that all submitted documents have been reviewed for completeness
+                            and legibility, and that the applicant has undergone Field/Virtual Validation on
+                            <strong><%= applicant.step5_validationDate %></strong>.
+                        </p>
+                    </div>
+
+                    <div class="letter-footer">
+                        <div class="letter-signatory">
+                            <div class="signatory-line"></div>
+                            <strong><%= endorsementData.rtcDirector %></strong><br>
+                            <span class="text-muted small">Center Director, <%= endorsementData.rtcOffice %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Endorsement -->
+        <% if (!endorsed) { %>
+        <div class="card">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-send-check me-2" style="color:#8e44ad;"></i>Submit Endorsement
+                </h5>
+                <% if (confirmError) { %>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    The confirmation must be ticked before endorsement can be submitted.
+                </div>
+                <% } %>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" for="endorseFile">Endorsement letter (ATI-QF-PAD-154)</label>
+                    <p class="text-muted small mb-2">
+                        Download the prescribed endorsement form, complete and sign it, then upload
+                        it with this endorsement to ATI Central Office.
+                    </p>
+                    <% if (endorsementForm) { %>
+                    <a href="/forms/lsa1_rtwg_endorsement" class="btn btn-outline-secondary mb-2" style="border-color:#8e44ad;color:#8e44ad;">
+                        <i class="bi bi-download me-1"></i>Download Endorsement Form
+                    </a>
+                    <% } %>
+                    <% if (endorsementDoc) { %>
+                    <div class="alert alert-info py-2 px-3 small mb-0">
+                        <i class="bi bi-file-earmark-check me-1"></i>
+                        A completed endorsement is on file.
+                        <a href="/documents/<%= endorsementDoc.id %>/file" target="_blank" rel="noopener">View current letter</a>.
+                    </div>
+                    <% } %>
+                </div>
+                <form action="/accreditation/<%= applicant.id %>/step/6" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="mb-3">
+                        <label for="endorseFile" class="form-label fw-semibold">Upload completed endorsement letter</label>
+                        <input type="file" class="form-control" id="endorseFile" name="file"
+                               accept=".pdf,.jpg,.jpeg,.png,.webp">
+                        <div class="form-text">Optional now, but ATI Central Office expects the signed letter.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="endorseRemarks" class="form-label fw-semibold">Endorsement Remarks</label>
+                        <textarea id="endorseRemarks" class="form-control" name="endorseRemarks" rows="3"
+                                  placeholder="Additional notes for ATI Central Office..."></textarea>
+                    </div>
+                    <div class="form-check mb-4">
+                        <input type="checkbox" class="form-check-input" id="confirmEndorse" name="confirmEndorse" required>
+                        <label class="form-check-label" for="confirmEndorse">
+                            I confirm that all documents have been reviewed and this endorsement is accurate and complete.
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-lg fw-bold text-white" style="background:#8e44ad;">
+                        <i class="bi bi-send-check me-2"></i>Submit Endorsement to ATI-CO → Step 7
+                    </button>
+                </form>
+            </div>
+        </div>
+        <% } %>
+
+    </div>
+    <div class="col-lg-4">
+        <%- include('../../partials/acred-sidebar', { applicant, currentStep: 6 }) %>
+    </div>
+</div>
+
+</div>
+</div>
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

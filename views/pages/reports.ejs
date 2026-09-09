@@ -1,0 +1,347 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page }) %>
+
+<div class="main-wrapper">
+    <div class="page-content">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Monitoring &amp; Reports</h1>
+                <p class="page-subtitle mb-0">Semestral accomplishment reports — visitors, trainings and technology demonstrations.</p>
+            </div>
+            <% if (['operator','admin','evaluator'].includes(role)) { %>
+            <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#reportForm"
+                    aria-expanded="<%= (role==='operator' && openPeriods.length) ? 'true' : 'false' %>" aria-controls="reportForm">
+                <i class="bi bi-file-earmark-plus me-1"></i>Submit Semestral Report
+            </button>
+            <% } %>
+        </div>
+
+        <% if (query.submitted) { %>
+        <div class="alert alert-success">Report submitted. It is now pending ATI review.</div>
+        <% } else if (query.reviewed) { %>
+        <div class="alert alert-success">
+            <%= query.reviewed === 'approved'
+                ? 'Report accepted. The operator has been notified.'
+                : 'Report returned for correction. The operator has been sent your remarks.' %>
+        </div>
+        <% } else if (query.error) { %>
+        <div class="alert alert-danger">
+            <% if (query.error === 'duplicate') { %>
+            That period has already been reported for this Learning Site.
+            <% } else if (query.error === 'period') { %>
+            Choose one of the reporting periods this Learning Site owes.
+            <% } else if (query.error === 'review') { %>
+            A returned report must say what needs correcting.
+            <% } else { %>
+            That farm could not be found.
+            <% } %>
+        </div>
+        <% } %>
+
+        <% if (['operator','admin','evaluator'].includes(role)) { %>
+        <div class="collapse mb-4 <%= (role==='operator' && openPeriods.length) ? 'show' : '' %>" id="reportForm">
+            <form method="POST" action="/reports" class="card report-form">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0 px-4">
+                    <h5 class="card-title mb-0"><i class="bi bi-journal-plus me-2 text-primary"></i>New Semestral Report</h5>
+                    <p class="text-muted small mb-0">Enter the figures for one reporting period, then submit for ATI review.</p>
+                </div>
+                <div class="card-body row g-3 p-4">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <% if (farms.length) { %>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="farmId"><i class="bi bi-building me-1 text-muted"></i>Learning Site</label>
+                        <select class="form-select" id="farmId" name="farmId" required>
+                            <% farms.forEach(function (f) { %>
+                            <option value="<%= f.id %>"><%= f.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <% } %>
+                    <div class="col-md-<%= farms.length ? '6' : '12' %>">
+                        <label class="form-label fw-semibold" for="period"><i class="bi bi-calendar3 me-1 text-muted"></i>Reporting period</label>
+                        <% if (role === 'operator') { %>
+                        <!-- The periods this Learning Site actually owes, overdue first.
+                             This was "this year's two semesters" for everyone, which a
+                             farm accredited part-way through a year does not owe at all. -->
+                        <select class="form-select" id="period" name="period" required
+                                <%= openPeriods.length ? '' : 'disabled' %>>
+                            <% openPeriods.forEach(function (p) { %>
+                            <option value="<%= p.period %>">
+                                <%= p.period %> — due <%= p.dueDate %><%= p.status === 'overdue' ? ' (overdue)' : '' %>
+                            </option>
+                            <% }); %>
+                        </select>
+                        <% if (!openPeriods.length) { %>
+                        <div class="form-text"><i class="bi bi-check-circle text-success me-1"></i>Every period in this accreditation has been reported.</div>
+                        <% } %>
+                        <% } else { %>
+                        <input type="text" class="form-control" id="period" name="period" required
+                               placeholder="Semester 1 <%= new Date().getFullYear() %>">
+                        <div class="form-text">Must be a period the chosen farm still owes.</div>
+                        <% } %>
+                    </div>
+
+                    <div class="col-12"><hr class="my-1"></div>
+                    <div class="col-12"><span class="small fw-semibold text-muted text-uppercase" style="letter-spacing:.04em;">Accomplishments this period</span></div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold" for="visitors"><i class="bi bi-people me-1 text-info"></i>Visitors received</label>
+                        <input type="number" min="0" class="form-control" id="visitors" name="visitors" value="0">
+                        <div class="form-text">Farm visits &amp; walk-ins.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold" for="trainingSessions"><i class="bi bi-mortarboard me-1 text-primary"></i>Training sessions held</label>
+                        <input type="number" min="0" class="form-control" id="trainingSessions" name="trainingSessions" value="0">
+                        <div class="form-text">Lectures &amp; orientations.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold" for="techDemos"><i class="bi bi-lightbulb me-1 text-warning"></i>Technology demonstrations</label>
+                        <input type="number" min="0" class="form-control" id="techDemos" name="techDemos" value="0">
+                        <div class="form-text">Techniques shown to visitors.</div>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#reportForm">Cancel</button>
+                        <button type="submit" class="btn btn-primary px-4" <%= (role==='operator' && !openPeriods.length) ? 'disabled' : '' %>>
+                            <i class="bi bi-send me-1"></i>Submit for review
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <% } %>
+
+        <!-- Stat Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary"><i class="bi bi-file-bar-graph"></i></div>
+                    <div class="stat-info"><h3><%= stats.total %></h3><p>Total Reports</p></div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-success"><i class="bi bi-check-circle"></i></div>
+                    <div class="stat-info"><h3><%= stats.approved %></h3><p>Approved</p></div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-warning"><i class="bi bi-hourglass-split"></i></div>
+                    <div class="stat-info"><h3><%= stats.pending %></h3><p>Pending Review</p></div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-info"><i class="bi bi-people"></i></div>
+                    <div class="stat-info"><h3><%= stats.totalVisitors %></h3><p>Total Visitors</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Reports Table -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-table me-2 text-primary"></i>Semestral Reports
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Farm</th>
+                                        <th>Operator</th>
+                                        <th>Period</th>
+                                        <th>Visitors</th>
+                                        <th>Training</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <% if (canDecide) { %><th>Decision</th><% } %>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (!reports.length) { %>
+                                    <tr>
+                                        <td colspan="<%= canDecide ? 8 : 7 %>" class="text-center text-muted py-5">
+                                            <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
+                                            No reports yet.
+                                            <% if (role === 'operator') { %>
+                                            Use <strong>Submit Semestral Report</strong> above to file your first period.
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                    <% reports.forEach(r => { %>
+                                    <tr>
+                                        <td class="fw-semibold"><%= r.farmName %></td>
+                                        <td class="text-muted small"><%= r.operator %></td>
+                                        <td><%= r.period %></td>
+                                        <td><span class="badge bg-info-subtle text-info border"><%= r.visitors %></span></td>
+                                        <td><span class="badge bg-success-subtle text-success border"><%= r.trainingSessions %></span></td>
+                                        <td>
+                                            <span class="status-badge <%= r.status %>">
+                                                <%= r.status %>
+                                            </span>
+                                            <% if (r.remarks) { %>
+                                            <div class="text-muted small mt-1"><%= r.remarks %></div>
+                                            <% } %>
+                                            <% if (r.reviewedBy) { %>
+                                            <div class="text-muted small">by <%= r.reviewedBy %></div>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-muted small"><%= r.submissionDate %></td>
+                                        <% if (canDecide) { %>
+                                        <td>
+                                            <% if (r.status === 'pending') { %>
+                                            <!-- Accept, or return with the reason. A return with no
+                                                 reason is refused by the route: an operator told only
+                                                 that their report came back has nothing to act on. -->
+                                            <form method="POST" action="/reports/<%= r.id %>/review"
+                                                  class="d-flex flex-column gap-1" style="min-width:210px">
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                <input type="text" name="remarks" class="form-control form-control-sm"
+                                                       placeholder="Remarks (required to return)">
+                                                <div class="d-flex gap-1">
+                                                    <button class="btn btn-sm btn-success flex-fill"
+                                                            name="status" value="approved">Accept</button>
+                                                    <button class="btn btn-sm btn-outline-danger flex-fill"
+                                                            name="status" value="returned">Return</button>
+                                                </div>
+                                            </form>
+                                            <% } else { %>
+                                            <span class="text-muted small">
+                                                <%= r.reviewedAt ? String(r.reviewedAt).substring(0, 10) : 'decided' %>
+                                            </span>
+                                            <% } %>
+                                        </td>
+                                        <% } %>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+
+                <% if (role === 'operator') { %>
+                <!-- An operator's own reporting standing — the province-wide
+                     breakdown below is a system view and is shown to staff only. -->
+                <% const nextDue = openPeriods[0] || null; %>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3"><i class="bi bi-calendar-check me-2 text-primary"></i>Your Reporting Status</h5>
+                        <% if (nextDue) { %>
+                        <div class="report-next <%= nextDue.status === 'overdue' ? 'report-next--overdue' : '' %>">
+                            <div class="small text-uppercase fw-semibold" style="letter-spacing:.04em;opacity:.75;">
+                                <%= nextDue.status === 'overdue' ? 'Overdue' : 'Next due' %>
+                            </div>
+                            <div class="fw-bold"><%= nextDue.period %></div>
+                            <div class="small"><i class="bi bi-clock me-1"></i>Due <%= nextDue.dueDate %></div>
+                        </div>
+                        <% } else { %>
+                        <div class="alert alert-success py-2 px-3 small mb-3">
+                            <i class="bi bi-check-circle me-1"></i>You're all caught up — every period has been reported.
+                        </div>
+                        <% } %>
+                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                            <span class="text-muted small">Submitted</span><span class="fw-semibold"><%= stats.total %></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Approved</span><span class="fw-semibold text-success"><%= stats.approved %></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Pending review</span><span class="fw-semibold text-warning"><%= stats.pending %></span>
+                        </div>
+                    </div>
+                </div>
+                <% } else { %>
+                <!-- Staff: system-wide distribution of Learning Sites. -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4"><i class="bi bi-bar-chart me-2 text-primary"></i>LSA by Province</h5>
+                        <% Object.entries(provinceMap).forEach(([prov, count]) => { %>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="fw-semibold"><%= prov %></small>
+                                <small class="text-muted"><%= count %> farm<%= count !== 1 ? 's' : '' %></small>
+                            </div>
+                            <div class="progress" style="height:8px;">
+                                <div class="progress-bar bg-primary"
+                                     style="width:<%= Math.round((count / Object.values(provinceMap).reduce((a,b)=>a+b,0)) * 100) %>%">
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+                <% } %>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-pie-chart me-2 text-primary"></i>Report Status
+                        </h5>
+                        <% if (stats.total) { %>
+                        <canvas id="reportChart" style="max-height:180px;"></canvas>
+                        <% } else { %>
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-pie-chart d-block mb-2" style="font-size:2rem;opacity:.35;"></i>
+                            <p class="mb-0 small">No reports to chart yet.</p>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+
+<script nonce="<%= cspNonce %>">
+// Drawn only when there is at least one report; otherwise the card shows a
+// friendly empty state and there is no canvas to bind to.
+if (document.getElementById('reportChart')) {
+new Chart(document.getElementById('reportChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Approved', 'Pending'],
+        datasets: [{
+            data: [<%= stats.approved %>, <%= stats.pending %>],
+            backgroundColor: ['#27ae60', '#f39c12'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+}
+</script>
+
+<style nonce="<%= cspNonce %>">
+.report-next {
+    border-radius: 10px; padding: 12px 14px;
+    background: rgba(45,122,62,.06); color: var(--primary-color);
+    border: 1px solid rgba(45,122,62,.15);
+}
+.report-next--overdue {
+    background: rgba(231,76,60,.07); color: var(--danger-color);
+    border-color: rgba(231,76,60,.2);
+}
+</style>
+</body>
+</html>

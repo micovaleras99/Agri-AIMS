@@ -1,0 +1,159 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/accreditation/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Step 3: Submit Documents</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <span class="step-badge bg-warning text-dark">Step 3 of 7</span>
+        <h1 class="page-title mt-1">Submit Documents</h1>
+        <p class="page-subtitle">Upload all required documentary requirements · <strong><%= submittedCount %></strong> of <strong><%= totalRequired %></strong> submitted</p>
+    </div>
+    <div class="d-flex gap-2">
+        <% if (!readonly) { %>
+        <a href="/documents/submit" class="btn btn-warning text-dark">
+            <i class="bi bi-upload me-1"></i>Upload Document
+        </a>
+        <% } %>
+        <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">Overview</a>
+    </div>
+</div>
+
+<!-- Progress summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="bi bi-files"></i></div>
+            <div class="stat-info"><h3><%= totalRequired %></h3><p>Required</p></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning"><i class="bi bi-upload"></i></div>
+            <div class="stat-info"><h3><%= submittedCount %></h3><p>Submitted</p></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="bi bi-patch-check"></i></div>
+            <div class="stat-info"><h3><%= verifiedCount %></h3><p>Verified</p></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-danger"><i class="bi bi-exclamation-circle"></i></div>
+            <div class="stat-info"><h3><%= totalRequired - submittedCount %></h3><p>Missing</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <!-- Document checklist table -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-list-check me-2 text-warning"></i>
+                    Documentary Requirements Checklist
+                </h5>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Document</th>
+                                <th>Form Reference</th>
+                                <th>Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <% docStatus.forEach((d, i) => { %>
+                        <tr class="<%= d.status === 'missing' ? 'table-danger bg-opacity-10' : d.status === 'verified' ? 'table-success bg-opacity-10' : '' %>">
+                            <td class="text-muted small"><%= i+1 %></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-file-earmark-<%= d.submitted ? 'pdf text-danger' : 'text-secondary' %> fs-5"></i>
+                                    <div>
+                                        <div class="fw-semibold small"><%= d.label %></div>
+                                        <% if (d.filename) { %>
+                                        <div class="text-muted" style="font-size:11px;"><%= d.filename %></div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-muted small"><%= d.form %></td>
+                            <td>
+                                <span class="status-badge <%= d.status.replace('_','-') %>">
+                                    <%= d.status.replace(/_/g,' ') %>
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <% if (d.hasForm) { %>
+                                <a href="/forms/<%= d.type %>" class="btn btn-xs btn-outline-info" title="Download prescribed form">
+                                    <i class="bi bi-download"></i> Form
+                                </a>
+                                <% } %>
+                                <% if (!d.submitted && !readonly) { %>
+                                <a href="/documents/submit?applicant=<%= applicant.id %>&type=<%= d.type %>" class="btn btn-xs btn-warning text-dark">Upload</a>
+                                <% } else if (d.submitted) { %>
+                                <a href="/documents" class="btn btn-xs btn-outline-secondary">View</a>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proceed button -->
+        <% if (!readonly && submittedCount >= 8) { %>
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">Ready to proceed?</div>
+                        <div class="text-muted small">
+                            You have submitted <%= submittedCount %> of <%= totalRequired %> required documents.
+                            <% if (submittedCount < totalRequired) { %>
+                            Missing documents can still be uploaded while your application is under evaluation.
+                            <% } %>
+                        </div>
+                    </div>
+                    <form action="/accreditation/<%= applicant.id %>/step/3" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-warning text-dark fw-bold">
+                            <i class="bi bi-send me-2"></i>Submit for Evaluation →
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+    </div>
+
+    <div class="col-lg-4">
+        <%- include('../../partials/acred-sidebar', { applicant, currentStep: 3 }) %>
+    </div>
+</div>
+
+</div>
+</div>
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

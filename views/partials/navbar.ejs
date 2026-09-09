@@ -1,0 +1,166 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     PARTIAL: navbar.ejs — Role-Based Top Navigation
+     Roles: admin | evaluator | operator | applicant
+     Variables injected: page (string), currentUser (object), role (string)
+     ═══════════════════════════════════════════════════════════════ -->
+
+<%
+// ── Role-color & icon map ──────────────────────────────────────
+const roleConfig = {
+    admin:     { label: 'Admin',        color: 'danger',  icon: 'shield-lock-fill'       },
+    evaluator: { label: 'Evaluator',    color: 'warning', icon: 'clipboard2-check-fill'  },
+    operator:  { label: 'LSA Operator', color: 'success', icon: 'tree-fill'              },
+    applicant: { label: 'Applicant',    color: 'primary', icon: 'person-fill-add'        },
+    guest:     { label: 'Guest',        color: 'secondary', icon: 'person'                 }
+};
+const rc = roleConfig[role] || roleConfig.guest;
+%>
+
+<!-- Without this, reaching the page content means tabbing through the whole
+     navigation on every page. It lives here rather than in the header so it
+     always ships with the navigation it skips — the login and error pages
+     include the header without a navbar, and there the link had no target. -->
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+    <div class="container-fluid px-4">
+
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/dashboard">
+            <img src="/images/logo.png" alt="ATI LSA Logo" style="height: 40px; width: auto; object-fit: contain;">
+            <span class="brand-text" style="font-weight: 700;">ATI LSA - AIMS</span>
+        </a>
+
+        <!-- Role Badge (visible on desktop) -->
+        <% if (currentUser) { %>
+        <span class="role-badge d-none d-lg-flex bg-<%= rc.color %>-subtle text-<%= rc.color %> ms-2">
+            <i class="bi bi-<%= rc.icon %> me-1"></i><%= rc.label %>
+        </span>
+        <% } %>
+
+        <!-- ── Bell + User, always in the bar ──────────────────
+             These used to sit inside .navbar-collapse, so on a phone they were
+             hidden until the hamburger was opened: no unread badge, and no way
+             to reach Logout. They now live beside the toggler at every width,
+             and CSS moves them to the right-hand end on desktop. -->
+        <div class="navbar-actions d-flex align-items-center gap-3">
+                <% if (!currentUser) { %>
+                <a href="/" class="btn btn-primary btn-sm">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Log in
+                </a>
+                <% } else { %>
+                <div class="nav-bell position-relative" id="bellIcon" role="button" tabindex="0"
+                     aria-label="Notifications" aria-expanded="false" aria-controls="notifDropdown"
+                     style="cursor:pointer" data-call="toggleNotifications">
+                    <i class="bi bi-bell fs-5" aria-hidden="true"></i>
+                    <span class="nav-badge" id="notifCount" style="display:none;">0</span>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-link user-btn dropdown-toggle"
+                            type="button" data-bs-toggle="dropdown">
+                        <%- include('avatar', { user: currentUser, cls: 'user-avatar-sm', color: rc.color }) %>
+                        <span class="user-name-label d-none d-md-inline">
+                            <%= currentUser.firstName %>
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <!-- User Info Header -->
+                        <li class="px-3 py-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <%- include('avatar', { user: currentUser, cls: 'user-avatar-sm flex-shrink-0', color: rc.color }) %>
+                                <div>
+                                    <div class="fw-semibold small">
+                                        <%= currentUser.firstName %> <%= currentUser.lastName %>
+                                    </div>
+                                    <div class="small text-muted"><%= currentUser.email %></div>
+                                    <span class="badge bg-<%= rc.color %>-subtle text-<%= rc.color %> mt-1">
+                                        <i class="bi bi-<%= rc.icon %> me-1"></i><%= rc.label %>
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/profile">
+                            <i class="bi bi-person me-2"></i>Profile
+                        </a></li>
+
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </div>
+                <% } %>
+            </div>
+
+        <button class="navbar-toggler border-0" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-label="Open navigation menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
+            <!-- ── ROLE-BASED NAV LINKS ── -->
+            <!-- ── ROLE-BASED NAV ──────────────────────────────
+                 Defined once in config/navigation.js. Related destinations sit
+                 in dropdowns so the bar stays scannable; nothing was removed,
+                 and each route still enforces its own access rules. -->
+            <ul class="navbar-nav mx-auto gap-1">
+                <% navItems.forEach(function (item) { %>
+                <% if (!item.children) { %>
+                <li class="nav-item">
+                    <a class="nav-link <%= page === item.page ? 'active' : '' %>" href="<%= item.href %>">
+                        <i class="bi bi-<%= item.icon %> me-1"></i><%= item.label %>
+                    </a>
+                </li>
+                <% } else { %>
+                <% var groupActive = item.children.some(function (c) { return page === c.page; }); %>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle <%= groupActive ? 'active' : '' %>" href="#"
+                       id="nav<%= item.label.replace(/W/g, '') %>" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-<%= item.icon %> me-1"></i><%= item.label %>
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="nav<%= item.label.replace(/W/g, '') %>">
+                        <% item.children.forEach(function (child) { %>
+                        <li>
+                            <a class="dropdown-item <%= page === child.page ? 'active' : '' %>" href="<%= child.href %>">
+                                <i class="bi bi-<%= child.icon %> me-2"></i><%= child.label %>
+                            </a>
+                        </li>
+                        <% }); %>
+                    </ul>
+                </li>
+                <% } %>
+                <% }); %>
+            </ul>
+
+        </div>
+
+
+        </div>
+    </div>
+</nav>
+
+<!-- Notification Dropdown — filled by /public/js/notifications.js -->
+<% if (currentUser) { %>
+<div class="notif-dropdown" id="notifDropdown">
+    <div class="notif-header">
+        <h6 class="mb-0">Notifications</h6>
+        <button class="btn btn-sm btn-link p-0" type="button" data-call="markAllNotificationsRead">
+            Mark all read
+        </button>
+    </div>
+    <div class="notif-body" id="notifBody">
+        <div class="notif-item">
+            <i class="bi bi-hourglass text-secondary"></i>
+            <div><div class="notif-title">Loading…</div></div>
+        </div>
+    </div>
+</div>
+<% } %>
+
+<!-- Where the skip link lands: past the navigation, at the page content. -->
+<div id="main-content" tabindex="-1"></div>

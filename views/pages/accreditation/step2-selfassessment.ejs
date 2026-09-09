@@ -1,0 +1,136 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/accreditation/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Step 2: Self-Assessment</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <span class="step-badge bg-info">Step 2 of 7</span>
+        <h1 class="page-title mt-1">Self-Assessment</h1>
+        <p class="page-subtitle">Eligibility self-assessment · <strong>ATI-QF-PAD-164 Rev. 00</strong></p>
+    </div>
+    <div class="d-flex gap-2">
+        <% if (applicant.step2_completedDate) { %>
+        <span class="badge bg-success px-3 py-2">
+            <i class="bi bi-clipboard-check me-1"></i>Submitted
+        </span>
+        <% } %>
+        <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">Overview</a>
+    </div>
+</div>
+
+<% if (applicant.step2_completedDate) { %>
+<div class="alert alert-success mb-4">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    Self-assessment submitted on <strong><%= applicant.step2_completedDate %></strong>.
+    <% if (submitted) { %>
+    <a href="/documents/<%= submitted.id %>/file" class="ms-2" target="_blank" rel="noopener">
+        <i class="bi bi-file-earmark-arrow-down me-1"></i>View uploaded copy
+    </a>
+    <% } %>
+    <a href="/accreditation/<%= applicant.id %>/step/3" class="btn btn-sm btn-success ms-3">
+        Continue to Step 3 →
+    </a>
+</div>
+<% } %>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="section-title mb-3">
+                    <i class="bi bi-clipboard-check me-2 text-info"></i>Self-Assessment Form (ATI-QF-PAD-164)
+                </h5>
+                <p class="text-muted">
+                    Download the official Self-Assessment form, complete and sign it offline, then
+                    upload the finished copy. ATI reviews your submitted form during document
+                    evaluation.
+                </p>
+
+                <a href="/forms/self_assessment" class="btn btn-outline-info mb-4">
+                    <i class="bi bi-download me-1"></i>Download Self-Assessment Form
+                </a>
+
+                <% if (typeof fileError !== 'undefined' && fileError) { %>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Attach your completed Self-Assessment form before submitting.
+                </div>
+                <% } %>
+
+                <% if (!readonly && !applicant.step2_completedDate) { %>
+                <form action="/accreditation/<%= applicant.id %>/step/2" method="POST"
+                      enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="saFile">Completed form</label>
+                        <input type="file" class="form-control" id="saFile" name="file"
+                               accept=".pdf,.jpg,.jpeg,.png,.webp" required>
+                        <div class="form-text">Upload as a PDF or a clear photo/scan (max 10 MB).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="saRemarks">Remarks (optional)</label>
+                        <textarea class="form-control" id="saRemarks" name="remarks" rows="3"
+                                  placeholder="Any notes about your farm or situation..."></textarea>
+                    </div>
+
+                    <% if (typeof facilities !== 'undefined' && facilities.length) { %>
+                    <fieldset class="mb-4">
+                        <legend class="form-label fw-semibold mb-1" style="font-size:1rem;">
+                            <i class="bi bi-buildings me-1 text-info"></i>Basic facilities on your farm
+                        </legend>
+                        <p class="form-text mt-0 mb-2">
+                            Tick the facilities your Learning Site has (LSA Guidelines, Farm Requirements).
+                            The TWG confirms these on the field validation visit.
+                        </p>
+                        <% facilities.forEach(function (f) { %>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="on"
+                                   id="<%= f.id %>" name="<%= f.id %>"
+                                   <%= facilityAnswers && facilityAnswers[f.id] ? 'checked' : '' %>>
+                            <label class="form-check-label" for="<%= f.id %>"><%= f.label %></label>
+                        </div>
+                        <% }); %>
+                    </fieldset>
+                    <% } %>
+
+                    <button type="submit" class="btn btn-info text-white btn-lg">
+                        <i class="bi bi-upload me-2"></i>Submit Self-Assessment &amp; Proceed to Step 3
+                    </button>
+                </form>
+                <% } else if (applicant.step2_completedDate) { %>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i>Your form has been submitted. To replace it,
+                    upload a new copy from the
+                    <a href="/documents/submit">Submit Document</a> page.
+                </p>
+                <% } %>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+        <%- include('../../partials/acred-sidebar', { applicant, currentStep: 2 }) %>
+    </div>
+</div>
+
+</div>
+</div>
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+</body>
+</html>

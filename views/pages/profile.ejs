@@ -1,0 +1,286 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<%
+// Same map the navbar uses, so the badge here reads identically.
+const roleConfig = {
+    admin:     { label: 'Admin',        color: 'danger'    },
+    evaluator: { label: 'Evaluator',    color: 'warning'   },
+    operator:  { label: 'LSA Operator', color: 'success'   },
+    applicant: { label: 'Applicant',    color: 'primary'   },
+    guest:     { label: 'Guest',        color: 'secondary' }
+};
+const rc = roleConfig[role] || roleConfig.guest;
+// Position and office describe an ATI post. A farmer does not hold one, so the
+// fields are shown only to the roles that do.
+const isStaff = role === 'admin' || role === 'evaluator';
+%>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">My Profile</h1>
+            <p class="page-subtitle">Your account details and sign-in password.</p>
+        </div>
+    </div>
+
+    <%
+    // The picture is a plain form post, so its result comes back on the query
+    // string rather than through showNotification like the two fetch forms.
+    const PHOTO_MSG = {
+        photo:        ['success', 'Profile picture updated.'],
+        photoremoved: ['success', 'Profile picture removed.'],
+        phototype:    ['danger',  'That file is not a JPEG, PNG or WebP image.'],
+        nophoto:      ['danger',  'No image was chosen, or it was larger than ' + maxPhotoMb + ' MB.']
+    };
+    const photoMsg = PHOTO_MSG[query.success] || PHOTO_MSG[query.error];
+    %>
+    <% if (photoMsg) { %>
+    <div class="alert alert-<%= photoMsg[0] %> alert-dismissible">
+        <i class="bi bi-<%= photoMsg[0] === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' %> me-2"></i><%= photoMsg[1] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <div class="row g-4">
+
+        <!-- ── Identity card ──────────────────────────────────── -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="avatar-edit mx-auto mb-3">
+                        <%- include('../partials/avatar', { user: currentUser, cls: 'user-avatar-lg', color: rc.color }) %>
+                        <button type="button" class="avatar-edit-btn" id="photoPick"
+                                title="Change profile picture" aria-label="Change profile picture">
+                            <i class="bi bi-camera-fill"></i>
+                        </button>
+                    </div>
+
+                    <!-- Multipart, so the CSRF token travels in the body and is
+                         checked after multer has parsed it. -->
+                    <form id="photoForm" method="POST" action="/profile/photo"
+                          enctype="multipart/form-data" class="d-none">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input type="file" id="photoInput" name="photo"
+                               accept="image/jpeg,image/png,image/webp">
+                    </form>
+
+                    <h5 class="mb-1"><%= currentUser.firstName %> <%= currentUser.lastName %></h5>
+                    <div class="text-muted small mb-2"><%= currentUser.email %></div>
+                    <span class="badge bg-<%= rc.color %>-subtle text-<%= rc.color %>"><%= rc.label %></span>
+
+                    <div class="small text-muted mt-3">
+                        JPEG, PNG or WebP, up to <%= maxPhotoMb %> MB.
+                    </div>
+                    <% if (currentUser.photo) { %>
+                    <form method="POST" action="/profile/photo/remove" class="mt-2">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-trash me-1"></i>Remove picture
+                        </button>
+                    </form>
+                    <% } %>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Role</span>
+                        <span class="fw-semibold"><%= rc.label %></span>
+                    </li>
+                    <% if (currentUser.applicationId) { %>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Application</span>
+                        <span class="fw-semibold"><%= currentUser.applicationId %></span>
+                    </li>
+                    <% } %>
+                    <% if (currentUser.farmId) { %>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">Learning site</span>
+                        <a href="/farms/<%= currentUser.farmId %>" class="fw-semibold">View farm</a>
+                    </li>
+                    <% } %>
+                </ul>
+                <div class="card-footer small text-muted">
+                    Your role and the records linked to your account are set by ATI and
+                    cannot be changed here.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Editable details ───────────────────────────────── -->
+        <div class="col-lg-8">
+            <form id="detailsForm" class="card mb-4">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-person me-1"></i>Account details
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="firstName">First name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="firstName" name="firstName"
+                                   value="<%= currentUser.firstName %>" required maxlength="120">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="lastName">Last name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="lastName" name="lastName"
+                                   value="<%= currentUser.lastName %>" required maxlength="120">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="email">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   value="<%= currentUser.email %>" required>
+                            <div class="form-text">This is the address you sign in with.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="phone">Mobile number</label>
+                            <input type="text" class="form-control" id="phone" name="phone"
+                                   value="<%= currentUser.phone || '' %>" maxlength="40">
+                        </div>
+                        <% if (isStaff) { %>
+                        <div class="col-md-6">
+                            <label class="form-label" for="position">Position</label>
+                            <input type="text" class="form-control" id="position" name="position"
+                                   value="<%= currentUser.position || '' %>" maxlength="255">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="office">Office</label>
+                            <input type="text" class="form-control" id="office" name="office"
+                                   value="<%= currentUser.office || '' %>" maxlength="255">
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>Save changes
+                    </button>
+                </div>
+            </form>
+
+            <!-- ── Password ───────────────────────────────────── -->
+            <form id="passwordForm" class="card">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-key me-1"></i>Change password
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        If ATI staff created this account for you and read the password out,
+                        change it here so that only you know it.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="currentPassword">Current password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="currentPassword"
+                                   name="currentPassword" required autocomplete="current-password">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="newPassword">New password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="newPassword"
+                                   name="newPassword" required autocomplete="new-password">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="confirmPassword">Confirm new password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="confirmPassword"
+                                   name="confirmPassword" required autocomplete="new-password">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-text">
+                                At least 8 characters, with an uppercase letter, a lowercase letter,
+                                a number and a special character.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-shield-lock me-1"></i>Update password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+  const USER_ID = <%= currentUser.id %>;
+  const CSRF_TOKEN = '<%= csrfToken %>';
+
+  async function save(body) {
+    const res = await fetch('/api/users/' + USER_ID, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': CSRF_TOKEN },
+      credentials: 'same-origin',
+      body: JSON.stringify(body)
+    });
+    let json = {};
+    try { json = await res.json(); } catch (e) { /* the server returned an error page, not JSON */ }
+    if (!res.ok || !json.success) {
+      throw new Error(json.error || ('Request failed (' + res.status + ')'));
+    }
+    return json.data;
+  }
+
+  // Runs a submit with the button disabled, so a slow bcrypt hash cannot be
+  // sent twice by an impatient second click.
+  function onSubmit(form, handler) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try {
+        await handler();
+      } catch (err) {
+        showNotification(err.message, 'danger');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // The camera button is the visible control; the file input behind it stays
+  // hidden because no browser lets its native rendering be styled.
+  const photoInput = document.getElementById('photoInput');
+  document.getElementById('photoPick').addEventListener('click', () => photoInput.click());
+  photoInput.addEventListener('change', () => {
+    const file = photoInput.files[0];
+    if (!file) return;
+    // Checked here as well as on the server so a phone photo is refused before
+    // it is uploaded over mobile data, not after.
+    if (file.size > <%= maxPhotoMb %> * 1024 * 1024) {
+      photoInput.value = '';
+      showNotification('That image is larger than <%= maxPhotoMb %> MB. Please choose a smaller one.', 'danger');
+      return;
+    }
+    document.getElementById('photoForm').submit();
+  });
+
+  const details = document.getElementById('detailsForm');
+  onSubmit(details, async () => {
+    const body = Object.fromEntries(new FormData(details).entries());
+    await save(body);
+    showNotification('Profile updated', 'success');
+    // The navbar is rendered server-side, so it keeps showing the old name
+    // until the page is fetched again.
+    setTimeout(() => window.location.reload(), 600);
+  });
+
+  const pw = document.getElementById('passwordForm');
+  onSubmit(pw, async () => {
+    const current = document.getElementById('currentPassword').value;
+    const next = document.getElementById('newPassword').value;
+    const confirmed = document.getElementById('confirmPassword').value;
+    if (next !== confirmed) throw new Error('The two new passwords do not match');
+    if (next === current) throw new Error('The new password is the same as the current one');
+    await save({ currentPassword: current, password: next });
+    pw.reset();
+    showNotification('Password updated', 'success');
+  });
+})();
+</script>
+</body>
+</html>

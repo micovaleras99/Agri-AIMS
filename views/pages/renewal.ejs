@@ -1,0 +1,276 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<%
+// Colour and icon per validity state. Never colour alone — each pill carries
+// its own words, so a red/green deficiency loses nothing.
+const STATE = {
+    expired:  { cls: 'danger',    icon: 'x-octagon-fill'          },
+    expiring: { cls: 'warning',   icon: 'exclamation-triangle-fill' },
+    active:   { cls: 'success',   icon: 'patch-check-fill'        },
+    unknown:  { cls: 'secondary', icon: 'question-circle'         }
+};
+const STATUS_ICON = {
+    submitted:    'inbox',
+    under_review: 'hourglass-split',
+    approved:     'patch-check',
+    rejected:     'x-circle'
+};
+const isStaff = role === 'admin' || role === 'evaluator';
+const MSG = {
+    applied:  ['success', 'Renewal application submitted. ATI has been notified.'],
+    review:   ['success', 'Marked as under review.'],
+    approved: ['success', 'Renewal approved. The accreditation has been extended.'],
+    rejected: ['success', 'Renewal rejected and the operator notified.'],
+    notfound: ['danger',  'That record no longer exists.'],
+    already:  ['danger',  'That site already has a renewal application in progress.'],
+    decided:  ['danger',  'That application has already been decided.'],
+    remarks:  ['danger',  'A rejection needs remarks — the operator has to know what to fix.']
+};
+const banner = MSG[query.success] || MSG[query.error];
+%>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title mb-1"><i class="bi bi-arrow-repeat me-2"></i>Renewal &amp; Re-accreditation</h1>
+            <p class="page-subtitle">
+                An LSA accreditation runs for <%= validityYears %> years from the date the certificate
+                is issued. Operators are reminded at
+                <%= reminderDays.join(', ') %> days before expiry, and apply here to renew.
+            </p>
+        </div>
+    </div>
+
+    <% if (banner) { %>
+    <div class="alert alert-<%= banner[0] %> alert-dismissible">
+        <i class="bi bi-<%= banner[0] === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' %> me-2"></i><%= banner[1] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <!-- ── Validity tracking ────────────────────────────────── -->
+    <div class="card mb-4">
+        <div class="card-header fw-semibold">
+            <i class="bi bi-calendar-check me-1"></i>Accreditation validity
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 renewal-table">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Learning Site</th>
+                        <th>Operator</th>
+                        <th>LSA Certificate No.</th>
+                        <th>Certified</th>
+                        <th style="min-width:150px">Accredited until</th>
+                        <th>Status</th>
+                        <th>Renewal</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!rows.length) { %>
+                    <tr>
+                        <td colspan="8" class="renewal-cell--full text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            No accredited Learning Sites to renew yet.
+                        </td>
+                    </tr>
+                    <% } %>
+                    <% rows.forEach(function (r) {
+                         const st = STATE[r.validity.state]; %>
+                    <tr <%= focusFarm === r.farm.id ? 'class="table-active"' : '' %>>
+                        <td class="ps-3" data-label="Learning Site">
+                            <a href="/farms/<%= r.farm.id %>" class="fw-semibold text-decoration-none"><%= r.farm.name %></a>
+                            <div class="small text-muted"><%= r.farm.municipality %>, <%= r.farm.province %></div>
+                        </td>
+                        <td data-label="Operator"><%= r.farm.operator || '—' %></td>
+                        <td class="font-monospace" data-label="Certificate No."><%= r.certificateNumber || '—' %></td>
+                        <td class="font-monospace" data-label="Certified"><%= r.farm.accreditedSince || '—' %></td>
+                        <td class="font-monospace" data-label="Accredited until"><%= r.farm.expiryDate || 'Not recorded' %></td>
+                        <td data-label="Status">
+                            <span class="badge bg-<%= st.cls %>-subtle text-<%= st.cls %> border">
+                                <i class="bi bi-<%= st.icon %> me-1"></i><%= r.validity.label %>
+                            </span>
+                        </td>
+                        <td data-label="Renewal">
+                            <% if (r.open) { %>
+                            <span class="badge bg-light text-dark border">
+                                <i class="bi bi-<%= STATUS_ICON[r.open.status] %> me-1"></i><%= statusLabels[r.open.status] %>
+                            </span>
+                            <% } else { %>
+                            <span class="text-muted small">None in progress</span>
+                            <% } %>
+                        </td>
+                        <td class="text-end pe-3" data-label="Action">
+                            <% if (!r.open && r.canApply && r.validity.state !== 'active') { %>
+                            <button type="button" class="btn btn-sm btn-primary"
+                                    data-bs-toggle="collapse" data-bs-target="#apply<%= r.farm.id %>">
+                                <i class="bi bi-arrow-repeat me-1"></i>Apply to renew
+                            </button>
+                            <% } else if (!r.open && r.canApply) { %>
+                            <span class="text-muted small">Not due yet</span>
+                            <% } else if (r.open && isStaff) { %>
+                            <a href="#renewal-<%= r.open.id %>" class="btn btn-sm btn-outline-primary">Review</a>
+                            <% } else { %>
+                            <span class="text-muted small">—</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% if (!r.open && r.canApply && r.validity.state !== 'active') { %>
+                    <tr class="collapse renewal-apply-row" id="apply<%= r.farm.id %>">
+                        <td colspan="8" class="bg-light renewal-cell--full">
+                            <form method="POST" action="/renewal/<%= r.farm.id %>/apply" class="row g-2 align-items-end">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <div class="col-md-9">
+                                    <label class="form-label small fw-semibold" for="remarks<%= r.farm.id %>">
+                                        Anything ATI should know before the re-validation visit
+                                    </label>
+                                    <textarea class="form-control" id="remarks<%= r.farm.id %>" name="remarks" rows="2"
+                                              placeholder="Changes to the farm, new facilities, a preferred visit window…"></textarea>
+                                </div>
+                                <div class="col-md-3 d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-send me-1"></i>Submit renewal
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <% } %>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Applications ─────────────────────────────────────── -->
+    <div class="card">
+        <div class="card-header fw-semibold">
+            <i class="bi bi-folder2-open me-1"></i>Renewal applications
+        </div>
+        <div class="card-body">
+            <% if (!history.length) { %>
+            <p class="text-muted mb-0">No renewal application has been submitted yet.</p>
+            <% } %>
+            <% history.forEach(function (h) { %>
+            <div class="border rounded-3 p-3 mb-3" id="renewal-<%= h.id %>">
+                <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+                    <div>
+                        <span class="fw-semibold"><%= h.farmName %></span>
+                        <span class="text-muted small ms-2">
+                            submitted <%= new Date(h.submittedAt).toISOString().split('T')[0] %>
+                            <% if (h.previousExpiry) { %> · was valid until <%= h.previousExpiry %><% } %>
+                        </span>
+                    </div>
+                    <span class="badge bg-light text-dark border">
+                        <i class="bi bi-<%= STATUS_ICON[h.status] %> me-1"></i><%= statusLabels[h.status] %>
+                    </span>
+                </div>
+
+                <% if (h.operatorRemarks) { %>
+                <p class="small mb-2"><span class="text-muted">Operator:</span> <%= h.operatorRemarks %></p>
+                <% } %>
+                <% if (h.decisionRemarks) { %>
+                <p class="small mb-2"><span class="text-muted">ATI:</span> <%= h.decisionRemarks %></p>
+                <% } %>
+                <% if (h.status === 'approved') { %>
+                <p class="small mb-0 text-success">
+                    <i class="bi bi-patch-check me-1"></i>Renewed until <strong><%= h.newValidUntil %></strong>
+                    <% if (h.newCertificateNo) { %> · certificate <%= h.newCertificateNo %><% } %>
+                </p>
+                <% } %>
+
+                <% if (isStaff && ['submitted','under_review'].includes(h.status)) { %>
+                <hr class="my-3">
+                <div class="d-flex flex-wrap gap-2">
+                    <% if (h.status === 'submitted') { %>
+                    <form method="POST" action="/renewal/<%= h.id %>/review">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-hourglass-split me-1"></i>Mark under review
+                        </button>
+                    </form>
+                    <% } %>
+                </div>
+                <form method="POST" action="/renewal/<%= h.id %>/decide" class="row g-2 align-items-end mt-1">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold" for="cert<%= h.id %>">New certificate no.</label>
+                        <input type="text" class="form-control form-control-sm" id="cert<%= h.id %>"
+                               name="certificateNo" placeholder="Optional">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold" for="dec<%= h.id %>">Remarks <span class="text-muted fw-normal">(required to reject)</span></label>
+                        <input type="text" class="form-control form-control-sm" id="dec<%= h.id %>" name="remarks">
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <% if (role === 'admin') { %>
+                        <button type="submit" name="decision" value="approve" class="btn btn-sm btn-success flex-fill">
+                            <i class="bi bi-check-lg me-1"></i>Approve
+                        </button>
+                        <% } %>
+                        <button type="submit" name="decision" value="reject" class="btn btn-sm btn-outline-danger flex-fill">
+                            <i class="bi bi-x-lg me-1"></i>Reject
+                        </button>
+                    </div>
+                    <% if (role !== 'admin') { %>
+                    <div class="col-12">
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-info-circle me-1"></i>Only an administrator can approve a renewal,
+                            as with the original certificate at Step 7.
+                        </p>
+                    </div>
+                    <% } %>
+                </form>
+                <% } %>
+            </div>
+            <% }); %>
+        </div>
+    </div>
+</div>
+
+<style nonce="<%= cspNonce %>">
+/* Phones: the 8-column validity table would otherwise scroll sideways. Reflow
+   each row into a stacked card, one label:value per line — no horizontal scroll,
+   same DOM (so the apply/collapse form and its ids keep working). */
+@media (max-width: 767.98px) {
+    .renewal-table thead { display: none; }
+    .renewal-table, .renewal-table tbody { display: block; width: 100%; }
+    .renewal-table tr {
+        display: block;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 6px 14px;
+        margin: 12px;
+        background: var(--bg-secondary, #fff);
+    }
+    .renewal-table tr.table-active { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(45,122,62,.15); }
+    .renewal-table td {
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        padding: 8px 0; border: 0; text-align: right;
+    }
+    .renewal-table td + td { border-top: 1px solid var(--border-color); }
+    .renewal-table td::before {
+        content: attr(data-label);
+        font-weight: 600; font-size: 12px; color: var(--text-secondary);
+        text-align: left; flex-shrink: 0;
+    }
+    .renewal-table td.ps-3, .renewal-table td.pe-3 { padding-left: 0; padding-right: 0; }
+    /* Full-width cells (empty state, the apply form) span the card with no label. */
+    .renewal-table td.renewal-cell--full { display: block; text-align: left; }
+    .renewal-table td.renewal-cell--full::before { content: none; }
+    .renewal-table td.renewal-cell--full + td { border-top: 0; }
+    /* The collapse row is its own card only once open; keep it flush with the row above. */
+    .renewal-table tr.renewal-apply-row { margin-top: -6px; border-top-left-radius: 0; border-top-right-radius: 0; }
+    .renewal-table tr.renewal-apply-row .row > [class^="col-"] { width: 100%; }
+    .renewal-table td.text-end { justify-content: flex-end; }
+}
+</style>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<%- include('../partials/chatbot') %>
+</body>
+</html>

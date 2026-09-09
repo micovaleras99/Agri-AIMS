@@ -1,0 +1,248 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/accreditation/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Step 7: Certificate & MOA</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <span class="step-badge bg-success">Step 7 of 7</span>
+        <h1 class="page-title mt-1">Certificate Issuance & MOA Signing</h1>
+        <p class="page-subtitle">Issue LSA Certificate and execute Memorandum of Agreement</p>
+    </div>
+    <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">Overview</a>
+</div>
+
+<% if (alreadyIssued) { %>
+<div class="alert alert-success mb-4">
+    <i class="bi bi-award-fill me-2"></i>
+    <strong>Certificate Issued!</strong> Certificate No.: <strong><%= applicant.step7_certificateNo %></strong> ·
+    Valid until: <strong><%= applicant.step7_validUntil %></strong>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <h5 class="card-title mb-3">
+            <i class="bi bi-file-earmark-arrow-up me-2 text-success"></i>Scanned Certificate
+        </h5>
+        <% if (certificateDoc) { %>
+        <p class="mb-3">
+            <i class="bi bi-file-earmark-check text-success me-1"></i>
+            The scanned certificate is on file — the applicant can download it.
+            <a href="/documents/<%= certificateDoc.id %>/file" target="_blank" rel="noopener" class="ms-1">View copy</a>.
+        </p>
+        <% } else { %>
+        <p class="text-muted mb-3">
+            No scanned certificate uploaded yet. Upload the signed copy so the applicant can download it.
+        </p>
+        <% } %>
+        <form action="/accreditation/<%= applicant.id %>/step/7" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="confirmCert" value="on">
+            <div class="input-group">
+                <input type="file" class="form-control" name="file"
+                       accept=".pdf,.jpg,.jpeg,.png,.webp" required aria-label="Scanned certificate">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-upload me-1"></i><%= certificateDoc ? 'Replace' : 'Upload' %>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<% } %>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <!-- Certificate Preview -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-award me-2 text-success"></i>Certificate of Accreditation Preview
+                </h5>
+
+                <div class="certificate-preview">
+                    <div class="cert-header">
+                        <div class="cert-logo"><img src="/images/logo.png" alt="Agri-AIMS Logo" style="max-height: 80px;"></div>
+                        <div class="cert-agency">
+                            Republic of the Philippines<br>
+                            Department of Agriculture<br>
+                            <strong>AGRICULTURAL TRAINING INSTITUTE</strong><br>
+                            <span>Regional Training Center V (Bicol)</span>
+                        </div>
+                    </div>
+
+                    <div class="cert-body">
+                        <div class="cert-title">CERTIFICATE OF ACCREDITATION</div>
+                        <div class="cert-subtitle">Learning Site for Agriculture (LSA I)</div>
+
+                        <p class="cert-text">
+                            This certifies that
+                        </p>
+                        <div class="cert-name"><%= applicant.firstName %> <%= applicant.lastName %></div>
+                        <div class="cert-farm"><%= applicant.farmName %></div>
+                        <div class="cert-location"><%= applicant.municipality %>, <%= applicant.province %></div>
+
+                        <p class="cert-text mt-3">
+                            has been duly accredited as a
+                            <strong>Learning Site for Agriculture I (LSA I)</strong>
+                            under the <strong><%= applicant.classification.replace(/_/g,' ') %></strong>
+                            classification pursuant to ATI Program Guidelines.
+                        </p>
+
+                        <div class="cert-details">
+                            <div class="cert-detail-item">
+                                <span class="cert-detail-label">Certificate No.</span>
+                                <span class="cert-detail-value"><%= certNo %></span>
+                            </div>
+                            <div class="cert-detail-item">
+                                <span class="cert-detail-label">Date Issued</span>
+                                <span class="cert-detail-value"><%= issueDate %></span>
+                            </div>
+                            <div class="cert-detail-item">
+                                <span class="cert-detail-label">Valid Until</span>
+                                <span class="cert-detail-value"><%= validUntil %></span>
+                            </div>
+                            <div class="cert-detail-item">
+                                <span class="cert-detail-label">LSA Type</span>
+                                <span class="cert-detail-value"><%= applicant.lsaType.toUpperCase() %></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cert-footer">
+                        <div class="cert-signatory">
+                            <div class="cert-sig-line"></div>
+                            <strong><%= organization.director %></strong><br>
+                            <span><%= organization.directorTitle %>, <%= organization.office %></span>
+                        </div>
+                        <div class="cert-seal">
+                            <i class="bi bi-patch-check-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOA Responsibilities -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-file-text me-2 text-primary"></i>
+                    Memorandum of Agreement (MOA) — Key Provisions
+                </h5>
+                <% moaResponsibilities.forEach(party => { %>
+                <div class="mb-4">
+                    <h6 class="fw-bold text-<%= party.party.includes('ATI') ? 'primary' : 'success' %> mb-3">
+                        <i class="bi bi-building me-2"></i><%= party.party %>
+                    </h6>
+                    <% party.items.forEach(item => { %>
+                    <div class="moa-item">
+                        <i class="bi bi-check-circle text-<%= party.party.includes('ATI') ? 'primary' : 'success' %> flex-shrink-0"></i>
+                        <span class="small"><%= item %></span>
+                    </div>
+                    <% }) %>
+                </div>
+                <% }) %>
+            </div>
+        </div>
+
+        <!-- Issue Certificate Form -->
+        <% if (!alreadyIssued) { %>
+        <div class="card">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-pen me-2 text-success"></i>Issue Certificate & Execute MOA
+                </h5>
+                <% if (confirmError) { %>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    The confirmation must be ticked before the certificate can be issued.
+                </div>
+                <% } %>
+                <form action="/accreditation/<%= applicant.id %>/step/7" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="certNo" class="form-label fw-semibold">Certificate Number</label>
+                            <input id="certNo" type="text" class="form-control font-monospace" name="certNo"
+                                   value="<%= certNo %>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="issueDate" class="form-label fw-semibold">Date Issued</label>
+                            <input id="issueDate" type="date" class="form-control" name="issueDate"
+                                   value="<%= issueDate %>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="validUntil" class="form-label fw-semibold">Valid Until</label>
+                            <input id="validUntil" type="date" class="form-control" name="validUntil"
+                                   value="<%= validUntil %>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="moaDate" class="form-label fw-semibold">MOA Signing Date</label>
+                            <input id="moaDate" type="date" class="form-control" name="moaDate"
+                                   value="<%= issueDate %>" required>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="moaRemarks" class="form-label fw-semibold">Remarks</label>
+                            <input id="moaRemarks" type="text" class="form-control" name="moaRemarks"
+                                   placeholder="Any additional notes...">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="certFile" class="form-label fw-semibold">Scanned certificate (optional now)</label>
+                        <input type="file" class="form-control" id="certFile" name="file"
+                               accept=".pdf,.jpg,.jpeg,.png,.webp">
+                        <div class="form-text">
+                            Upload the signed, scanned certificate — the applicant downloads this copy.
+                            You can also upload it after issuing.
+                        </div>
+                    </div>
+                    <div class="form-check mb-4">
+                        <input type="checkbox" class="form-check-input" id="confirmCert" name="confirmCert" required>
+                        <label class="form-check-label" for="confirmCert">
+                            I confirm that all accreditation requirements have been satisfied and this certificate
+                            is issued in accordance with ATI Program Guidelines.
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg fw-bold">
+                        <i class="bi bi-award me-2"></i>Issue Certificate & Complete Accreditation
+                    </button>
+                </form>
+            </div>
+        </div>
+        <% } else { %>
+        <div class="text-center py-4">
+            <i class="bi bi-award-fill text-success" style="font-size:60px;"></i>
+            <h4 class="mt-3">Accreditation Complete!</h4>
+            <p class="text-muted">
+                Certificate No. <strong><%= applicant.step7_certificateNo %></strong> issued.
+                Valid until <strong><%= applicant.step7_validUntil %></strong>.
+            </p>
+            <a href="/applicants/<%= applicant.id %>" class="btn btn-success">
+                <i class="bi bi-arrow-left me-2"></i>Back to Application
+            </a>
+        </div>
+        <% } %>
+
+    </div>
+    <div class="col-lg-4">
+        <%- include('../../partials/acred-sidebar', { applicant, currentStep: 7 }) %>
+    </div>
+</div>
+
+</div>
+</div>
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+</body>
+</html>
