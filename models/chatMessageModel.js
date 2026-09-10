@@ -118,17 +118,19 @@ async function findOwnerRow(id) {
 }
 
 async function create(data) {
-  const sql = `
-    INSERT INTO chat_messages (channel_id, user_id, sender_name, sender_avatar, body)
-    VALUES (?,?,?,?,?)
-  `;
-  const [res] = await pool.execute(sql, [
-    data.channelId,
-    data.userId ?? null,
-    data.senderName,
-    data.senderAvatar || '',
-    data.body,
-  ]);
+  // A synced announcement can carry the article's own published date, so the chat
+  // reads with the real posting time rather than the moment the sync ran. Ordinary
+  // messages pass no createdAt and default to NOW().
+  const at = data.createdAt instanceof Date && !Number.isNaN(data.createdAt.getTime())
+    ? data.createdAt
+    : null;
+
+  const cols = ['channel_id', 'user_id', 'sender_name', 'sender_avatar', 'body'];
+  const params = [data.channelId, data.userId ?? null, data.senderName, data.senderAvatar || '', data.body];
+  if (at) { cols.push('created_at'); params.push(at); }
+
+  const sql = `INSERT INTO chat_messages (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(',')})`;
+  const [res] = await pool.execute(sql, params);
   return res.insertId;
 }
 

@@ -33,12 +33,21 @@ const ATI_MIRROR_SLUGS = (process.env.ATI_MIRROR_CHANNEL_SLUGS === undefined
   : process.env.ATI_MIRROR_CHANNEL_SLUGS)
   .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 
+/**
+ * e-Learning course announcements are likewise mirrored into #general so the
+ * main channel carries them too. Same override convention as the ATI mirror.
+ */
+const ELEARNING_MIRROR_SLUGS = (process.env.ELEARNING_MIRROR_CHANNEL_SLUGS === undefined
+  ? 'general'
+  : process.env.ELEARNING_MIRROR_CHANNEL_SLUGS)
+  .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+
 /** Which channel(s) a run should post into, given the driver that produced it. */
 function channelsFor(driver) {
   if (driver === 'ati_website') {
     return [...new Set([ATI_CHANNEL_SLUG.toLowerCase(), ...ATI_MIRROR_SLUGS])];
   }
-  return [CHANNEL_SLUG.toLowerCase()];
+  return [...new Set([CHANNEL_SLUG.toLowerCase(), ...ELEARNING_MIRROR_SLUGS])];
 }
 
 /** Every slug the sync might post into, so they can be protected from deletion. */
@@ -169,6 +178,11 @@ async function sync(opts = {}) {
       // dedupe key stops the next run re-posting it to any of them.
       let firstChannelId = null;
       let firstMessageId = null;
+      // Date the post to when the article was actually published, where the
+      // source gives a date. The ATI website publishes none (see atiWebsite.js),
+      // so those fall back to the sync time; Moodle and manual entries carry a
+      // real date and read correctly in the channel.
+      const publishedAt = article.publishedAt ? new Date(article.publishedAt) : undefined;
       for (const ch of channels) {
         const messageId = await chatMessageModel.create({
           channelId: ch.id,
@@ -176,6 +190,7 @@ async function sync(opts = {}) {
           senderName,
           senderAvatar: 'AT',
           body,
+          createdAt: publishedAt,
         });
         if (firstMessageId === null) { firstChannelId = ch.id; firstMessageId = messageId; }
       }
@@ -215,28 +230,40 @@ async function addManual({ title, summary, url, publishedAt, notifyMembers = tru
   if (!articleId) return { added: false };
 
   await chatChannelModel.ensureSeed();
-  // A manually added announcement is an e-learning entry, not ATI website news.
-  const channel = await chatChannelModel.findBySlug(CHANNEL_SLUG);
   const article = await articleModel.findById(articleId);
+  const body = composeMessage(article);
+  // A manually added announcement is an e-learning entry, so it posts to the same
+  // channels the e-learning sync does — #e-learning and the #general mirror.
+  const channels = [];
+  for (const slug of channelsFor('manual')) {
+    const ch = await chatChannelModel.findBySlug(slug);
+    if (ch) channels.push(ch);
+  }
 
-  let messageId = null;
+  const postedAt = article.publishedAt ? new Date(article.publishedAt) : undefined;
+  let firstChannelId = null;
+  let firstMessageId = null;
   let notified = 0;
-  if (channel) {
-    messageId = await chatMessageModel.create({
-      channelId: channel.id,
+  for (const ch of channels) {
+    const messageId = await chatMessageModel.create({
+      channelId: ch.id,
       userId: null,
       senderName: 'ATI e-Learning',
       senderAvatar: 'AT',
-      body: composeMessage(article),
+      body,
+      createdAt: postedAt,
     });
+    if (firstMessageId === null) { firstChannelId = ch.id; firstMessageId = messageId; }
+  }
+  if (channels.length) {
     if (notifyMembers) {
       const recipients = await notificationModel.findUserIdsByRole(['operator', 'applicant', 'evaluator', 'admin']);
       notified = await notify.elearningArticle(article, recipients);
     }
-    await articleModel.markPosted(articleId, channel.id, messageId, notified);
+    await articleModel.markPosted(articleId, firstChannelId, firstMessageId, notified);
   }
 
-  return { added: true, articleId, messageId, notified };
+  return { added: true, articleId, messageId: firstMessageId, notified };
 }
 
 module.exports = { sync, addManual, composeMessage, CHANNEL_SLUG, ATI_CHANNEL_SLUG, channelsFor, allSyncSlugs };
@@ -246,8 +273,9 @@ if (require.main === module) {
   const ati = channelsFor('ati_website');
   console.assert(ati.includes('region-v-bicol') && ati.includes('general'),
     'ATI news must post to both region-v-bicol and general', ati);
-  console.assert(channelsFor('moodle').length === 1 && !channelsFor('moodle').includes('general'),
-    'the e-learning driver posts only to its own channel', channelsFor('moodle'));
+  const el = channelsFor('moodle');
+  console.assert(el.includes('e-learning') && el.includes('general'),
+    'e-learning announcements must post to both e-learning and general', el);
   console.assert(allSyncSlugs().includes('general'),
     'general must be a protected sync channel', allSyncSlugs());
   console.log('elearningSync channel-routing self-check passed');
