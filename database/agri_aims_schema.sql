@@ -1,7 +1,7 @@
 -- ============================================================
 -- Agri-AIMS database schema (structure only, no data)
 -- Database: agri_aims
--- Generated: 2026-09-10T00:38:29.724Z
+-- Generated: 2026-09-10T03:30:05.545Z
 -- MySQL Workbench: File > Open SQL Script (or Run SQL Script) to load,
 --   then Database > Reverse Engineer to draw the ERD.
 -- ============================================================
@@ -157,7 +157,7 @@ CREATE TABLE `chat_messages` (
   KEY `idx_chat_messages_channel_updated` (`channel_id`,`updated_at`),
   CONSTRAINT `fk_chat_messages_channel` FOREIGN KEY (`channel_id`) REFERENCES `chat_channels` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_chat_messages_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=163 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=170 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------- compliance_checks ----------
 DROP TABLE IF EXISTS `compliance_checks`;
@@ -246,7 +246,6 @@ CREATE TABLE `documents` (
   `size` varchar(40) NOT NULL DEFAULT '',
   `upload_date` date DEFAULT NULL,
   `status` varchar(40) NOT NULL DEFAULT 'pending_review',
-  `ocr_extracted` tinyint(1) NOT NULL DEFAULT 0,
   `remarks` text DEFAULT NULL,
   `reviewed_by` int(10) unsigned DEFAULT NULL,
   `reviewed_at` timestamp NULL DEFAULT NULL,
@@ -259,7 +258,7 @@ CREATE TABLE `documents` (
   KEY `fk_documents_reviewer` (`reviewed_by`),
   CONSTRAINT `fk_documents_applicant` FOREIGN KEY (`applicant_id`) REFERENCES `applicants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_documents_reviewer` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=661 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=662 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------- elearning_articles ----------
 DROP TABLE IF EXISTS `elearning_articles`;
@@ -285,7 +284,7 @@ CREATE TABLE `elearning_articles` (
   KEY `fk_elearning_message` (`chat_message_id`),
   CONSTRAINT `fk_elearning_channel` FOREIGN KEY (`chat_channel_id`) REFERENCES `chat_channels` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_elearning_message` FOREIGN KEY (`chat_message_id`) REFERENCES `chat_messages` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4565 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4815 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------- farms ----------
 DROP TABLE IF EXISTS `farms`;
@@ -388,7 +387,7 @@ CREATE TABLE `notifications` (
   KEY `idx_notifications_user_unread` (`user_id`,`read_at`,`id`),
   KEY `idx_notifications_type` (`type`),
   CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1915 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1916 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------- provinces ----------
 DROP TABLE IF EXISTS `provinces`;
