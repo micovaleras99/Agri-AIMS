@@ -27,10 +27,11 @@
  *
  * KNOWN LIMITATIONS, to state plainly rather than paper over
  * ---------------------------------------------------------
- * - **The site publishes no dates.** No <time>, no og:published_time, no visible
- *   date on the article pages. "New" therefore means "a URL this system has not
- *   seen before", which works from the moment monitoring starts but cannot
- *   backfill or answer "what was posted last week".
+ * - **The raw HTML exposes no usable dates** — no <time>, no og:published_time —
+ *   so the direct reader below dates nothing and "new" means "a URL this system
+ *   has not seen before". Firecrawl (used when FIRECRAWL_API_KEY is set) does
+ *   surface the listing's per-article dates, so with a key the posts are dated;
+ *   without one this limitation still applies.
  * - Scraping breaks when markup changes. This returns an empty list and an
  *   explanatory note rather than throwing, and the sync records the note, so a
  *   silent stop is visible instead of looking like "no new posts".
@@ -48,6 +49,12 @@ const TIMEOUT_MS = Number(process.env.ATI_TIMEOUT_MS) || 20000;
 const USER_AGENT =
   process.env.ATI_USER_AGENT ||
   'agri-aims/1.0 (ATI-RTC V Learning Site monitor; +mailto:rtc5_dcc@ati.da.gov.ph)';
+
+// Firecrawl renders the listing and, unlike the raw HTML, surfaces each article's
+// publish date. Used as the primary reader when FIRECRAWL_API_KEY is set; the
+// direct fetch below stays as the no-key, no-third-party fallback.
+const FIRECRAWL_ENDPOINT = 'https://api.firecrawl.dev/v1/scrape';
+const FIRECRAWL_TIMEOUT_MS = Number(process.env.FIRECRAWL_TIMEOUT_MS) || 45000;
 
 /** Only real articles; the listing also links to section pages. */
 const ARTICLE_RE = /^\/ati-5\/content\/article\/[^/]+\/[^/]+$/;
@@ -104,12 +111,126 @@ function parseListing(html) {
 }
 
 /**
- * Fetch the listing and return items in the shape elearningSync expects.
+ * Read the listing and return items in the shape elearningSync expects.
  * Never throws: a failure returns an empty list with a note explaining it.
+ *
+ * Firecrawl is preferred when FIRECRAWL_API_KEY is set — it renders the listing
+ * and exposes the per-article publish dates the raw HTML does not, and is far
+ * less brittle than regex over markup. On any Firecrawl failure (no key, an
+ * outage, out of credits, an empty parse) it falls back to the direct
+ * fetch-and-regex reader, so monitoring never stops.
  *
  * @returns {Promise<{items: object[], note: string}>}
  */
 async function fetchAtiArticles() {
+  if (process.env.FIRECRAWL_API_KEY) {
+    const viaFirecrawl = await fetchViaFirecrawl();
+    if (viaFirecrawl && viaFirecrawl.items.length) return viaFirecrawl;
+    // else fall through to the raw reader
+  }
+  return fetchRawListing();
+}
+
+/**
+ * Scrape the listing through Firecrawl and parse title, URL and publish date.
+ * Returns null on any failure so the caller can fall back to the raw reader.
+ *
+ * @returns {Promise<{items: object[], note: string}|null>}
+ */
+async function fetchViaFirecrawl() {
+  const url = BASE + LISTING_PATH;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FIRECRAWL_TIMEOUT_MS);
+    const res = await fetch(FIRECRAWL_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.FIRECRAWL_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url, formats: ['markdown'], onlyMainContent: true }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.success || !json.data || !json.data.markdown) {
+      logger.error(`Firecrawl ATI scrape failed (HTTP ${res.status}); falling back to direct read`);
+      return null;
+    }
+
+    const items = parseFirecrawlListing(json.data.markdown);
+    if (!items.length) {
+      logger.error('Firecrawl ATI scrape returned no parseable articles; falling back to direct read');
+      return null;
+    }
+    const dated = items.filter((i) => i.publishedAt).length;
+    return { items, note: `Read ${items.length} article(s) from ${url} via Firecrawl (${dated} dated).` };
+  } catch (err) {
+    logger.error(`Firecrawl ATI scrape error: ${err.message}; falling back to direct read`);
+    return null;
+  }
+}
+
+/** Month abbreviations as they appear in the listing ("Sep 02, 2026"). */
+const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+// A text title link to an article: [Title](…/article/…). The leading [^\]!]
+// skips the thumbnail link that precedes it, whose text starts with "!".
+const FC_LINK_RE = /\[([^\]!][^\]]*)\]\((https?:\/\/[^)]*\/ati-5\/content\/article\/[^)]+)\)/g;
+const FC_DATE_RE = /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2}),\s+(20\d{2})\b/;
+
+/**
+ * Turn the Firecrawl markdown of the listing into items with dates.
+ *
+ * Each row renders as a thumbnail link, then a text title link to the same
+ * article, then a "Mon DD, YYYY" line. The date for a row is the first one that
+ * appears after its title link and before the next row's.
+ *
+ * @param {string} markdown
+ * @returns {Array<object>}
+ */
+function parseFirecrawlListing(markdown) {
+  const seen = new Map();
+  let m;
+  FC_LINK_RE.lastIndex = 0;
+  while ((m = FC_LINK_RE.exec(markdown)) !== null) {
+    let path;
+    try { path = new URL(m[2]).pathname; } catch { continue; }
+    path = path.split('?')[0].split('#')[0];
+    if (!ARTICLE_RE.test(path)) continue;
+    const title = decodeEntities(m[1]);
+    if (!title || title.length < 3) continue;
+    if (!seen.has(path)) seen.set(path, { path, title, at: FC_LINK_RE.lastIndex });
+  }
+
+  const rows = [...seen.values()];
+  return rows.map((row, i) => {
+    const stop = i + 1 < rows.length ? rows[i + 1].at : markdown.length;
+    const d = markdown.slice(row.at, stop).match(FC_DATE_RE);
+    let publishedAt = null;
+    if (d) {
+      const dt = new Date(Date.UTC(Number(d[3]), MONTHS[d[1].toLowerCase()], Number(d[2])));
+      if (!Number.isNaN(dt.getTime())) publishedAt = dt;
+    }
+    return {
+      source: 'ati_website',
+      externalId: row.path,
+      title: row.title,
+      summary: '',
+      url: BASE + row.path,
+      publishedAt,
+    };
+  });
+}
+
+/**
+ * The original direct read: one GET of the listing page, regex-parsed. Kept as
+ * the fallback for when Firecrawl is unavailable — it needs no key and no third
+ * party, but it gets no dates and breaks if the markup changes.
+ *
+ * @returns {Promise<{items: object[], note: string}>}
+ */
+async function fetchRawListing() {
   const url = BASE + LISTING_PATH;
   let html;
 
@@ -161,4 +282,8 @@ async function fetchAtiArticles() {
   };
 }
 
-module.exports = { fetchAtiArticles, parseListing, titleFromSlug, BASE, LISTING_PATH, USER_AGENT };
+module.exports = {
+  fetchAtiArticles, fetchViaFirecrawl, fetchRawListing,
+  parseListing, parseFirecrawlListing, titleFromSlug,
+  BASE, LISTING_PATH, USER_AGENT,
+};
