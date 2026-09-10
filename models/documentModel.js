@@ -10,7 +10,6 @@ const { removeStored } = require('../config/upload');
 const SELECT_BASE = `
   SELECT d.id, d.applicant_id, d.application_id, d.applicant_name, d.name, d.type, d.filename,
          d.stored_name, d.mime_type, d.size_bytes, d.size, d.upload_date,
-         d.assistance_id,
          d.status, d.remarks, d.reviewed_by, d.reviewed_at,
          TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS reviewed_by_name,
          d.created_at, d.updated_at
@@ -44,10 +43,7 @@ async function findAll() {
  * @param {{ status?: string, type?: string, search?: string, applicantId?: number, applicantIds?: number[] }} filters
  */
 async function findFiltered(filters = {}) {
-  // Document Management is the accreditation packet only. Evidence attached to a
-  // (now-removed) Provision-of-Assistance request lives in the same table but is
-  // not an accreditation document, so it never belongs in this list or its counts.
-  const clauses = ['d.assistance_id IS NULL'];
+  const clauses = [];
   const params = [];
 
   if (filters.applicantId != null) {
@@ -86,7 +82,6 @@ async function statsGlobal() {
       SUM(CASE WHEN status = 'pending_review' THEN 1 ELSE 0 END) AS pending_review,
       SUM(CASE WHEN status = 'incomplete' THEN 1 ELSE 0 END) AS incomplete
     FROM documents
-    WHERE assistance_id IS NULL
   `);
   const r = rows[0];
   return {
@@ -108,14 +103,13 @@ async function countVerifiedForApplicantIds(docType) {
 async function create(data) {
   const sql = `
     INSERT INTO documents (
-      applicant_id, assistance_id, application_id, applicant_name, name, type, filename, stored_name,
+      applicant_id, application_id, applicant_name, name, type, filename, stored_name,
       mime_type, size_bytes, size, upload_date, status, remarks
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
   `;
   // pool.execute exposes the OkPacket; query() returns rows only, so insertId lives here.
   const [result] = await pool.execute(sql, [
     data.applicantId,
-    data.assistanceId ? Number(data.assistanceId) : null,
     data.applicationId,
     data.applicantName,
     data.name,
@@ -218,16 +212,7 @@ async function syncCount(applicantId) {
   return count;
 }
 
-/** Evidence filed against one assistance request, oldest first. */
-async function findByAssistance(assistanceId) {
-  const rows = await query(
-    `${SELECT_BASE} WHERE d.assistance_id = ? ORDER BY d.id ASC`, [Number(assistanceId)]
-  );
-  return rows.map(formatRow);
-}
-
 module.exports = {
-  findByAssistance,
   syncCount,
   DOCUMENT_STATUSES,
   review,

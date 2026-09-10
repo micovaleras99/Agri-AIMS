@@ -4,7 +4,6 @@ const { ALL_DOCUMENT_TYPES, LABELS, requirementsFor, adminRequirementsFor } = re
 const { buildZip } = require('../services/zip');
 const { hasPrescribedForm } = require('../config/prescribedForms');
 const { LSA2_DOCUMENTS } = require('../config/lsa2');
-const { CALAMITY_EVIDENCE_ITEMS } = require('../config/assistance');
 const { upload, humanSize, resolveStored, removeStored } = require('../config/upload');
 const { requireCsrfAfterUpload } = require('../middleware/csrf');
 const documentModel = require('../models/documentModel');
@@ -46,15 +45,11 @@ router.get('/', async (req, res) => {
   // the catalogue (legacy 'other') falls to the end.
   const typeOrder = ALL_DOCUMENT_TYPES.map((t) => t.type);
   const typeMeta = new Map(ALL_DOCUMENT_TYPES.map((t) => [t.type, t]));
-  // Calamity-assistance evidence is filed as documents too, and its types are
-  // not in the accreditation catalogue — pull their labels from the assistance
-  // config so they read as titles, not raw keys.
-  const evidenceLabels = new Map(CALAMITY_EVIDENCE_ITEMS.map((e) => [e.key, e.label]));
-  // Last resort for any type in neither list (legacy 'other'): humanise the key
-  // rather than print snake_case.
+  // Last resort for any type not in the catalogue (legacy 'other'): humanise the
+  // key rather than print snake_case.
   const humanise = (t) => String(t).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   const labelFor = (t) => (typeMeta.get(t) && typeMeta.get(t).label)
-    || LABELS[t] || evidenceLabels.get(t) || humanise(t);
+    || LABELS[t] || humanise(t);
 
   const grouped = new Map();
   for (const d of docs) {
