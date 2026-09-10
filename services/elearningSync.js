@@ -23,9 +23,27 @@ const CHANNEL_SLUG = process.env.ELEARNING_CHANNEL_SLUG || 'e-learning';
  */
 const ATI_CHANNEL_SLUG = process.env.ATI_CHANNEL_SLUG || 'region-v-bicol';
 
-/** Which channel a run should post into, given the driver that produced it. */
-function channelFor(driver) {
-  return driver === 'ati_website' ? ATI_CHANNEL_SLUG : CHANNEL_SLUG;
+/**
+ * ATI news is also mirrored into #general, so the site's main discussion channel
+ * carries the announcements and not only the regional one. Comma-separated and
+ * overridable; set ATI_MIRROR_CHANNEL_SLUGS to empty to disable the mirror.
+ */
+const ATI_MIRROR_SLUGS = (process.env.ATI_MIRROR_CHANNEL_SLUGS === undefined
+  ? 'general'
+  : process.env.ATI_MIRROR_CHANNEL_SLUGS)
+  .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+
+/** Which channel(s) a run should post into, given the driver that produced it. */
+function channelsFor(driver) {
+  if (driver === 'ati_website') {
+    return [...new Set([ATI_CHANNEL_SLUG.toLowerCase(), ...ATI_MIRROR_SLUGS])];
+  }
+  return [CHANNEL_SLUG.toLowerCase()];
+}
+
+/** Every slug the sync might post into, so they can be protected from deletion. */
+function allSyncSlugs() {
+  return [...new Set([...channelsFor('ati_website'), ...channelsFor('moodle')])];
 }
 
 /** How the announcement reads in the chat channel. */
@@ -99,9 +117,14 @@ async function sync(opts = {}) {
   }
 
   await chatChannelModel.ensureSeed();
-  const channel = await chatChannelModel.findBySlug(channelFor(result.driver));
-  if (!channel) {
-    result.errors.push(`Chat channel "${channelFor(result.driver)}" not found.`);
+  const channels = [];
+  for (const slug of channelsFor(result.driver)) {
+    const ch = await chatChannelModel.findBySlug(slug);
+    if (ch) channels.push(ch);
+    else result.errors.push(`Chat channel "${slug}" not found — skipped.`);
+  }
+  if (!channels.length) {
+    result.errors.push(`No target chat channel found for driver "${result.driver}".`);
     return result;
   }
 
@@ -139,21 +162,33 @@ async function sync(opts = {}) {
     // and a failure here must not make the next run re-post it.
     try {
       const article = await articleModel.findById(articleId);
-      const messageId = await chatMessageModel.create({
-        channelId: channel.id,
-        userId: null,
-        senderName: article.source === 'ati_website' ? 'ATI Bicol' : 'ATI e-Learning',
-        senderAvatar: 'AT',
-        body: composeMessage(article),
-      });
+      const body = composeMessage(article);
+      const senderName = article.source === 'ati_website' ? 'ATI Bicol' : 'ATI e-Learning';
+
+      // Post into every target channel. The article is already recorded, so the
+      // dedupe key stops the next run re-posting it to any of them.
+      let firstChannelId = null;
+      let firstMessageId = null;
+      for (const ch of channels) {
+        const messageId = await chatMessageModel.create({
+          channelId: ch.id,
+          userId: null,
+          senderName,
+          senderAvatar: 'AT',
+          body,
+        });
+        if (firstMessageId === null) { firstChannelId = ch.id; firstMessageId = messageId; }
+      }
       result.posted += 1;
 
+      // One notification per article, not one per channel it was mirrored into.
       let notified = 0;
       if (recipients.length) {
         notified = await notify.elearningArticle(article, recipients);
         result.notified += notified;
       }
-      await articleModel.markPosted(articleId, channel.id, messageId, notified);
+      // markPosted keeps a single reference; the first (primary) channel is it.
+      await articleModel.markPosted(articleId, firstChannelId, firstMessageId, notified);
     } catch (err) {
       result.errors.push(`posting "${item.title}": ${err.message}`);
       logger.error('elearning sync: post failed', err);
@@ -204,4 +239,17 @@ async function addManual({ title, summary, url, publishedAt, notifyMembers = tru
   return { added: true, articleId, messageId, notified };
 }
 
-module.exports = { sync, addManual, composeMessage, CHANNEL_SLUG, ATI_CHANNEL_SLUG, channelFor };
+module.exports = { sync, addManual, composeMessage, CHANNEL_SLUG, ATI_CHANNEL_SLUG, channelsFor, allSyncSlugs };
+
+// ponytail: self-check for channel routing — run `node services/elearningSync.js`.
+if (require.main === module) {
+  const ati = channelsFor('ati_website');
+  console.assert(ati.includes('region-v-bicol') && ati.includes('general'),
+    'ATI news must post to both region-v-bicol and general', ati);
+  console.assert(channelsFor('moodle').length === 1 && !channelsFor('moodle').includes('general'),
+    'the e-learning driver posts only to its own channel', channelsFor('moodle'));
+  console.assert(allSyncSlugs().includes('general'),
+    'general must be a protected sync channel', allSyncSlugs());
+  console.log('elearningSync channel-routing self-check passed');
+  process.exit(0);
+}

@@ -4,21 +4,21 @@
 
 const chatChannelModel = require('../models/chatChannelModel');
 const chatMessageModel = require('../models/chatMessageModel');
+const { allSyncSlugs } = require('../services/elearningSync');
 const { asyncHandler } = require('../utils/asyncHandler');
 
 /**
- * Channels the article sync posts into.
+ * Channels the article sync posts into — refused for deletion here.
  *
  * Archiving one of these would not break loudly — the next sync would report
  * "chat channel not found" into a log nobody is reading, and new ATI articles
  * would simply stop arriving. Refusing here, with the reason, is far kinder
- * than a feature that quietly stops working.
+ * than a feature that quietly stops working. The list comes from the sync itself
+ * so the two cannot drift: whatever it targets — including the #general mirror —
+ * is what is protected.
  */
 function syncChannelSlugs() {
-  return [
-    (process.env.ATI_CHANNEL_SLUG || 'region-v-bicol').toLowerCase(),
-    (process.env.ELEARNING_CHANNEL_SLUG || 'e-learning').toLowerCase(),
-  ];
+  return allSyncSlugs();
 }
 
 const MAX_BODY = 4000;
