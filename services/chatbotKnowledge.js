@@ -229,4 +229,20 @@ async function answer(question) {
   return { answer: hits[0].answer, source: hits[0].source, matched: true };
 }
 
-module.exports = { answer, retrieve };
+/**
+ * The whole corpus, unranked, for the language-model path.
+ *
+ * Keyword retrieve() had to pick the best few of these to fit a context window;
+ * the corpus is small enough (~77 short entries, a few thousand tokens) that the
+ * model can be handed all of it instead. That removes the keyword-tuning
+ * treadmill — a reworded question the scorer would miss is still answered,
+ * because the model sees every entry — while grounding is unchanged: it is still
+ * only these guideline entries, never the model's own training.
+ *
+ * @returns {Promise<Array<{answer: string, source: string|null}>>}
+ */
+async function allEntries() {
+  return [...staticEntries(), ...(await complianceEntries())];
+}
+
+module.exports = { answer, retrieve, allEntries };

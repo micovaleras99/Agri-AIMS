@@ -1,5 +1,5 @@
 const express = require('express');
-const { answer, retrieve } = require('../../services/chatbotKnowledge');
+const { answer, allEntries } = require('../../services/chatbotKnowledge');
 const { answerWithModel } = require('../../services/chatbotLlm');
 const ai = require('../../config/aiProvider');
 
@@ -52,11 +52,12 @@ function identityReply(role, user) {
  * widget itself — it exposes no applicant or farm rows.
  *
  * Two ways to answer, in order:
- *   1. If a model is configured, retrieved snippets are handed to it and it
- *      replies from those alone (services/chatbotLlm.js).
+ *   1. If a model is configured, the whole (small) LSA corpus is handed to it
+ *      and it replies from those entries alone (services/chatbotLlm.js), citing
+ *      the numbered entry it used so the source stays ours.
  *   2. Otherwise — or if the model is unreachable, out of credits or slow —
- *      the best matching snippet is returned directly, which is how this has
- *      always worked. A missing key must never leave the demo without a bot.
+ *      the best keyword-matching snippet is returned directly, which is how this
+ *      has always worked. A missing key must never leave the demo without a bot.
  */
 router.get('/', async (req, res) => {
   // Role and account come from server-side session state (roleContext), not from
@@ -84,16 +85,16 @@ router.get('/', async (req, res) => {
   const roleLabel = ROLE_LABEL[role] || null;
 
   if (ai.isConfigured()) {
-    const snippets = await retrieve(question, 4);
-    const model = await answerWithModel(question, snippets, roleLabel);
+    const entries = await allEntries();
+    const model = await answerWithModel(question, entries, roleLabel);
     if (model.usedModel) {
       return res.json({
         success: true,
         data: {
           answer: model.answer,
-          // The citation still comes from the retrieved snippet, not the model,
-          // so it cannot be invented.
-          source: snippets[0] ? snippets[0].source : null,
+          // The model names which numbered entry it used and chatbotLlm maps it
+          // back to our own source string, so the citation cannot be invented.
+          source: model.source || null,
           matched: true,
           generated: true,
           model: ai.MODEL,

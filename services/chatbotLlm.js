@@ -1,15 +1,21 @@
 /**
- * RSC-06 — a language model answering, but only from what we retrieved.
+ * RSC-06 — a language model answering, but only from the corpus we give it.
  *
  * The audit's rule for a government system is the one thing that must not bend:
- * every answer that states an LSA rule has to come from a retrieved snippet and
+ * every answer that states an LSA rule has to come from a provided snippet and
  * carry a visible citation. So the model never answers from its own training —
- * it is handed the snippets `chatbotKnowledge` already finds and told to answer
- * from those alone, or to say it cannot.
+ * it is handed the LSA knowledge entries and told to answer from those alone, or
+ * to say it cannot.
+ *
+ * The corpus is small (~77 short entries), so it is handed *all* of it rather
+ * than the top few keyword matches. That is what lets it answer a reworded
+ * question the keyword scorer would have missed. The citation is still ours: the
+ * model only names which numbered entry it used, and we map that number back to
+ * our own source string, so a source can never be invented.
  *
  * If the model is unreachable, slow, or returns nothing usable, the caller falls
- * back to the retrieval answer that has always worked. A missing API key is not
- * an outage.
+ * back to the keyword retrieval answer that has always worked. A missing API key
+ * is not an outage.
  */
 
 const logger = require('../utils/logger');
@@ -45,21 +51,46 @@ const SYSTEM_PROMPT = [
   '6. If the person\'s role is given, tailor the answer to it: steps 4-7 (evaluation, '
     + 'validation, endorsement, certificate) are ATI staff actions, not the applicant\'s; an '
     + 'operator is already accredited, so point them to renewal/reports rather than applying.',
+  '7. After your answer, on a final separate line, write exactly "SOURCE: N" where N is the '
+    + 'number of the single CONTEXT entry your answer draws from most. If no entry answers '
+    + 'the question, write "SOURCE: none". This line is machine-read and removed before display.',
 ].join('\n');
 
 /**
- * Ask the configured model, grounded in the given snippets.
+ * Splits the model's reply into the displayed answer and the source it cited.
+ *
+ * The model ends its reply with "SOURCE: N" naming the numbered entry it used;
+ * we map N back to that entry's citation string ourselves, so the source shown
+ * to the user is always one of our own guideline references and never something
+ * the model composed. A missing or unparseable trailer just means no citation —
+ * the answer still stands.
+ *
+ * @param {string} raw
+ * @param {Array<{source: string|null}>} entries
+ * @returns {{ text: string, source: string|null }}
+ */
+function extractSource(raw, entries) {
+  const m = raw.match(/\n?\s*SOURCE:\s*(\d+|none)\s*$/i);
+  if (!m) return { text: raw.trim(), source: null };
+  const text = raw.slice(0, m.index).trim();
+  if (/none/i.test(m[1])) return { text, source: null };
+  const entry = entries[Number(m[1]) - 1];
+  return { text, source: entry ? entry.source : null };
+}
+
+/**
+ * Ask the configured model, grounded in the given entries.
  *
  * @param {string} question
- * @param {Array<{answer: string, source: string|null}>} snippets  ranked, best first
+ * @param {Array<{answer: string, source: string|null}>} entries  the whole corpus
  * @param {string|null} [roleLabel]  who is asking (e.g. "LSA Operator"), for tailoring
- * @returns {Promise<{answer: string, usedModel: boolean, error?: string}>}
+ * @returns {Promise<{answer: string, source?: string|null, usedModel: boolean, error?: string}>}
  */
-async function answerWithModel(question, snippets, roleLabel = null) {
+async function answerWithModel(question, entries, roleLabel = null) {
   if (!ai.isConfigured()) return { answer: '', usedModel: false, error: 'not configured' };
-  if (!snippets.length) return { answer: '', usedModel: false, error: 'nothing retrieved' };
+  if (!entries.length) return { answer: '', usedModel: false, error: 'empty corpus' };
 
-  const context = snippets
+  const context = entries
     .map((s, i) => `[${i + 1}] ${s.answer}${s.source ? `\n    (source: ${s.source})` : ''}`)
     .join('\n\n');
   // The role is trusted server state (resolved by roleContext), not user input.
@@ -81,12 +112,15 @@ async function answerWithModel(question, snippets, roleLabel = null) {
     // The SDK caps each request at timeoutMs and throws on HTTP errors.
     const res = await client.chat.send({ chatRequest }, { timeoutMs: ai.TIMEOUT_MS });
 
-    const text = res?.choices?.[0]?.message?.content;
-    if (!text || !String(text).trim()) {
+    const raw = res?.choices?.[0]?.message?.content;
+    if (!raw || !String(raw).trim()) {
       return { answer: '', usedModel: false, error: 'model returned an empty reply' };
     }
 
-    return { answer: String(text).trim(), usedModel: true };
+    const { text, source } = extractSource(String(raw).trim(), entries);
+    if (!text) return { answer: '', usedModel: false, error: 'model returned an empty reply' };
+
+    return { answer: text, source, usedModel: true };
   } catch (err) {
     // 401 = bad key, 402 = credits exhausted, 429 = rate limited, timeouts. All
     // are ordinary for a free tier and must degrade to the retrieval answer, not
@@ -99,4 +133,22 @@ async function answerWithModel(question, snippets, roleLabel = null) {
   }
 }
 
-module.exports = { answerWithModel, SYSTEM_PROMPT };
+module.exports = { answerWithModel, extractSource, SYSTEM_PROMPT };
+
+// ponytail: self-check for the SOURCE-line parser — run `node services/chatbotLlm.js`.
+if (require.main === module) {
+  const entries = [{ source: 'Ref A' }, { source: 'Ref B' }, { source: 'Ref C' }];
+  const cases = [
+    ['The answer is X.\nSOURCE: 2', 'The answer is X.', 'Ref B'],
+    ['Multi\nline answer.\nSOURCE: 1', 'Multi\nline answer.', 'Ref A'],
+    ['I cannot find that.\nSOURCE: none', 'I cannot find that.', null],
+    ['Plain answer, no trailer.', 'Plain answer, no trailer.', null],
+    ['Out of range.\nSOURCE: 99', 'Out of range.', null],
+  ];
+  for (const [raw, wantText, wantSource] of cases) {
+    const got = extractSource(raw, entries);
+    console.assert(got.text === wantText && got.source === wantSource,
+      `extractSource failed for ${JSON.stringify(raw)} →`, got);
+  }
+  console.log('extractSource self-check passed');
+}
