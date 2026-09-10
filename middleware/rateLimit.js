@@ -46,4 +46,19 @@ const apiLimiter = rateLimit({
   message: jsonMessage('Too many requests. Please slow down.'),
 });
 
-module.exports = { loginLimiter, registerLimiter, apiLimiter };
+/**
+ * Chatbot questions. Every one that reaches a configured model spends OpenRouter
+ * credits, so this is tighter than the general /api backstop: enough for a real
+ * person holding a conversation, not enough for a script to run up a bill. When
+ * no model is configured the answers are free, but the limit stays on so the
+ * retrieval work itself can't be hammered either.
+ */
+const chatbotLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  limit: 40,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: jsonMessage('Too many questions in a short time. Please wait a minute and ask again.'),
+});
+
+module.exports = { loginLimiter, registerLimiter, apiLimiter, chatbotLimiter };

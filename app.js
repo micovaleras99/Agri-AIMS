@@ -16,7 +16,7 @@ const { ping } = require('./config/database');
 const { roleContext } = require('./middleware/roleContext');
 const { requireAuthPage } = require('./middleware/requireAuthPage');
 const { csrfProtection } = require('./middleware/csrf');
-const { loginLimiter, registerLimiter, apiLimiter } = require('./middleware/rateLimit');
+const { loginLimiter, registerLimiter, apiLimiter, chatbotLimiter } = require('./middleware/rateLimit');
 const { requestLogger } = require('./middleware/requestLogger');
 const { errorHandler, notFoundApi } = require('./middleware/errorHandler');
 
@@ -158,6 +158,7 @@ app.use('/profile', requireAuthPage, require('./routes/profile'));
 
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', registerLimiter);
+app.use('/api/chatbot', chatbotLimiter);
 app.use('/api', apiLimiter);
 app.use('/api', require('./routes/api'));
 
