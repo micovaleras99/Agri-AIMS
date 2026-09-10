@@ -8,7 +8,7 @@
  * afterwards. Both ATI staff accounts in this database are on
  * `ati-bicol.da.gov.ph`, a domain that does not resolve at all, so every
  * staff-directed notification email — a document filed, a report submitted, a
- * renewal or assistance request — is written to the bell and then fails to send.
+ * renewal — is written to the bell and then fails to send.
  *
  * Read-only: it reports, it never edits an address. Fixing one is a decision
  * about a real person's mailbox.

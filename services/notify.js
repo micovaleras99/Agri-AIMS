@@ -316,7 +316,7 @@ async function renewalSubmitted(farm, renewalId) {
  * A semestral accomplishment report has been filed and needs a decision.
  *
  * Every other submission in the system tells someone it arrived — documents,
- * renewals, assistance. Reports did not, so one could sit unreviewed for a
+ * renewals. Reports did not, so one could sit unreviewed for a
  * semester with nobody aware it was waiting.
  */
 async function reportSubmitted(farm, report) {

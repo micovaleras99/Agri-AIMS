@@ -9,7 +9,7 @@
  * Everything the certificate is supposed to unlock reads one or the other of
  * those two things:
  *
- *   renewal, the reminder job, LSA II, compliance, reports, assistance,
+ *   renewal, the reminder job, LSA II, compliance, reports,
  *   the public directory, the RSC-07 registry export   →  farms
  *   the operator dashboard, the MOA obligations it tracks →  role + farm_id
  *

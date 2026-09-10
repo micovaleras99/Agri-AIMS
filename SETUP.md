@@ -53,10 +53,14 @@ npm run migrate:sql -- database/migrations/012_lsa2.sql
 npm run migrate:sql -- database/migrations/013_assistance.sql
 npm run migrate:sql -- database/migrations/014_disqualification_declaration.sql
 npm run migrate:sql -- database/migrations/015_ati_website_source.sql
-npm run migrate:sql -- database/migrations/011_document_files.sql
-npm run migrate:sql -- database/migrations/012_lsa2.sql
-npm run migrate:sql -- database/migrations/013_assistance.sql
 ```
+
+Migrations `016`–`032` were added later and follow the same pattern — run any your
+database predates, in order. Two are worth calling out: `031_remove_assistance.sql`
+drops the discontinued Provision-of-Assistance tables (and `documents.assistance_id`),
+and `032_direct_message_foreign_keys.sql` adds the direct-message foreign keys. On a
+database created before `031`, the earlier `013`/`024`/`025` assistance migrations are
+undone by `031`, so a fresh install can skip all four.
 
 `migrate:sql` runs the file through the `mysql2` driver the project already depends on, so it works whether or not the
 `mysql` command-line client is on your PATH — on Windows it usually is not, unless you added it yourself. Statements that
@@ -301,6 +305,25 @@ Without a token the system runs in **manual mode**: staff add announcements at `
 and they follow exactly the same path — recorded, posted to the `#e-learning` Community Chat
 channel, members notified. HTML scraping is deliberately not implemented.
 
+### Chatbot language model (RSC-06)
+
+The AgriBot widget answers questions about the LSA programme. It is **optional**: with no key
+it answers from the system's own LSA knowledge (definitions, requirements, steps, help topics,
+compliance rules) using keyword retrieval, at no cost. Set a key and the same knowledge is
+handed to a language model, which phrases the answer and handles reworded questions — but it is
+told to answer **only** from that knowledge and to cite it, never from its own training, so no
+applicant data is ever sent to the model.
+
+```
+AI_BASE_URL=https://api.openai.com/v1     # any OpenAI-compatible provider
+AI_API_KEY=sk-xxxxxxxx
+AI_MODEL=gpt-4o-mini
+```
+
+Requests are capped at 40 questions per 5 minutes per IP, so a configured model cannot be run
+up into a large bill. If the key is missing, expired or out of credits, the chatbot silently
+falls back to keyword answers — a bad key is never an outage.
+
 ## 9. Administrator: registering a farmer
 
 `/admin/farmers/new` (admin role only) creates the applicant record and the farmer's login account in one transaction, capturing the barangay, RSBSA/NCFRS number, and farm profile. Choose "Generate a temporary password" to have the system produce one — it is displayed once on the confirmation screen and stored only as a bcrypt hash, so copy it before leaving the page.
@@ -339,10 +362,12 @@ With `LOG_TO_FILE=true`, logs are appended under `logs/` (`request.log`, `error.
   `/api/auth/login` and `/api/auth/register` are exempt (no session to protect yet) and
   are rate limited instead.
 - Rate limits (`middleware/rateLimit.js`): 10 failed sign-ins per 15 minutes, 5 registrations
-  per hour, 600 other API requests per 15 minutes. Counters are per-process and in memory —
-  behind more than one instance, move them to a shared store.
+  per hour, 40 chatbot questions per 5 minutes (the chatbot calls a paid model), and 600 other
+  API requests per 15 minutes. Counters are per-process and in memory — behind more than one
+  instance, move them to a shared store.
 - Security headers via `helmet`, including a Content-Security-Policy naming the CDNs the
   pages actually use. Behind a reverse proxy, set `TRUST_PROXY` so the rate limiters see the
   real client IP rather than the proxy's.
-- Still outstanding: the CSP keeps `'unsafe-inline'` because the views use inline scripts and
-  `onclick` handlers; removing it means moving that code into `/public/js`.
+- The CSP allows no inline scripts or `onclick` handlers (`script-src` uses a per-request
+  nonce, `script-src-attr` is `'none'`). Page behaviour lives in `/public/js` and is wired
+  through `data-*` attributes by `public/js/actions.js`.

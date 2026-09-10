@@ -6,10 +6,9 @@
  * at a form that no longer exists). Nothing tied an answer to the guidelines.
  *
  * This builds the answer set from what the system already holds — the
- * accreditation checklists, the document requirements, the LSA II rules, the
- * assistance caps and the seeded compliance requirements — so an answer cannot
- * drift from the data the rest of the app enforces, and every answer carries
- * the source it came from.
+ * accreditation checklists, the document requirements, the LSA II rules and
+ * the seeded compliance requirements — so an answer cannot drift from the data
+ * the rest of the app enforces, and every answer carries the source it came from.
  *
  * Retrieval is keyword overlap, not an LLM. No model, no API key, no network.
  */
