@@ -122,7 +122,11 @@
                                     <span class="req-option__text">
                                         <span class="req-option__name"><%= r.label %></span>
                                         <% if (r.form) { %><span class="req-option__form"><%= r.form %></span><% } %>
-                                        <% if (r.hasForm) { %>
+                                        <% if (['lsa1_field_validation_report','lsa1_rtwg_endorsement','lsa1_checklist','lsa2_checklist','lsa1_qualification_form','lsa2_qualification_form','self_assessment','farm_profile'].includes(r.type)) { %>
+                                        <a class="req-option__download" href="/forms/<%= r.type %>/filled?applicant=<%= submittingFor ? submittingFor.id : '' %>">
+                                            <i class="bi bi-magic me-1"></i>Generate filled form
+                                        </a>
+                                        <% } else if (r.hasForm) { %>
                                         <a class="req-option__download" href="/forms/<%= r.type %>">
                                             <i class="bi bi-download me-1"></i>Download form
                                         </a>

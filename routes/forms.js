@@ -40,6 +40,10 @@ const GENERATED_DOCS = {
   // copy — so these expose fillBuffer (Download filled) only, not generate().
   lsa1_field_validation_report: require('../services/fieldValidationDoc'),
   lsa1_rtwg_endorsement: require('../services/endorsementDoc'),
+  lsa1_checklist: require('../services/checklistDoc'),
+  lsa2_checklist: require('../services/checklistDoc'),
+  lsa1_qualification_form: require('../services/qualificationDoc'),
+  lsa2_qualification_form: require('../services/qualificationDoc'),
 };
 
 /**
