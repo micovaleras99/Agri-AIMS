@@ -306,18 +306,20 @@ function appendTableRows(xml, anchor, rows) {
  * blank immediately before the first matching `label` with `mark`. Optionally
  * scoped to [start, end) so the same label in another section is left alone.
  */
-// A check mark carrying a combining low line (U+0332), so the tick itself sits
-// on an underscore — a ticked box drawn on the form's blank line.
+// A check mark carrying a combining low line (U+0332) so the tick itself sits on
+// an underscore — the box's blank line becomes a ticked mark on a line.
 const CHECK_MARK = '✓̲';
 
 function markInlineCheckbox(xml, label, mark = CHECK_MARK, fromText = '', toText = '') {
   const r = rangeOf(xml, fromText, toText);
   if (!r) return xml;
   const [start, end] = r;
-  // Keep the underline blank and place the mark on it, rather than replacing it.
-  const re = new RegExp(`(_+)(\\s*${escapeRe(label)})`);
+  // Replace the blank ("____") before the label with the underlined check mark,
+  // so it renders as a tick sitting on the underscore rather than beside a long
+  // empty line.
+  const re = new RegExp(`_+(\\s*${escapeRe(label)})`);
   const region = xml.slice(start, end);
-  const replaced = region.replace(re, (m, blank, tail) => `${xmlEscape(mark)}${blank}${tail}`);
+  const replaced = region.replace(re, (m, tail) => `${xmlEscape(mark)}${tail}`);
   if (replaced === region) return xml;
   return xml.slice(0, start) + replaced + xml.slice(end);
 }
@@ -432,9 +434,9 @@ if (require.main === module) {
   fp = markInlineCheckbox(fp, 'Male');
   fp = markInlineCheckbox(fp, 'Married');
   fp = markInlineCheckbox(fp, 'Toilet');
-  assert.ok(/✓̲?_+\s*Male/.test(fp), 'Sex checkbox ticked (underline kept)');
-  assert.ok(/✓̲?_+\s*Married/.test(fp), 'Civil status checkbox ticked (underline kept)');
-  assert.ok(/✓̲?_+\s*Toilet/.test(fp), 'facility checkbox ticked (underline kept)');
+  assert.ok(/✓̲?\s*Male/.test(fp), 'Sex checkbox ticked');
+  assert.ok(/✓̲?\s*Married/.test(fp), 'Civil status checkbox ticked');
+  assert.ok(/✓̲?\s*Toilet/.test(fp), 'facility checkbox ticked');
   // Scoped fill: fill "Cellphone No" only in the organization block (A.2).
   fp = fillValueCellScoped(fp, 'Name of Organization', 'Iriga Farmers Coop',
     'A.2 For Private Organization', 'Membership in Organization');

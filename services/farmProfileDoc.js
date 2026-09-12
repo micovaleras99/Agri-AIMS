@@ -216,10 +216,10 @@ if (require.main === module) {
     'Iriga Coop', 'Organic Farming', 'Rice', 'Hand tractor', 'BP-123']) {
     assert.ok(out.includes(v), `filled: ${v}`);
   }
-  assert.ok(/✓̲?_+\s*Male/.test(out), 'Sex ticked');
-  assert.ok(/✓̲?_+\s*Married/.test(out), 'Civil status ticked');
-  assert.ok(/✓̲?_+\s*Toilet/.test(out), 'facility ticked');
-  assert.ok(/✓̲?_+\s*Farmer\/Farm Family/.test(out), 'owner type ticked');
+  assert.ok(/✓̲?\s*Male/.test(out), 'Sex ticked');
+  assert.ok(/✓̲?\s*Married/.test(out), 'Civil status ticked');
+  assert.ok(/✓̲?\s*Toilet/.test(out), 'facility ticked');
+  assert.ok(/✓̲?\s*Farmer\/Farm Family/.test(out), 'owner type ticked');
   assert.ok(/Male\s*3/.test(out) || out.includes('Male 3'), 'workers male filled');
   assert.ok(!fs.readFileSync(template).includes(Buffer.from('Iriga Coop')), 'template unchanged');
   console.log('farmProfileDoc self-check passed');
