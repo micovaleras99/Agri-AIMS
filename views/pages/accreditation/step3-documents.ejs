@@ -99,12 +99,25 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                <% if (d.hasForm) { %>
+                                <% const GENERATED = ['self_assessment','development_plan','farm_profile']; %>
+                                <% if (d.type === 'self_assessment') { %>
+                                <a href="/forms/self_assessment/filled?applicant=<%= applicant.id %>" class="btn btn-xs btn-outline-info" title="Download filled Self-Assessment (Word)">
+                                    <i class="bi bi-download"></i> Form
+                                </a>
+                                <% } else if (d.type === 'development_plan') { %>
+                                <a href="/development-plan?applicant=<%= applicant.id %>" class="btn btn-xs btn-outline-info" title="Fill in the Development Plan">
+                                    <i class="bi bi-pencil-square"></i> Plan
+                                </a>
+                                <% } else if (d.type === 'farm_profile') { %>
+                                <a href="/farm-profile?applicant=<%= applicant.id %>" class="btn btn-xs btn-outline-info" title="Fill in the Farm Profile">
+                                    <i class="bi bi-pencil-square"></i> Profile
+                                </a>
+                                <% } else if (d.hasForm) { %>
                                 <a href="/forms/<%= d.type %>" class="btn btn-xs btn-outline-info" title="Download prescribed form">
                                     <i class="bi bi-download"></i> Form
                                 </a>
                                 <% } %>
-                                <% if (!d.submitted && !readonly) { %>
+                                <% if (!d.submitted && !readonly && !GENERATED.includes(d.type)) { %>
                                 <a href="/documents/submit?applicant=<%= applicant.id %>&type=<%= d.type %>" class="btn btn-xs btn-warning text-dark">Upload</a>
                                 <% } else if (d.submitted) { %>
                                 <a href="/documents" class="btn btn-xs btn-outline-secondary">View</a>

@@ -20,6 +20,8 @@ const { getApplicant, advanceStep, canPassStep4 } = require('../controllers/accr
 const { certify } = require('../services/certification');
 const assessmentModel = require('../models/assessmentModel');
 const { FACILITY_ITEMS } = require('../config/accreditationChecklists');
+const { sectionKeyFor, SECTIONS, LABELS: SA_LABELS, itemsFor } = require('../config/selfAssessmentFill');
+const selfAssessmentDoc = require('../services/selfAssessmentDoc');
 
 /**
  * May this caller open or act on this application?
@@ -205,51 +207,87 @@ router.get('/:id/step/2', async (req, res) => {
     if (!applicant) return res.redirect('/applicants');
     if (!mayHandleApplication(res, applicant)) return notYours(res);
 
-    // The Self-Assessment is now the prescribed ATI-QF-PAD-164 form: download,
-    // complete offline, upload. The completed copy filed at Step 1/2 is what a
-    // reviewer reads, so the on-screen checklist is no longer needed here.
+    // The Self-Assessment is completed on-screen: the applicant answers the real
+    // ATI-QF/PAD-164 checklist for their enterprise type, and the system fills a
+    // copy of the official DOCX from those answers plus the details already on
+    // file — no download, offline editing or re-upload.
     const myDocs = await documentModel.findByApplicant(applicant.id);
     const submitted = myDocs.find((d) => d.type === 'self_assessment') || null;
+    const sectionKey = sectionKeyFor(applicant);
+    const withAddr = await selfAssessmentDoc.withAddress(applicant);
 
     res.render('pages/accreditation/step2-selfassessment', {
         title:    `Step 2: Self-Assessment — ${applicant.applicationId}`,
         page:     'applicants',
         applicant,
         submitted,
-        // The four basic facilities the applicant declares — pre-ticked from a
+        // The checklist for this applicant's section, pre-ticked from any
         // previous submission so revisiting the step shows what was answered.
-        facilities:       FACILITY_ITEMS,
-        facilityAnswers:  await assessmentModel.answerMap(applicant.id, 2),
-        fileError: req.query.error === 'file',
+        section:  SECTIONS[sectionKey],
+        labels:   SA_LABELS,
+        answers:  await assessmentModel.answerMap(applicant.id, 2),
+        establishedDate: applicant.farmEstablishedDate || '',
+        // Basic Information the DOCX needs but the system does not yet hold.
+        missing:  selfAssessmentDoc.missingFields(withAddr),
+        regenerated: req.query.regenerated === '1',
+        certError: req.query.error === 'certify',
         readonly: !['applicant','admin'].includes(role)
     });
 });
 
-// POST /accreditation/:id/step/2 — Applicant uploads the completed self-assessment
-router.post('/:id/step/2', upload.single('file'), requireCsrfAfterUpload, async (req, res) => {
+// POST /accreditation/:id/step/2 — Applicant completes the self-assessment on-screen
+router.post('/:id/step/2', async (req, res) => {
     const { role } = res.locals;
-    const discard = () => { if (req.file) removeStored(req.file.filename); };
-
     if (!['admin','applicant'].includes(role)) {
-        discard();
         return res.redirect(`/applicants/${req.params.id}`);
     }
 
     const owner = await getApplicant(req.params.id);
-    if (!owner) { discard(); return res.redirect('/applicants'); }
-    if (!mayHandleApplication(res, owner)) { discard(); return notYours(res); }
+    if (!owner) return res.redirect('/applicants');
+    if (!mayHandleApplication(res, owner)) return notYours(res);
 
-    if (req.uploadRejected === 'type' || !req.file) {
-        discard();
-        return res.redirect(`/accreditation/${req.params.id}/step/2?error=file`);
+    // The certification stands in for the applicant's signature on the form.
+    if (!req.body.certify) {
+        return res.redirect(`/accreditation/${req.params.id}/step/2?error=certify`);
     }
 
-    await fileUploadedRequirement(owner, 'self_assessment', req.file);
-
-    // The applicant's own claim about the four basic facilities (PDF p.11),
-    // saved as the Step 2 answers the Basic Facilities panel reads as "Declared".
-    await assessmentModel.saveResponses(owner.id, 2, FACILITY_ITEMS, req.body,
+    // Save every checklist answer for this applicant's enterprise type (this
+    // also populates the four basic facilities, whose codes carry a `facility`
+    // key that Step-5 validation and the Basic Facilities panel read).
+    await assessmentModel.saveResponses(owner.id, 2, itemsFor(owner), req.body,
         `${owner.firstName} ${owner.lastName}`);
+
+    // Date Established is captured here (the official form needs it and the
+    // system held no column for it before). Persist it on the applicant.
+    const establishedDate = (req.body.establishedDate || '').trim();
+    if (establishedDate) {
+        await applicantModel.patch(owner.id, { farmEstablishedDate: establishedDate });
+        owner.farmEstablishedDate = establishedDate;
+    }
+
+    // Fill the official DOCX from those answers + the details already on file,
+    // then convert it to PDF.
+    const result = await selfAssessmentDoc.generate(owner);
+    if (!result.ok) {
+        // Required Basic Information is missing (it comes from registration /
+        // the applicant's profile, not this step) — do not advance with a
+        // half-filled form; re-render Step 2 listing what to complete first.
+        const sectionKey = sectionKeyFor(owner);
+        return res.status(422).render('pages/accreditation/step2-selfassessment', {
+            title:    `Step 2: Self-Assessment — ${owner.applicationId}`,
+            page:     'applicants',
+            applicant: owner,
+            submitted: (await documentModel.findByApplicant(owner.id)).find((d) => d.type === 'self_assessment') || null,
+            section:  SECTIONS[sectionKey],
+            labels:   SA_LABELS,
+            answers:  await assessmentModel.answerMap(owner.id, 2),
+            establishedDate: owner.farmEstablishedDate || '',
+            missing:  result.missing,
+            regenerated: false,
+            certError: false,
+            readonly: false
+        });
+    }
 
     await advanceStep(req.params.id, 3, {
         step2_completedDate: new Date().toISOString().split('T')[0],

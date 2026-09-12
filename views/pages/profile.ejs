@@ -43,6 +43,13 @@ const isStaff = role === 'admin' || role === 'evaluator';
     </div>
     <% } %>
 
+    <% if (typeof personalSaved !== 'undefined' && personalSaved) { %>
+    <div class="alert alert-success alert-dismissible">
+        <i class="bi bi-check-circle-fill me-2"></i>Personal details saved.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
     <div class="row g-4">
 
         <!-- ── Identity card ──────────────────────────────────── -->
@@ -156,6 +163,56 @@ const isStaff = role === 'admin' || role === 'evaluator';
                     </button>
                 </div>
             </form>
+
+            <!-- ── Personal details (Farm/Agri-Enterprise Profile, ATI-QF-PAD-48) ── -->
+            <% if (typeof applicant !== 'undefined' && applicant) { %>
+            <form action="/profile/personal" method="POST" class="card mb-4">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-person-vcard me-1"></i>Personal details
+                    <span class="text-muted fw-normal small">— used to auto-fill your Farm Profile form</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="dateOfBirth">Date of Birth</label>
+                            <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth"
+                                   value="<%= applicant.dateOfBirth || '' %>">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="civilStatus">Civil Status</label>
+                            <select class="form-select" id="civilStatus" name="civilStatus">
+                                <% ['', 'Single', 'Married', 'Widowed', 'Separated'].forEach(function (o) { %>
+                                <option value="<%= o %>" <%= (applicant.civilStatus || '') === o ? 'selected' : '' %>><%= o || '—' %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="ethnicOrigin">Ethnic Origin / Tribe</label>
+                            <input type="text" class="form-control" id="ethnicOrigin" name="ethnicOrigin"
+                                   value="<%= applicant.ethnicOrigin || '' %>" maxlength="120">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="educationalAttainment">Educational Attainment</label>
+                            <input type="text" class="form-control" id="educationalAttainment" name="educationalAttainment"
+                                   value="<%= applicant.educationalAttainment || '' %>" maxlength="120"
+                                   placeholder="e.g. College Graduate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="homeAddress">Home Address</label>
+                            <input type="text" class="form-control" id="homeAddress" name="homeAddress"
+                                   value="<%= applicant.homeAddress || '' %>" maxlength="500"
+                                   placeholder="Your residential address (if different from the farm)">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>Save personal details
+                    </button>
+                </div>
+            </form>
+            <% } %>
 
             <!-- ── Password ───────────────────────────────────── -->
             <form id="passwordForm" class="card">

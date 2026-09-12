@@ -372,6 +372,11 @@ router.get('/:id/file', async (req, res) => {
     });
   }
   res.type(doc.mimeType || 'application/octet-stream');
+  // Word files aren't viewable inline, so send them as a download with their
+  // real name; PDFs and images stay inline so they open in the browser tab.
+  if (/\.docx$/i.test(doc.storedName)) {
+    res.setHeader('Content-Disposition', `attachment; filename="${doc.filename || 'document.docx'}"`);
+  }
   return res.sendFile(abs);
 });
 

@@ -76,9 +76,13 @@ function humanSize(bytes) {
   return n >= 1024 * 1024 ? (n / 1024 / 1024).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
 }
 
-/** Absolute path for a stored file, or null if the name is not one of ours. */
+/**
+ * Absolute path for a stored file, or null if the name is not one of ours.
+ * `.docx` is allowed for system-generated documents (services/selfAssessmentDoc.js),
+ * which are written here under the same random-hex naming as uploads.
+ */
 function resolveStored(storedName) {
-  if (!storedName || !/^[a-f0-9]{32}\.(pdf|jpg|png|webp)$/.test(storedName)) return null;
+  if (!storedName || !/^[a-f0-9]{32}\.(pdf|jpg|png|webp|docx)$/.test(storedName)) return null;
   return path.join(UPLOAD_DIR, storedName);
 }
 

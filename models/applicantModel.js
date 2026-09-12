@@ -52,6 +52,12 @@ const CAMEL_TO_COL = {
   farmName: 'farm_name',
   farmArea: 'farm_area',
   farmAddress: 'farm_address',
+  farmEstablishedDate: 'farm_established_date',
+  dateOfBirth: 'date_of_birth',
+  civilStatus: 'civil_status',
+  ethnicOrigin: 'ethnic_origin',
+  educationalAttainment: 'educational_attainment',
+  homeAddress: 'home_address',
   region: 'region',
   province: 'province',
   municipality: 'municipality',
@@ -109,6 +115,7 @@ const CAMEL_TO_COL = {
 
 const SELECT_BASE = `
   SELECT id, application_id, first_name, last_name, email, phone, rsbsa_number, farm_name, farm_area, farm_address,
+         farm_established_date, date_of_birth, civil_status, ethnic_origin, educational_attainment, home_address,
          region, province, municipality, barangay_id, lsa_type, category, assistance_type, classification, status, progress,
          submission_date, accreditation_step, documents, total_docs, latitude, longitude,
          geo_tagged_by, geo_tagged_date, geo_tag_status,

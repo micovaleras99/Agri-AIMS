@@ -13,17 +13,55 @@
 
 const express = require('express');
 const userModel = require('../models/userModel');
+const applicantModel = require('../models/applicantModel');
+const farmModel = require('../models/farmModel');
 const { avatarUpload, resolveStored, removeStored, AVATAR_MAX_BYTES } = require('../config/upload');
 const { requireCsrfAfterUpload } = require('../middleware/csrf');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
+/**
+ * The applicant record behind the signed-in user, if any. An applicant is linked
+ * by application id; an operator (already accredited) by their farm. Admin/staff
+ * have no applicant record and so no personal-details section.
+ */
+async function applicantForUser(user) {
+  if (!user) return null;
+  if (user.applicationId) return applicantModel.findByApplicationId(user.applicationId);
+  if (user.farmId) {
+    const id = await farmModel.getApplicantIdForFarm(user.farmId);
+    return id ? applicantModel.findById(id) : null;
+  }
+  return null;
+}
+
+router.get('/', async (req, res) => {
+  const applicant = await applicantForUser(res.locals.currentUser).catch(() => null);
   res.render('pages/profile', {
     title: 'My Profile — Agri-AIMS',
     page: 'profile',
     maxPhotoMb: Math.round(AVATAR_MAX_BYTES / 1024 / 1024),
+    applicant,
+    personalSaved: req.query.success === 'personal',
   });
+});
+
+/**
+ * Save the personal details used by the Farm/Agri-Enterprise Profile form.
+ * These live on the applicant record, so a user with no applicant record cannot
+ * reach this (the form is not shown to them).
+ */
+router.post('/personal', async (req, res) => {
+  const applicant = await applicantForUser(res.locals.currentUser).catch(() => null);
+  if (!applicant) return res.redirect('/profile');
+  await applicantModel.patch(applicant.id, {
+    dateOfBirth: req.body.dateOfBirth || null,
+    civilStatus: (req.body.civilStatus || '').trim(),
+    ethnicOrigin: (req.body.ethnicOrigin || '').trim(),
+    educationalAttainment: (req.body.educationalAttainment || '').trim(),
+    homeAddress: (req.body.homeAddress || '').trim(),
+  });
+  res.redirect('/profile?success=personal');
 });
 
 /**

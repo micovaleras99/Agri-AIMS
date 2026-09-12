@@ -23,8 +23,20 @@ const { fillDocx } = require('../services/docxFill');
 const applicantModel = require('../models/applicantModel');
 const farmModel = require('../models/farmModel');
 const locationModel = require('../models/locationModel');
+const documentModel = require('../models/documentModel');
+const { resolveStored } = require('../config/upload');
+const selfAssessmentDoc = require('../services/selfAssessmentDoc');
 
 const router = express.Router();
+
+const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+/** Forms the system generates by filling the official DOCX, keyed by type. */
+const GENERATED_DOCS = {
+  self_assessment: selfAssessmentDoc,
+  development_plan: require('../services/developmentPlanDoc'),
+  farm_profile: require('../services/farmProfileDoc'),
+};
 
 /**
  * One address line from its parts, de-duplicated.
@@ -82,6 +94,9 @@ const FILLABLE = {
     { label: 'Name of Owner', value: `${a.firstName || ''} ${a.lastName || ''}`.trim() },
     { label: 'Address', value: a.fullAddress || a.farmAddress || [a.municipality, a.province].filter(Boolean).join(', ') },
   ],
+  // Farm Profile is now authored on-screen and filled in full by
+  // services/farmProfileDoc.js (see GENERATED_DOCS), so it is not a simple
+  // label-prefill here.
 };
 
 /** The applicant whose data should fill the form, or null to send it blank. */
@@ -99,6 +114,86 @@ async function targetApplicant(req) {
   }
   return null;
 }
+
+/** Render the "missing required information" page for a generated form. */
+function renderMissing(res, missing) {
+  return res.status(422).render('pages/error', {
+    title: 'Information Incomplete', code: 422,
+    message: `Some required information is missing, so the form can't be generated yet: ${missing.join(', ')}. Please complete it in the application first.`,
+  });
+}
+
+/**
+ * GET /forms/:type/download — the completed official DOCX, filled from the
+ * database. Streams the applicant's current generated copy (creating one on the
+ * fly if none exists), as a download with a readable filename. This is both the
+ * "Preview" (opens in Word / Google Docs) and the "Download".
+ */
+router.get('/:type/download', async (req, res) => {
+  const gen = GENERATED_DOCS[req.params.type];
+  const applicant = await targetApplicant(req).catch(() => null);
+  if (!gen || !applicant) {
+    return res.status(404).render('pages/error', {
+      title: 'Not Found', code: 404, message: 'No generated form is available here for that applicant.',
+    });
+  }
+
+  let doc = (await documentModel.findByApplicant(applicant.id))
+    .find((d) => d.type === gen.DOC_TYPE);
+  if (!doc) {
+    const result = await gen.generate(applicant);
+    if (!result.ok) return renderMissing(res, result.missing);
+    doc = await documentModel.findById(result.docId);
+  }
+
+  const abs = resolveStored(doc.storedName);
+  if (!abs) {
+    return res.status(404).render('pages/error', {
+      title: 'Not Found', code: 404, message: 'That file is missing from storage.',
+    });
+  }
+  res.type(doc.mimeType || DOCX_MIME);
+  // A PDF previews inline in the browser; a DOCX (fallback) downloads.
+  const disposition = /\.pdf$/i.test(doc.storedName) ? 'inline' : 'attachment';
+  res.setHeader('Content-Disposition', `${disposition}; filename="${doc.filename}"`);
+  return res.sendFile(abs);
+});
+
+/**
+ * GET /forms/:type/filled — the applicant's filled form as an editable .docx.
+ * Best-effort (fills whatever data exists) and never stored — this is the
+ * "Download" action in the Documentary Requirements list, giving the applicant
+ * an editable Word copy of their own answers, distinct from the official PDF
+ * kept in Document Management.
+ */
+router.get('/:type/filled', async (req, res) => {
+  const gen = GENERATED_DOCS[req.params.type];
+  const applicant = await targetApplicant(req).catch(() => null);
+  if (!gen || !gen.fillBuffer || !applicant) {
+    return res.status(404).render('pages/error', {
+      title: 'Not Found', code: 404, message: 'No fillable form is available here for that applicant.',
+    });
+  }
+  const { buffer, filename } = await gen.fillBuffer(applicant);
+  res.type(DOCX_MIME);
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  return res.send(buffer);
+});
+
+/**
+ * POST /forms/:type/regenerate — rebuild the completed DOCX from the latest
+ * database values, replacing the stored copy. Redirects back to the step.
+ */
+router.post('/:type/regenerate', async (req, res) => {
+  const gen = GENERATED_DOCS[req.params.type];
+  if (req.body.applicant) req.query.applicant = req.body.applicant;
+  const applicant = await targetApplicant(req).catch(() => null);
+  if (!gen || !applicant) return res.redirect('/applicants');
+
+  const result = await gen.generate(applicant);
+  if (!result.ok) return renderMissing(res, result.missing);
+  return res.redirect(`/accreditation/${applicant.id}/step/2?regenerated=1`);
+});
 
 router.get('/:type', async (req, res) => {
   const applicant = await targetApplicant(req).catch(() => null);

@@ -155,6 +155,8 @@ app.use('/registry', requireAuthPage, require('./routes/registry'));
 app.use('/messages', requireAuthPage, require('./routes/messages'));
 app.use('/admin', requireAuthPage, require('./routes/admin'));
 app.use('/profile', requireAuthPage, require('./routes/profile'));
+app.use('/development-plan', requireAuthPage, require('./routes/developmentPlan'));
+app.use('/farm-profile', requireAuthPage, require('./routes/farmProfile'));
 
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', registerLimiter);

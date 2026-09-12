@@ -1,0 +1,175 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/accreditation/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Development Plan</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">LSA Development Plan</h1>
+        <p class="page-subtitle">Fill in your plan — the system writes it into the official form.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/forms/development_plan/filled?applicant=<%= applicant.id %>" class="btn btn-outline-secondary">
+            <i class="bi bi-file-earmark-word me-1"></i>Download (Word)
+        </a>
+        <a href="/forms/development_plan/download?applicant=<%= applicant.id %>" class="btn btn-outline-primary" target="_blank" rel="noopener">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Preview (PDF)
+        </a>
+    </div>
+</div>
+
+<% if (saved) { %>
+<div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i>Development Plan saved. The official form has been updated.</div>
+<% } %>
+<% if (missing && missing.length) { %>
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    The plan is saved, but the form needs this Basic Information (from your profile / application) before it can be generated:
+    <ul class="mb-0 mt-1"><% missing.forEach(function (m) { %><li><%= m %></li><% }); %></ul>
+</div>
+<% } %>
+
+<form action="/development-plan" method="POST" class="card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="applicant" value="<%= applicant.id %>">
+    <% const locked = readonly; %>
+    <div class="card-body">
+
+        <div class="alert alert-light border small mb-4">
+            <i class="bi bi-info-circle me-1"></i>
+            Basic Information (Name of LSA, Owner, Address, Contact, e-Mail) is filled automatically from
+            your profile. Complete the plan details below.
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label class="form-label" for="dateOfImplementation">Date of Implementation</label>
+                <input type="text" class="form-control" id="dateOfImplementation" name="dateOfImplementation"
+                       value="<%= plan.dateOfImplementation || '' %>" placeholder="e.g. January 2027"
+                       <%= locked ? 'disabled' : '' %>>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-semibold" for="rationale">Rationale / Background</label>
+            <textarea class="form-control" id="rationale" name="rationale" rows="3"
+                      placeholder="Short description of the farm, plans, etc." <%= locked ? 'disabled' : '' %>><%= plan.rationale || '' %></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-semibold" for="objectives">Objective/s</label>
+            <textarea class="form-control" id="objectives" name="objectives" rows="3" <%= locked ? 'disabled' : '' %>><%= plan.objectives || '' %></textarea>
+        </div>
+
+        <!-- Work Plan -->
+        <h6 class="fw-semibold">Detailed Work Plan and Schedule</h6>
+        <div class="table-responsive mb-2">
+            <table class="table table-sm table-bordered align-middle" id="workPlanTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Component</th><th>Time Frame</th><th>Target Output</th><th>Agency Involved</th><th>Budget</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% const wp = (plan.workPlan && plan.workPlan.length) ? plan.workPlan : [{}]; %>
+                    <% wp.forEach(function (r, i) { %>
+                    <tr>
+                        <td><input class="form-control form-control-sm" name="workPlan[<%= i %>][component]" value="<%= r.component || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td><input class="form-control form-control-sm" name="workPlan[<%= i %>][timeFrame]" value="<%= r.timeFrame || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td><input class="form-control form-control-sm" name="workPlan[<%= i %>][targetOutput]" value="<%= r.targetOutput || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td><input class="form-control form-control-sm" name="workPlan[<%= i %>][agency]" value="<%= r.agency || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td><input class="form-control form-control-sm" name="workPlan[<%= i %>][budget]" value="<%= r.budget || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger row-remove" title="Remove"<%= locked ? ' disabled' : '' %>>&times;</button></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <% if (!locked) { %>
+        <button type="button" class="btn btn-sm btn-outline-secondary mb-4" id="addWorkPlan" data-cols="component,timeFrame,targetOutput,agency,budget" data-name="workPlan" data-target="workPlanTable">
+            <i class="bi bi-plus-lg me-1"></i>Add row
+        </button>
+        <% } %>
+
+        <!-- Budget -->
+        <h6 class="fw-semibold">Detailed Budgetary Requirement</h6>
+        <div class="table-responsive mb-2">
+            <table class="table table-sm table-bordered align-middle" id="budgetTable">
+                <thead class="table-light">
+                    <tr><th>Description / Specifications</th><th>Quantity</th><th>Unit Cost</th><th>Total Cost</th><th></th></tr>
+                </thead>
+                <tbody>
+                    <% const br = (plan.budgetRows && plan.budgetRows.length) ? plan.budgetRows : [{}]; %>
+                    <% br.forEach(function (r, i) { %>
+                    <tr>
+                        <td><input class="form-control form-control-sm" name="budgetRows[<%= i %>][description]" value="<%= r.description || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td><input class="form-control form-control-sm" name="budgetRows[<%= i %>][quantity]" value="<%= r.quantity || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td><input class="form-control form-control-sm" name="budgetRows[<%= i %>][unitCost]" value="<%= r.unitCost || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td><input class="form-control form-control-sm" name="budgetRows[<%= i %>][totalCost]" value="<%= r.totalCost || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger row-remove" title="Remove"<%= locked ? ' disabled' : '' %>>&times;</button></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <% if (!locked) { %>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="addBudget" data-cols="description,quantity,unitCost,totalCost" data-name="budgetRows" data-target="budgetTable">
+            <i class="bi bi-plus-lg me-1"></i>Add row
+        </button>
+        <% } %>
+    </div>
+
+    <% if (!locked) { %>
+    <div class="card-footer d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Development Plan</button>
+    </div>
+    <% } %>
+</form>
+
+</div>
+</div>
+
+<% if (!locked) { %>
+<script nonce="<%= cspNonce %>">
+(function () {
+    function addRow(btn) {
+        var cols = btn.getAttribute('data-cols').split(',');
+        var name = btn.getAttribute('data-name');
+        var tbody = document.getElementById(btn.getAttribute('data-target')).querySelector('tbody');
+        var idx = tbody.querySelectorAll('tr').length;
+        var tr = document.createElement('tr');
+        var html = '';
+        cols.forEach(function (c) {
+            html += '<td><input class="form-control form-control-sm" name="' + name + '[' + idx + '][' + c + ']"></td>';
+        });
+        html += '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger row-remove" title="Remove">&times;</button></td>';
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    }
+    document.querySelectorAll('#addWorkPlan, #addBudget').forEach(function (b) {
+        b.addEventListener('click', function () { addRow(b); });
+    });
+    document.addEventListener('click', function (e) {
+        var rm = e.target.closest ? e.target.closest('.row-remove') : null;
+        if (!rm) return;
+        var tbody = rm.closest('tbody');
+        if (tbody.querySelectorAll('tr').length > 1) rm.closest('tr').remove();
+        else rm.closest('tr').querySelectorAll('input').forEach(function (i) { i.value = ''; });
+    });
+})();
+</script>
+<% } %>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+</body>
+</html>

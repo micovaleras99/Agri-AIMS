@@ -21,6 +21,12 @@ CREATE TABLE `applicants` (
   `farm_name` varchar(255) NOT NULL DEFAULT '',
   `farm_area` int(10) unsigned NOT NULL DEFAULT 0,
   `farm_address` varchar(500) NOT NULL DEFAULT '',
+  `farm_established_date` date DEFAULT NULL,
+  `date_of_birth` date DEFAULT NULL,
+  `civil_status` varchar(40) NOT NULL DEFAULT '',
+  `ethnic_origin` varchar(120) NOT NULL DEFAULT '',
+  `educational_attainment` varchar(120) NOT NULL DEFAULT '',
+  `home_address` varchar(500) NOT NULL DEFAULT '',
   `region` varchar(80) NOT NULL DEFAULT '',
   `province` varchar(120) NOT NULL DEFAULT '',
   `municipality` varchar(120) NOT NULL DEFAULT '',
@@ -105,6 +111,26 @@ CREATE TABLE `assessment_responses` (
   KEY `idx_assessment_facility` (`facility`),
   CONSTRAINT `fk_assessment_applicant` FOREIGN KEY (`applicant_id`) REFERENCES `applicants` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=6041 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ---------- development_plans ----------
+DROP TABLE IF EXISTS `development_plans`;
+CREATE TABLE `development_plans` (
+  `applicant_id` int(10) unsigned NOT NULL,
+  `data` longtext NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`applicant_id`),
+  CONSTRAINT `fk_devplan_applicant` FOREIGN KEY (`applicant_id`) REFERENCES `applicants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------- farm_profiles ----------
+DROP TABLE IF EXISTS `farm_profiles`;
+CREATE TABLE `farm_profiles` (
+  `applicant_id` int(10) unsigned NOT NULL,
+  `data` longtext NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`applicant_id`),
+  CONSTRAINT `fk_farmprofile_applicant` FOREIGN KEY (`applicant_id`) REFERENCES `applicants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------- barangays ----------
 DROP TABLE IF EXISTS `barangays`;

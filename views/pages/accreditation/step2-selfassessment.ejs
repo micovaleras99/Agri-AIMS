@@ -16,7 +16,7 @@
     <div>
         <span class="step-badge bg-info">Step 2 of 7</span>
         <h1 class="page-title mt-1">Self-Assessment</h1>
-        <p class="page-subtitle">Eligibility self-assessment · <strong>ATI-QF-PAD-164 Rev. 00</strong></p>
+        <p class="page-subtitle">Eligibility self-assessment · <strong>ATI-QF/PAD-164 Rev. 00</strong></p>
     </div>
     <div class="d-flex gap-2">
         <% if (applicant.step2_completedDate) { %>
@@ -28,16 +28,25 @@
     </div>
 </div>
 
-<% if (applicant.step2_completedDate) { %>
-<div class="alert alert-success mb-4">
-    <i class="bi bi-check-circle-fill me-2"></i>
-    Self-assessment submitted on <strong><%= applicant.step2_completedDate %></strong>.
-    <% if (submitted) { %>
-    <a href="/documents/<%= submitted.id %>/file" class="ms-2" target="_blank" rel="noopener">
-        <i class="bi bi-file-earmark-arrow-down me-1"></i>View uploaded copy
+<% if (applicant.step2_completedDate && submitted) { %>
+<div class="alert alert-success mb-4 d-flex flex-wrap align-items-center gap-2">
+    <i class="bi bi-check-circle-fill me-1"></i>
+    <span>Self-assessment submitted on <strong><%= applicant.step2_completedDate %></strong>. The system
+        filled the official form from your answers.</span>
+    <a href="/forms/self_assessment/download?applicant=<%= applicant.id %>"
+       class="btn btn-sm btn-outline-success">
+        <i class="bi bi-file-earmark-word me-1"></i>Preview / Download form
     </a>
+    <% if (!readonly) { %>
+    <form action="/forms/self_assessment/regenerate" method="POST" class="d-inline">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="applicant" value="<%= applicant.id %>">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-repeat me-1"></i>Regenerate
+        </button>
+    </form>
     <% } %>
-    <a href="/accreditation/<%= applicant.id %>/step/3" class="btn btn-sm btn-success ms-3">
+    <a href="/accreditation/<%= applicant.id %>/step/3" class="btn btn-sm btn-success ms-auto">
         Continue to Step 3 →
     </a>
 </div>
@@ -48,75 +57,93 @@
 
         <div class="card mb-4">
             <div class="card-body p-4">
-                <h5 class="section-title mb-3">
-                    <i class="bi bi-clipboard-check me-2 text-info"></i>Self-Assessment Form (ATI-QF-PAD-164)
+                <h5 class="section-title mb-2">
+                    <i class="bi bi-clipboard-check me-2 text-info"></i>Eligibility Checklist
+                    (<%= section.title %>)
                 </h5>
                 <p class="text-muted">
-                    Download the official Self-Assessment form, complete and sign it offline, then
-                    upload the finished copy. ATI reviews your submitted form during document
-                    evaluation.
+                    Tick every item your <%= section.key === 'agri' ? 'enterprise' : 'farm' %> meets.
+                    The system writes your answers and your saved details straight into the official
+                    Self-Assessment Word form — you don't download, print or upload anything.
                 </p>
 
-                <a href="/forms/self_assessment" class="btn btn-outline-info mb-4">
-                    <i class="bi bi-download me-1"></i>Download Self-Assessment Form
-                </a>
-
-                <% if (typeof fileError !== 'undefined' && fileError) { %>
-                <div class="alert alert-danger">
+                <% if (missing && missing.length) { %>
+                <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    Attach your completed Self-Assessment form before submitting.
+                    Some required information is missing, so the form can't be completed yet. Please
+                    add the following to the application first:
+                    <ul class="mb-0 mt-1"><% missing.forEach(function (m) { %><li><%= m %></li><% }); %></ul>
                 </div>
                 <% } %>
 
-                <% if (!readonly && !applicant.step2_completedDate) { %>
-                <form action="/accreditation/<%= applicant.id %>/step/2" method="POST"
-                      enctype="multipart/form-data">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <% if (typeof certError !== 'undefined' && certError) { %>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Please tick the certification box to confirm your answers before submitting.
+                </div>
+                <% } %>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold" for="saFile">Completed form</label>
-                        <input type="file" class="form-control" id="saFile" name="file"
-                               accept=".pdf,.jpg,.jpeg,.png,.webp" required>
-                        <div class="form-text">Upload as a PDF or a clear photo/scan (max 10 MB).</div>
+                <% if (typeof regenerated !== 'undefined' && regenerated) { %>
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>The form was regenerated from your latest information.
+                </div>
+                <% } %>
+
+                <form action="/accreditation/<%= applicant.id %>/step/2" method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <% const locked = readonly || applicant.step2_completedDate; %>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" for="establishedDate">
+                            Date Established <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" class="form-control" id="establishedDate" name="establishedDate"
+                               value="<%= establishedDate %>" <%= locked ? 'disabled' : '' %>>
+                        <div class="form-text">
+                            When the farm / agri-processing enterprise was established. This appears on the
+                            official Self-Assessment form.
+                        </div>
                     </div>
+
+                    <fieldset class="mb-4">
+                        <% section.rows.forEach(function (row) { %>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" value="on"
+                                   id="<%= row.code %>" name="<%= row.code %>"
+                                   <%= answers[row.code] ? 'checked' : '' %>
+                                   <%= locked ? 'disabled' : '' %>>
+                            <label class="form-check-label" for="<%= row.code %>">
+                                <%= labels[row.code] || row.locate %>
+                            </label>
+                        </div>
+                        <% }); %>
+                    </fieldset>
 
                     <div class="mb-3">
                         <label class="form-label" for="saRemarks">Remarks (optional)</label>
                         <textarea class="form-control" id="saRemarks" name="remarks" rows="3"
-                                  placeholder="Any notes about your farm or situation..."></textarea>
+                                  placeholder="Any notes about your farm or situation..."
+                                  <%= locked ? 'disabled' : '' %>><%= applicant.step2_remarks || '' %></textarea>
                     </div>
 
-                    <% if (typeof facilities !== 'undefined' && facilities.length) { %>
-                    <fieldset class="mb-4">
-                        <legend class="form-label fw-semibold mb-1" style="font-size:1rem;">
-                            <i class="bi bi-buildings me-1 text-info"></i>Basic facilities on your farm
-                        </legend>
-                        <p class="form-text mt-0 mb-2">
-                            Tick the facilities your Learning Site has (LSA Guidelines, Farm Requirements).
-                            The TWG confirms these on the field validation visit.
-                        </p>
-                        <% facilities.forEach(function (f) { %>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="on"
-                                   id="<%= f.id %>" name="<%= f.id %>"
-                                   <%= facilityAnswers && facilityAnswers[f.id] ? 'checked' : '' %>>
-                            <label class="form-check-label" for="<%= f.id %>"><%= f.label %></label>
-                        </div>
-                        <% }); %>
-                    </fieldset>
-                    <% } %>
+                    <% if (!locked) { %>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="1" id="certify" name="certify">
+                        <label class="form-check-label" for="certify">
+                            I certify that the information above is true and correct to the best of my knowledge.
+                        </label>
+                    </div>
 
                     <button type="submit" class="btn btn-info text-white btn-lg">
-                        <i class="bi bi-upload me-2"></i>Submit Self-Assessment &amp; Proceed to Step 3
+                        <i class="bi bi-clipboard-check me-2"></i>Submit Self-Assessment &amp; Proceed to Step 3
                     </button>
+                    <% } else if (applicant.step2_completedDate) { %>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-info-circle me-1"></i>Your self-assessment has been submitted.
+                        Use <strong>Preview / Download form</strong> above to open the completed Word document.
+                    </p>
+                    <% } %>
                 </form>
-                <% } else if (applicant.step2_completedDate) { %>
-                <p class="text-muted mb-0">
-                    <i class="bi bi-info-circle me-1"></i>Your form has been submitted. To replace it,
-                    upload a new copy from the
-                    <a href="/documents/submit">Submit Document</a> page.
-                </p>
-                <% } %>
             </div>
         </div>
 

@@ -797,10 +797,17 @@ new Chart(document.getElementById('visitorChart'), {
                         <div class="text-muted" style="font-size:10px"><%= d.form %></div>
                     </div>
                     <div class="d-flex gap-1 flex-shrink-0">
-                        <% if (d.hasForm) { %>
+                        <% const GENERATED = ['self_assessment','development_plan','farm_profile']; %>
+                        <% if (d.type === 'self_assessment') { %>
+                        <a href="/forms/self_assessment/filled" class="btn btn-xs btn-outline-secondary" title="Download your filled Self-Assessment (Word)">Download</a>
+                        <% } else if (d.type === 'development_plan') { %>
+                        <a href="/development-plan" class="btn btn-xs btn-outline-secondary" title="Fill in your Development Plan">Fill Plan</a>
+                        <% } else if (d.type === 'farm_profile') { %>
+                        <a href="/farm-profile" class="btn btn-xs btn-outline-secondary" title="Fill in your Farm Profile">Fill Profile</a>
+                        <% } else if (d.hasForm) { %>
                         <a href="/forms/<%= d.type %>" class="btn btn-xs btn-outline-secondary" title="Download the prescribed form">Download</a>
                         <% } %>
-                        <% if (d.status==='missing') { %>
+                        <% if (d.status==='missing' && !GENERATED.includes(d.type)) { %>
                         <a href="/documents/submit?type=<%= d.type %>" class="btn btn-xs btn-outline-primary">Upload</a>
                         <% } %>
                     </div>

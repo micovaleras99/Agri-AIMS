@@ -1,0 +1,200 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+<div class="page-content">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/applicants">Applications</a></li>
+        <li class="breadcrumb-item"><a href="/accreditation/<%= applicant.id %>"><%= applicant.applicationId %></a></li>
+        <li class="breadcrumb-item active">Farm Profile</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Farm / Agri-Enterprise Profile</h1>
+        <p class="page-subtitle">ATI-QF-PAD-48 · fill in your profile — the system writes it into the official form.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/forms/farm_profile/filled?applicant=<%= applicant.id %>" class="btn btn-outline-secondary">
+            <i class="bi bi-file-earmark-word me-1"></i>Download (Word)
+        </a>
+        <a href="/forms/farm_profile/download?applicant=<%= applicant.id %>" class="btn btn-outline-primary" target="_blank" rel="noopener">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Preview (PDF)
+        </a>
+    </div>
+</div>
+
+<% if (saved) { %>
+<div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i>Farm Profile saved. The official form has been updated.</div>
+<% } %>
+<% if (missing && missing.length) { %>
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    The profile is saved, but the form needs: <%= missing.join(', ') %>. Please complete it in the application first.
+</div>
+<% } %>
+
+<form action="/farm-profile" method="POST" class="card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="applicant" value="<%= applicant.id %>">
+    <% const locked = readonly; const p = profile; const org = p.organization || {}; const farm = p.farm || {}; const fac = p.facilities || {}; %>
+    <div class="card-body">
+
+        <div class="alert alert-light border small mb-4">
+            <i class="bi bi-info-circle me-1"></i>
+            Your name, date of birth, civil status, ethnic origin, educational attainment, home address, contact,
+            e-mail, RSBSA no., farm address and area are filled automatically from your
+            <a href="/profile">profile</a>. Complete the rest below.
+        </div>
+
+        <!-- Owner type + Sex -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-7">
+                <label class="form-label fw-semibold">The Owner</label>
+                <div>
+                    <% [['individual','Farmer / Farm Family'],['organization','Private Organization'],['government','Government Institution']].forEach(function (o) { %>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="ownerType" id="owner_<%= o[0] %>" value="<%= o[0] %>"
+                               <%= p.ownerType === o[0] ? 'checked' : '' %> <%= locked ? 'disabled' : '' %>>
+                        <label class="form-check-label" for="owner_<%= o[0] %>"><%= o[1] %></label>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Sex</label>
+                <div>
+                    <% ['Male','Female'].forEach(function (s) { %>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sex" id="sex_<%= s %>" value="<%= s %>"
+                               <%= p.sex === s ? 'checked' : '' %> <%= locked ? 'disabled' : '' %>>
+                        <label class="form-check-label" for="sex_<%= s %>"><%= s %></label>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+
+        <!-- A.2 Organization -->
+        <h6 class="fw-semibold">For Private Organization / Government Institution <span class="text-muted fw-normal small">(leave blank if individual)</span></h6>
+        <div class="row g-3 mb-4">
+            <% const orgFields = [['name','Name of Organization',6],['registeredAddress','Registered Address',6],['managerName','Farm Manager / In-Charge',6],['managerPosition','Position / Designation',6],['managerEducation','Educational Attainment of Manager',6],['managerCellphone','Manager Cellphone',4],['managerLandline','Landline',4],['managerEmail','Manager e-mail',4]]; %>
+            <% orgFields.forEach(function (f) { %>
+            <div class="col-md-<%= f[2] %>">
+                <label class="form-label" for="org_<%= f[0] %>"><%= f[1] %></label>
+                <input type="text" class="form-control" id="org_<%= f[0] %>" name="org[<%= f[0] %>]" value="<%= org[f[0]] || '' %>" <%= locked ? 'disabled' : '' %>>
+            </div>
+            <% }); %>
+        </div>
+
+        <!-- Membership / Trainings / Topics -->
+        <%
+        const tableDefs = [
+            { name: 'membership', title: 'Membership in Organizations', cols: [['organization','Name of Organization'],['dateJoined','Date Joined'],['position','Position, if any']] },
+            { name: 'trainings',  title: 'Trainings / Seminars / Workshops Attended', cols: [['title','Title of Training'],['dateAttended','Date Attended'],['sponsor','Sponsoring Organization']] },
+            { name: 'topics',     title: 'Topics Delivered / Capable of Delivering', cols: [['topic','Topic'],['timesDelivered','No. of times delivered'],['audience','Audience']] },
+            { name: 'enterprise', title: 'Farm Enterprise', cols: [['component','Component (commodity/project)'],['areaDevoted','Area Devoted'],['aveProduction','Ave. Annual Production'],['aveIncome','Average Income']] },
+            { name: 'machinery',  title: 'Farm Machinery / Tools', cols: [['item','Machinery / Tool'],['quantity','Quantity']] },
+        ];
+        %>
+        <% tableDefs.forEach(function (t) { const rows = (p[t.name] && p[t.name].length) ? p[t.name] : [{}]; %>
+        <h6 class="fw-semibold"><%= t.title %></h6>
+        <div class="table-responsive mb-2">
+            <table class="table table-sm table-bordered align-middle" id="tbl_<%= t.name %>">
+                <thead class="table-light"><tr>
+                    <% t.cols.forEach(function (c) { %><th><%= c[1] %></th><% }); %><th></th>
+                </tr></thead>
+                <tbody>
+                    <% rows.forEach(function (r, i) { %>
+                    <tr>
+                        <% t.cols.forEach(function (c) { %>
+                        <td><input class="form-control form-control-sm" name="<%= t.name %>[<%= i %>][<%= c[0] %>]" value="<%= r[c[0]] || '' %>" <%= locked ? 'disabled' : '' %>></td>
+                        <% }); %>
+                        <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger row-remove"<%= locked ? ' disabled' : '' %>>&times;</button></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <% if (!locked) { %>
+        <button type="button" class="btn btn-sm btn-outline-secondary mb-4 add-row" data-cols="<%= t.cols.map(function(c){return c[0];}).join(',') %>" data-name="<%= t.name %>" data-target="tbl_<%= t.name %>">
+            <i class="bi bi-plus-lg me-1"></i>Add row
+        </button>
+        <% } %>
+        <% }); %>
+
+        <!-- The Farm -->
+        <h6 class="fw-semibold">The Farm</h6>
+        <div class="row g-3 mb-4">
+            <% const farmFields = [['yearStartedFarming','Year started Farming',3],['yearsFarming','No. of Years Farming',3],['businessPermit','Business Permit',3],['organicArea','Area devoted to Organic',3],['organicYearStarted','Year started Organic',3],['organicYears','No. of Years Organic',3],['workersMale','Workers — Male',2],['workersFemale','Workers — Female',2],['workersTotal','Workers — Total',2]]; %>
+            <% farmFields.forEach(function (f) { %>
+            <div class="col-md-<%= f[2] %>">
+                <label class="form-label small" for="farm_<%= f[0] %>"><%= f[1] %></label>
+                <input type="text" class="form-control form-control-sm" id="farm_<%= f[0] %>" name="farm[<%= f[0] %>]" value="<%= farm[f[0]] || '' %>" <%= locked ? 'disabled' : '' %>>
+            </div>
+            <% }); %>
+        </div>
+
+        <!-- Facilities -->
+        <h6 class="fw-semibold">Farm Facilities</h6>
+        <div class="row g-2 mb-2">
+            <% Object.keys(facilities).forEach(function (key) { %>
+            <div class="col-md-4 col-sm-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="fac_<%= key %>" name="fac[<%= key %>]" value="on"
+                           <%= fac[key] ? 'checked' : '' %> <%= locked ? 'disabled' : '' %>>
+                    <label class="form-check-label" for="fac_<%= key %>"><%= facilities[key] %></label>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+    </div>
+
+    <% if (!locked) { %>
+    <div class="card-footer d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Farm Profile</button>
+    </div>
+    <% } %>
+</form>
+
+</div>
+</div>
+
+<% if (!locked) { %>
+<script nonce="<%= cspNonce %>">
+(function () {
+    function addRow(btn) {
+        var cols = btn.getAttribute('data-cols').split(',');
+        var name = btn.getAttribute('data-name');
+        var tbody = document.getElementById(btn.getAttribute('data-target')).querySelector('tbody');
+        var idx = tbody.querySelectorAll('tr').length;
+        var tr = document.createElement('tr');
+        var html = '';
+        cols.forEach(function (c) {
+            html += '<td><input class="form-control form-control-sm" name="' + name + '[' + idx + '][' + c + ']"></td>';
+        });
+        html += '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger row-remove">&times;</button></td>';
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    }
+    document.querySelectorAll('.add-row').forEach(function (b) {
+        b.addEventListener('click', function () { addRow(b); });
+    });
+    document.addEventListener('click', function (e) {
+        var rm = e.target.closest ? e.target.closest('.row-remove') : null;
+        if (!rm) return;
+        var tbody = rm.closest('tbody');
+        if (tbody.querySelectorAll('tr').length > 1) rm.closest('tr').remove();
+        else rm.closest('tr').querySelectorAll('input').forEach(function (i) { i.value = ''; });
+    });
+})();
+</script>
+<% } %>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+</body>
+</html>
