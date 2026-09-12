@@ -216,10 +216,10 @@ if (require.main === module) {
     'Iriga Coop', 'Organic Farming', 'Rice', 'Hand tractor', 'BP-123']) {
     assert.ok(out.includes(v), `filled: ${v}`);
   }
-  assert.ok(/✓̲?\s*Male/.test(out), 'Sex ticked');
-  assert.ok(/✓̲?\s*Married/.test(out), 'Civil status ticked');
-  assert.ok(/✓̲?\s*Toilet/.test(out), 'facility ticked');
-  assert.ok(/✓̲?\s*Farmer\/Farm Family/.test(out), 'owner type ticked');
+  // Owner type + Sex + Civil status + 3 facilities = 6 ticked boxes, each an
+  // underlined check-mark run.
+  assert.strictEqual((out.match(/<w:t xml:space="preserve">✓/g) || []).length, 6, 'six boxes ticked');
+  assert.ok(/<w:u w:val="single"\/><\/w:rPr><w:t xml:space="preserve">✓/.test(out), 'ticks sit in underlined runs');
   assert.ok(/Male\s*3/.test(out) || out.includes('Male 3'), 'workers male filled');
   assert.ok(!fs.readFileSync(template).includes(Buffer.from('Iriga Coop')), 'template unchanged');
   console.log('farmProfileDoc self-check passed');

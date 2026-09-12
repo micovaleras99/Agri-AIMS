@@ -306,22 +306,53 @@ function appendTableRows(xml, anchor, rows) {
  * blank immediately before the first matching `label` with `mark`. Optionally
  * scoped to [start, end) so the same label in another section is left alone.
  */
-// A check mark carrying a combining low line (U+0332) so the tick itself sits on
-// an underscore — the box's blank line becomes a ticked mark on a line.
-const CHECK_MARK = '✓̲';
+// Plain check mark; the line it sits on comes from a Word underline run built in
+// markInlineCheckbox, not from the character itself.
+const CHECK_MARK = '✓';
 
+/**
+ * Tick an inline checkbox written as "____ Label" by turning the box's blank into
+ * three runs: the run text before the blank, an UNDERLINED run holding the check
+ * mark plus spaces spanning the blank's width (Word draws the underline as the
+ * form's line, with the tick sitting on it), then the label in the original run's
+ * formatting. Optionally scoped to the region between fromText and toText.
+ */
 function markInlineCheckbox(xml, label, mark = CHECK_MARK, fromText = '', toText = '') {
   const r = rangeOf(xml, fromText, toText);
   if (!r) return xml;
   const [start, end] = r;
-  // Replace the blank ("____") before the label with the underlined check mark,
-  // so it renders as a tick sitting on the underscore rather than beside a long
-  // empty line.
-  const re = new RegExp(`_+(\\s*${escapeRe(label)})`);
   const region = xml.slice(start, end);
-  const replaced = region.replace(re, (m, tail) => `${xmlEscape(mark)}${tail}`);
-  if (replaced === region) return xml;
-  return xml.slice(0, start) + replaced + xml.slice(end);
+
+  // Find the <w:t> run text that holds "____ Label" (bounded to one <w:t> by the
+  // [^<] classes, so it never spans runs).
+  const tRe = new RegExp(`<w:t\\b[^>]*>([^<]*?)(_+)(\\s*${escapeRe(label)}[^<]*)</w:t>`);
+  const m = tRe.exec(region);
+  if (!m) return xml;
+  const [prefix, blank, rest] = [m[1], m[2], m[3]];
+  const tStart = m.index;
+  const tEnd = tStart + m[0].length;
+
+  // Its enclosing run: the nearest <w:r> before the <w:t>, and </w:r> after it.
+  const rOpen = Math.max(region.lastIndexOf('<w:r>', tStart), region.lastIndexOf('<w:r ', tStart));
+  const rClose = region.indexOf('</w:r>', tEnd);
+  if (rOpen < 0 || rClose < 0) return xml;
+  const runOpenTag = region.slice(rOpen, region.indexOf('>', rOpen) + 1);
+  const between = region.slice(rOpen + runOpenTag.length, tStart);
+  const rprMatch = between.match(/<w:rPr>[\s\S]*?<\/w:rPr>/);
+  const baseRpr = rprMatch ? rprMatch[0] : '';
+  const uRpr = baseRpr
+    ? baseRpr.replace('</w:rPr>', '<w:u w:val="single"/></w:rPr>')
+    : '<w:rPr><w:u w:val="single"/></w:rPr>';
+
+  // Rebuild the one run as: prefix (same formatting) · underlined check+blank · label.
+  const spanned = xmlEscape(mark) + ' '.repeat(Math.max(2, blank.length - 1));
+  const prefixRun = prefix ? `${runOpenTag}${baseRpr}<w:t xml:space="preserve">${prefix}</w:t></w:r>` : '';
+  const checkRun = `<w:r>${uRpr}<w:t xml:space="preserve">${spanned}</w:t></w:r>`;
+  const restRun = `${runOpenTag}${baseRpr}<w:t xml:space="preserve">${rest}</w:t></w:r>`;
+  const rebuilt = prefixRun + checkRun + restRun;
+
+  const newRegion = region.slice(0, rOpen) + rebuilt + region.slice(rClose + '</w:r>'.length);
+  return xml.slice(0, start) + newRegion + xml.slice(end);
 }
 
 /**
@@ -434,9 +465,8 @@ if (require.main === module) {
   fp = markInlineCheckbox(fp, 'Male');
   fp = markInlineCheckbox(fp, 'Married');
   fp = markInlineCheckbox(fp, 'Toilet');
-  assert.ok(/✓̲?\s*Male/.test(fp), 'Sex checkbox ticked');
-  assert.ok(/✓̲?\s*Married/.test(fp), 'Civil status checkbox ticked');
-  assert.ok(/✓̲?\s*Toilet/.test(fp), 'facility checkbox ticked');
+  assert.strictEqual((fp.match(/<w:t xml:space="preserve">✓/g) || []).length, 3, 'three boxes ticked');
+  assert.ok(/<w:u w:val="single"\/><\/w:rPr><w:t xml:space="preserve">✓/.test(fp), 'the tick sits in an underlined run');
   // Scoped fill: fill "Cellphone No" only in the organization block (A.2).
   fp = fillValueCellScoped(fp, 'Name of Organization', 'Iriga Farmers Coop',
     'A.2 For Private Organization', 'Membership in Organization');
