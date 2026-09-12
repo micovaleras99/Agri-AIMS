@@ -114,14 +114,13 @@
                 <div class="mb-4">
                     <label class="form-label fw-semibold" for="endorseFile">Endorsement letter (ATI-QF-PAD-154)</label>
                     <p class="text-muted small mb-2">
-                        Download the prescribed endorsement form, complete and sign it, then upload
-                        it with this endorsement to ATI Central Office.
+                        The system fills the checklist with the applicant's details, your name as
+                        evaluator, and a "Complied" mark for every verified requirement. Generate it,
+                        sign, then upload the signed copy to send with this endorsement to ATI Central Office.
                     </p>
-                    <% if (endorsementForm) { %>
-                    <a href="/forms/lsa1_rtwg_endorsement" class="btn btn-outline-secondary mb-2" style="border-color:#8e44ad;color:#8e44ad;">
-                        <i class="bi bi-download me-1"></i>Download Endorsement Form
+                    <a href="/forms/lsa1_rtwg_endorsement/filled?applicant=<%= applicant.id %>" class="btn btn-outline-secondary mb-2" style="border-color:#8e44ad;color:#8e44ad;">
+                        <i class="bi bi-file-earmark-word me-1"></i>Generate Filled Checklist (Word)
                     </a>
-                    <% } %>
                     <% if (endorsementDoc) { %>
                     <div class="alert alert-info py-2 px-3 small mb-0">
                         <i class="bi bi-file-earmark-check me-1"></i>

@@ -428,37 +428,23 @@ router.post('/:id/step/4', async (req, res) => {
         });
     }
 
-    const result = req.body.evalResult; // 'passed' | 'returned'
-
-    // The form hides the Pass button when documents are outstanding, but the
-    // form is not the authority — a stale page or a direct POST reaches here too.
-    if (result === 'passed') {
-        const gate = canPassStep4(await documentModel.findByApplicant(parseInt(req.params.id, 10)));
-        if (!gate.ok) {
-            return res.redirect(`/accreditation/${req.params.id}/step/4?blocked=1`);
-        }
+    // Only "Pass" is offered now (the Return-for-revision action was removed per
+    // consultant feedback — a document is sent back by Rejecting it, which the
+    // applicant then re-uploads). The Pass gate is re-checked here because the
+    // form is not the authority: a stale page or a direct POST reaches here too.
+    const gate = canPassStep4(await documentModel.findByApplicant(parseInt(req.params.id, 10)));
+    if (!gate.ok) {
+        return res.redirect(`/accreditation/${req.params.id}/step/4?blocked=1`);
     }
 
-    if (result === 'passed') {
-        await advanceStep(req.params.id, 5, {
-            step4_evalDate:    new Date().toISOString().split('T')[0],
-            step4_evalResult:  'passed',
-            step4_evalRemarks: req.body.evalRemarks || '',
-            step4_evalBy:      `${currentUser.firstName} ${currentUser.lastName}`
-        });
-        await notify.accreditationAdvanced(await getApplicant(req.params.id), 5);
-        res.redirect(`/accreditation/${req.params.id}/step/5?advanced=1`);
-    } else {
-        await applicantModel.patch(parseInt(req.params.id, 10), {
-            step4_evalResult: 'returned',
-            step4_evalRemarks: req.body.evalRemarks || '',
-            step4_evalBy: `${currentUser.firstName} ${currentUser.lastName}`,
-            step4_evalDate: new Date().toISOString().split('T')[0],
-            status: 'document_review',
-        });
-        await notify.documentsReturned(await getApplicant(req.params.id), req.body.evalRemarks);
-        res.redirect(`/applicants/${req.params.id}?returned=1`);
-    }
+    await advanceStep(req.params.id, 5, {
+        step4_evalDate:    new Date().toISOString().split('T')[0],
+        step4_evalResult:  'passed',
+        step4_evalRemarks: req.body.evalRemarks || '',
+        step4_evalBy:      `${currentUser.firstName} ${currentUser.lastName}`
+    });
+    await notify.accreditationAdvanced(await getApplicant(req.params.id), 5);
+    res.redirect(`/accreditation/${req.params.id}/step/5?advanced=1`);
 });
 
 

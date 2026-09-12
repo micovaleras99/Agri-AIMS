@@ -152,22 +152,24 @@ function fillDocx(templateBuf, fields) {
 const AGRI_HEADING = 'enterprise can be any';
 
 /**
- * Write `mark` into the "Write (/) or (x)" cell (the 4th of the row's five cells)
- * of the checklist row whose Qualifications text starts with `locate`, searching
- * only within [start, end). Returns the xml unchanged if the row, or a 4th cell
- * in it, is not found — so an unexpected layout is a no-op, never a corruption.
+ * Write `mark` into the `nth` cell (1-based) of the table row whose text starts
+ * with `locate`, searching only within [start, end). Defaults to the 4th cell —
+ * the Self-Assessment's "Write (/) or (x)" column. The Endorsement Checklist
+ * passes nth=2/3 for its "Complied"/"Not Complied" columns. Returns the xml
+ * unchanged if the row, or that cell, is not found (an unexpected layout is a
+ * no-op, never a corruption).
  */
-function markCheckCell(xml, start, end, locate, mark) {
+function markCheckCell(xml, start, end, locate, mark, nth = 4) {
   const idx = xml.indexOf(locate, start);
   if (idx < 0 || idx >= end) return xml;
   const trStart = xml.lastIndexOf('<w:tr', idx);
   const trEnd = xml.indexOf('</w:tr>', idx);
   if (trStart < 0 || trEnd < 0) return xml;
-  // Walk to the 4th <w:tc> in this row — the check column.
+  // Walk to the nth <w:tc> in this row.
   let pos = trStart;
-  for (let n = 0; n < 4; n += 1) {
+  for (let n = 0; n < nth; n += 1) {
     pos = xml.indexOf('<w:tc>', pos + 1);
-    if (pos < 0 || pos > trEnd) return xml; // fewer than four cells: not a checklist row
+    if (pos < 0 || pos > trEnd) return xml; // fewer than nth cells: not this row
   }
   const cellEnd = xml.indexOf('</w:tc>', pos);
   if (cellEnd < 0 || cellEnd > trEnd) return xml;
@@ -389,6 +391,21 @@ function fillBlankAfter(xml, label, value, fromText = '', toText = '') {
 }
 
 /**
+ * Fill the next underscore blank that appears AFTER `label`, even when the label,
+ * its colon and the blank are in separate runs (as in the Field Validation
+ * Report). The blank run is replaced by the value text. No-op if not found.
+ */
+function fillBlankAfterLabel(xml, label, value) {
+  if (!value) return xml;
+  const i = xml.indexOf(label);
+  if (i < 0) return xml;
+  const m = /_{3,}/.exec(xml.slice(i));
+  if (!m) return xml;
+  const at = i + m.index;
+  return xml.slice(0, at) + xmlEscape(value) + xml.slice(at + m[0].length);
+}
+
+/**
  * fillValueCell, but restricted to the document region between `fromText` and
  * `toText`. Lets a label that appears in more than one section (e.g. "Cellphone
  * No." in both the individual and the organization blocks) be filled in the
@@ -406,8 +423,8 @@ function fillValueCellScoped(xml, label, value, fromText, toText) {
 module.exports = {
   fillDocx, fillSelfAssessment, markCheckCell,
   fillInlineLabel, insertParagraphAfter, appendTableRows,
-  markInlineCheckbox, fillValueCellScoped, fillValueCell, fillBlankAfter,
-  removeParagraphContaining, CHECK_MARK, readZip, writeZip,
+  markInlineCheckbox, fillValueCellScoped, fillValueCell, fillBlankAfter, fillBlankAfterLabel,
+  removeParagraphContaining, CHECK_MARK, xmlEscape, readZip, writeZip,
 };
 
 // Round-trip check: a real .docx read, filled, rewritten, and re-read must keep

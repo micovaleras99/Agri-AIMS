@@ -132,6 +132,25 @@ CREATE TABLE `farm_profiles` (
   CONSTRAINT `fk_farmprofile_applicant` FOREIGN KEY (`applicant_id`) REFERENCES `applicants` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ---------- document_reviews ----------
+DROP TABLE IF EXISTS `document_reviews`;
+CREATE TABLE `document_reviews` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `applicant_id` int(10) unsigned DEFAULT NULL,
+  `application_id` varchar(32) NOT NULL DEFAULT '',
+  `doc_type` varchar(80) NOT NULL DEFAULT '',
+  `doc_name` varchar(255) NOT NULL DEFAULT '',
+  `filename` varchar(255) NOT NULL DEFAULT '',
+  `action` enum('submitted','accepted','rejected') NOT NULL,
+  `remarks` text DEFAULT NULL,
+  `actor` varchar(255) NOT NULL DEFAULT '',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_docrev_applicant_type` (`applicant_id`,`doc_type`),
+  KEY `idx_docrev_applicant` (`applicant_id`),
+  CONSTRAINT `fk_docrev_applicant` FOREIGN KEY (`applicant_id`) REFERENCES `applicants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ---------- barangays ----------
 DROP TABLE IF EXISTS `barangays`;
 CREATE TABLE `barangays` (

@@ -7,6 +7,7 @@ const { LSA2_DOCUMENTS } = require('../config/lsa2');
 const { upload, humanSize, resolveStored, removeStored } = require('../config/upload');
 const { requireCsrfAfterUpload } = require('../middleware/csrf');
 const documentModel = require('../models/documentModel');
+const documentReviewModel = require('../models/documentReviewModel');
 const applicantModel = require('../models/applicantModel');
 const farmModel = require('../models/farmModel');
 const notify = require('../services/notify');
@@ -378,6 +379,24 @@ router.get('/:id/file', async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${doc.filename || 'document.docx'}"`);
   }
   return res.sendFile(abs);
+});
+
+// GET /documents/:id/history — the submission/validation timeline for this
+// document's requirement (all attempts), as JSON for the history modal.
+router.get('/:id/history', async (req, res) => {
+  const { role, currentUser } = res.locals;
+  const doc = await documentModel.findById(parseInt(req.params.id, 10));
+  if (!doc) return res.status(404).json({ success: false, error: 'Not found' });
+
+  let allowed = ['admin', 'evaluator'].includes(role);
+  if (role === 'applicant') allowed = doc.applicationId === currentUser.applicationId;
+  if (role === 'operator' && currentUser.farmId) {
+    allowed = (await farmModel.getApplicantIdForFarm(currentUser.farmId)) === doc.applicantId;
+  }
+  if (!allowed) return res.status(403).json({ success: false, error: 'Forbidden' });
+
+  const events = await documentReviewModel.historyFor(doc.applicantId, doc.type);
+  return res.json({ success: true, document: doc.name, events });
 });
 
 // GET /documents/package/:applicantId — the central-office submission package.

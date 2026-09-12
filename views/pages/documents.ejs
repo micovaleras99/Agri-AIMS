@@ -127,7 +127,14 @@
                             <span class="doc-item__applicant"><%= d.applicantName %></span>
                             <span class="app-id-link"><%= d.applicationId %></span>
                         </div>
-                        <span class="status-badge <%= d.status %>"><%= d.status.replace(/_/g,' ') %></span>
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <span class="status-badge <%= d.status %>"><%= d.status.replace(/_/g,' ') %></span>
+                            <button type="button" class="btn btn-sm btn-link p-0 text-secondary doc-history-btn"
+                                    data-doc-id="<%= d.id %>" data-doc-name="<%= d.name %>"
+                                    title="Submission &amp; validation history">
+                                <i class="bi bi-clock-history"></i>
+                            </button>
+                        </span>
                     </div>
 
                     <div class="doc-item__meta">
@@ -192,6 +199,69 @@
 
     </div>
 </div>
+
+<!-- Document submission & validation history -->
+<div class="modal fade" id="docHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Document History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="docHistoryBody">
+                <div class="text-muted">Loading&hellip;</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+    var modalEl = document.getElementById('docHistoryModal');
+    if (!modalEl || typeof bootstrap === 'undefined') return;
+    var body = document.getElementById('docHistoryBody');
+    var titleEl = modalEl.querySelector('.modal-title');
+    var modal = new bootstrap.Modal(modalEl);
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function fmt(ts) { try { return new Date(ts).toLocaleString('en-PH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return esc(ts); } }
+    function badge(a) {
+        if (a === 'accepted') return '<span class="status-badge verified">accepted</span>';
+        if (a === 'rejected') return '<span class="status-badge incomplete">rejected</span>';
+        return '<span class="status-badge pending_review">submitted</span>';
+    }
+    document.querySelectorAll('.doc-history-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-doc-id');
+            titleEl.innerHTML = '<i class="bi bi-clock-history me-2"></i>History &mdash; ' + esc(btn.getAttribute('data-doc-name') || 'Document');
+            body.innerHTML = '<div class="text-muted">Loading&hellip;</div>';
+            modal.show();
+            fetch('/documents/' + id + '/history', { headers: { Accept: 'application/json' } })
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    if (!j.success || !j.events || !j.events.length) {
+                        body.innerHTML = '<div class="text-muted">No history recorded yet.</div>'; return;
+                    }
+                    var attempt = 0, html = '<ol class="list-unstyled mb-0">';
+                    j.events.forEach(function (e) {
+                        if (e.action === 'submitted') attempt += 1;
+                        var head = e.action === 'submitted' ? ('Attempt ' + attempt) : (e.action.charAt(0).toUpperCase() + e.action.slice(1));
+                        html += '<li class="mb-3 pb-2 border-bottom">'
+                            + '<div class="d-flex justify-content-between align-items-center gap-2"><strong>' + esc(head) + '</strong>' + badge(e.action) + '</div>'
+                            + '<div class="small text-muted">' + fmt(e.createdAt) + (e.actor ? ' &middot; ' + esc(e.actor) : '') + '</div>'
+                            + (e.remarks ? '<div class="small">Reason: ' + esc(e.remarks) + '</div>' : '')
+                            + '</li>';
+                    });
+                    body.innerHTML = html + '</ol>';
+                })
+                .catch(function () { body.innerHTML = '<div class="text-danger">Could not load history.</div>'; });
+        });
+    });
+})();
+</script>
 
 <%- include('../partials/footer') %>
 <%- include('../partials/scripts') %>

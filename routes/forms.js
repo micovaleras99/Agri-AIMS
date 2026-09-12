@@ -36,6 +36,10 @@ const GENERATED_DOCS = {
   self_assessment: selfAssessmentDoc,
   development_plan: require('../services/developmentPlanDoc'),
   farm_profile: require('../services/farmProfileDoc'),
+  // Admin forms: the system fills them, the admin signs and uploads the signed
+  // copy — so these expose fillBuffer (Download filled) only, not generate().
+  lsa1_field_validation_report: require('../services/fieldValidationDoc'),
+  lsa1_rtwg_endorsement: require('../services/endorsementDoc'),
 };
 
 /**
@@ -132,7 +136,7 @@ function renderMissing(res, missing) {
 router.get('/:type/download', async (req, res) => {
   const gen = GENERATED_DOCS[req.params.type];
   const applicant = await targetApplicant(req).catch(() => null);
-  if (!gen || !applicant) {
+  if (!gen || !gen.generate || !applicant) {
     return res.status(404).render('pages/error', {
       title: 'Not Found', code: 404, message: 'No generated form is available here for that applicant.',
     });
@@ -174,7 +178,9 @@ router.get('/:type/filled', async (req, res) => {
       title: 'Not Found', code: 404, message: 'No fillable form is available here for that applicant.',
     });
   }
-  const { buffer, filename } = await gen.fillBuffer(applicant);
+  const cu = res.locals.currentUser || {};
+  const evaluator = `${cu.firstName || ''} ${cu.lastName || ''}`.trim();
+  const { buffer, filename } = await gen.fillBuffer(applicant, { evaluator });
   res.type(DOCX_MIME);
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   return res.send(buffer);

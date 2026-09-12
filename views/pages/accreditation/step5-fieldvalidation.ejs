@@ -44,16 +44,15 @@
                     <i class="bi bi-clipboard2-check me-2 text-danger"></i>Field Validation Report (ATI-QF-PAD-165)
                 </h5>
                 <p class="text-muted">
-                    Download the prescribed Field Validation Report, conduct the field or virtual
-                    visit, complete the form, and upload it here with your findings. The applicant
-                    does not submit this — it is prepared by ATI.
+                    The system fills the prescribed report with the applicant and farm details already
+                    on file. Generate it, conduct the field or virtual visit, then sign and upload the
+                    completed report below. The applicant does not submit this — it is prepared by ATI.
                 </p>
 
-                <% if (reportForm) { %>
-                <a href="/forms/lsa1_field_validation_report" class="btn btn-outline-danger mb-3">
-                    <i class="bi bi-download me-1"></i>Download Report Form
+                <a href="/forms/lsa1_field_validation_report/filled?applicant=<%= applicant.id %>"
+                   class="btn btn-outline-danger mb-3">
+                    <i class="bi bi-file-earmark-word me-1"></i>Generate Filled Report (Word)
                 </a>
-                <% } %>
 
                 <% if (report) { %>
                 <div class="alert alert-info py-2 px-3 small">

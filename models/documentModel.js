@@ -6,6 +6,7 @@ const { query, pool } = require('../config/database');
 const { likeTerm } = require('../utils/search');
 const { rowToCamel } = require('../utils/caseConvert');
 const { removeStored } = require('../config/upload');
+const documentReviewModel = require('./documentReviewModel');
 
 const SELECT_BASE = `
   SELECT d.id, d.applicant_id, d.application_id, d.applicant_name, d.name, d.type, d.filename,
@@ -123,6 +124,16 @@ async function create(data) {
     data.status,
     data.remarks || '',
   ]);
+  // Audit trail: record the submission so history survives a later re-upload.
+  await documentReviewModel.log({
+    applicantId: data.applicantId,
+    applicationId: data.applicationId,
+    docType: data.type,
+    docName: data.name,
+    filename: data.filename,
+    action: 'submitted',
+    actor: data.applicantName,
+  });
   return result.insertId;
 }
 
@@ -188,7 +199,21 @@ async function review(id, { status, remarks, reviewerId }) {
     [status, String(remarks || '').trim(), reviewerId || null, id]
   );
   if (!result.affectedRows) return null;
-  return findById(id);
+  const doc = await findById(id);
+  // Audit trail: record the decision (accepted / rejected) with its reason.
+  if (doc) {
+    await documentReviewModel.log({
+      applicantId: doc.applicantId,
+      applicationId: doc.applicationId,
+      docType: doc.type,
+      docName: doc.name,
+      filename: doc.filename,
+      action: status === 'verified' ? 'accepted' : 'rejected',
+      remarks: doc.remarks,
+      actor: doc.reviewedByName,
+    });
+  }
+  return doc;
 }
 
 /**
