@@ -17,6 +17,7 @@ const developmentPlanModel = require('../models/developmentPlanModel');
 const { UPLOAD_DIR, humanSize } = require('../config/upload');
 const {
   readZip, writeZip, fillInlineLabel, insertParagraphAfter, appendTableRows,
+  removeParagraphContaining,
 } = require('./docxFill');
 const docxToPdf = require('./docxToPdf');
 const { withAddress } = require('./selfAssessmentDoc');
@@ -42,6 +43,8 @@ function fillPlanXml(xml, a, plan) {
   xml = fillInlineLabel(xml, 'Contact Number', a.phone);
   xml = fillInlineLabel(xml, 'e-Mail Address', a.email);
   xml = fillInlineLabel(xml, 'Date of Implementation', plan.dateOfImplementation);
+  // Drop the red instruction line once the applicant has written a rationale.
+  if (plan.rationale) xml = removeParagraphContaining(xml, 'Short description of the Farm');
   xml = insertParagraphAfter(xml, 'Rationale/Background', plan.rationale);
   xml = insertParagraphAfter(xml, 'Objective/s', plan.objectives);
   const wp = nonEmpty(plan.workPlan, ['component', 'timeFrame', 'targetOutput', 'agency', 'budget']);
@@ -159,6 +162,10 @@ if (require.main === module) {
     'Expand TDA', 'Bigger demo', 'Hand tractor', '80000']) {
     assert.ok(out.includes(v), `filled: ${v}`);
   }
+  assert.ok(!out.includes('Short description of the Farm'), 'instruction line removed when rationale given');
+  const blank = readZip(fillDocxBuffer(fs.readFileSync(TEMPLATE), a, {}))
+    .find((e) => e.name === 'word/document.xml').data.toString('utf8');
+  assert.ok(blank.includes('Short description of the Farm'), 'instruction kept when no rationale');
   assert.deepStrictEqual(missingFor({ farmName: '', completeAddress: '' }, null),
     ['Farm Name', 'Complete Address', 'Development Plan content (fill in the plan first)'], 'missing list');
   assert.ok(!fs.readFileSync(TEMPLATE).includes(Buffer.from('Sunrise Farm')), 'template unchanged');

@@ -257,6 +257,20 @@ function insertParagraphAfter(xml, afterText, value) {
   return xml.slice(0, at) + para + xml.slice(at);
 }
 
+/**
+ * Remove the whole paragraph that contains `matchText` — used to drop a form's
+ * placeholder/instruction line (e.g. the red "*Short description of the Farm…")
+ * once the applicant has supplied real content. No-op if not found.
+ */
+function removeParagraphContaining(xml, matchText) {
+  const i = xml.indexOf(matchText);
+  if (i < 0) return xml;
+  const pStart = Math.max(xml.lastIndexOf('<w:p>', i), xml.lastIndexOf('<w:p ', i));
+  const pEnd = xml.indexOf('</w:p>', i);
+  if (pStart < 0 || pEnd < 0) return xml;
+  return xml.slice(0, pStart) + xml.slice(pEnd + '</w:p>'.length);
+}
+
 /** Inject a value into each cell of a table row, in order (skips empty values). */
 function fillRowCells(rowXml, values) {
   let idx = 0;
@@ -393,7 +407,7 @@ module.exports = {
   fillDocx, fillSelfAssessment, markCheckCell,
   fillInlineLabel, insertParagraphAfter, appendTableRows,
   markInlineCheckbox, fillValueCellScoped, fillValueCell, fillBlankAfter,
-  CHECK_MARK, readZip, writeZip,
+  removeParagraphContaining, CHECK_MARK, readZip, writeZip,
 };
 
 // Round-trip check: a real .docx read, filled, rewritten, and re-read must keep
