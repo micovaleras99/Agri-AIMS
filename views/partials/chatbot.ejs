@@ -6,7 +6,7 @@
 <div class="chatbot-bubble" id="chatbotBubble" role="button" tabindex="0"
      aria-label="Open AgriBot assistant" aria-expanded="false" aria-controls="chatbotWidget"
      data-call="toggleChatbot">
-    <i class="ph ph-robot chatbot-bubble-icon" aria-hidden="true"></i>
+    <i class="bi bi-robot chatbot-bubble-icon" aria-hidden="true"></i>
     <span class="chatbot-bubble-badge" id="chatbotBadge" style="display:none;">1</span>
     <div class="chatbot-bubble-tooltip">AgriBot Assistant</div>
 </div>
@@ -15,19 +15,19 @@
 <div class="chatbot-widget" id="chatbotWidget" style="display:none;">
     <div class="chatbot-header" id="chatbotDragHandle">
         <div class="chatbot-header-avatar">
-            <i class="ph ph-robot"></i>
+            <i class="bi bi-robot"></i>
         </div>
         <div class="chatbot-header-info">
             <span class="chatbot-title">AgriBot Assistant</span>
             <span class="chatbot-status">
-                <i class="ph-fill ph-circle"></i> Online
+                <i class="bi bi-circle-fill"></i> Online
             </span>
         </div>
         <button class="chatbot-close-btn" data-call="clearChatbot" title="Clear conversation" aria-label="Clear conversation">
-            <i class="ph ph-trash"></i>
+            <i class="bi bi-trash"></i>
         </button>
         <button class="chatbot-close-btn" data-call="toggleChatbot" data-args='["@event"]' title="Minimize">
-            <i class="ph ph-minus"></i>
+            <i class="bi bi-dash-lg"></i>
         </button>
     </div>
     <div class="chatbot-body">
@@ -43,7 +43,7 @@
              data-user-id="<%= cbUser ? cbUser.id : '' %>"
              data-user-photo="<%= cbPhoto %>" data-user-initials="<%= cbInitials %>">
             <div class="chatbot-message bot">
-                <div class="message-avatar"><i class="ph ph-robot"></i></div>
+                <div class="message-avatar"><i class="bi bi-robot"></i></div>
                 <div class="message-content">
                     <p>Hello! I'm AgriBot, your LSA application assistant. How can I help you today?</p>
                     <div class="quick-replies">
@@ -69,7 +69,7 @@
                    data-call="handleChatbotEnter" data-on="keypress" data-args='["@event"]'>
             <button data-call="sendChatbotMessage"
                     aria-label="Send message to AgriBot" title="Send">
-                <i class="ph ph-paper-plane-right" aria-hidden="true"></i>
+                <i class="bi bi-send" aria-hidden="true"></i>
             </button>
         </div>
     </div>
