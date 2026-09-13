@@ -21,7 +21,7 @@ const rc = roleConfig[role] || roleConfig.guest;
      include the header without a navbar, and there the link had no target. -->
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
-<nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+<nav class="navbar navbar-expand-xl fixed-top" id="mainNavbar">
     <div class="container-fluid px-4">
 
         <!-- Brand -->
@@ -32,7 +32,7 @@ const rc = roleConfig[role] || roleConfig.guest;
 
         <!-- Role Badge (visible on desktop) -->
         <% if (currentUser) { %>
-        <span class="role-badge d-none d-lg-flex bg-<%= rc.color %>-subtle text-<%= rc.color %> ms-2">
+        <span class="role-badge d-none d-xxl-flex bg-<%= rc.color %>-subtle text-<%= rc.color %> ms-2">
             <i class="<%= ic(rc.icon) %> me-1"></i><%= rc.label %>
         </span>
         <% } %>
@@ -59,7 +59,7 @@ const rc = roleConfig[role] || roleConfig.guest;
                     <button class="btn btn-link user-btn dropdown-toggle"
                             type="button" data-bs-toggle="dropdown">
                         <%- include('avatar', { user: currentUser, cls: 'user-avatar-sm', color: rc.color }) %>
-                        <span class="user-name-label d-none d-md-inline">
+                        <span class="user-name-label d-none d-xxl-inline">
                             <%= currentUser.firstName %>
                         </span>
                     </button>
@@ -111,7 +111,7 @@ const rc = roleConfig[role] || roleConfig.guest;
                 <% if (!item.children) { %>
                 <li class="nav-item">
                     <a class="nav-link <%= page === item.page ? 'active' : '' %>" href="<%= item.href %>">
-                        <i class="<%= ic(item.icon) %> me-1"></i><%= item.label %>
+                        <%= item.label %>
                     </a>
                 </li>
                 <% } else { %>
@@ -120,7 +120,7 @@ const rc = roleConfig[role] || roleConfig.guest;
                     <a class="nav-link dropdown-toggle <%= groupActive ? 'active' : '' %>" href="#"
                        id="nav<%= item.label.replace(/W/g, '') %>" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="<%= ic(item.icon) %> me-1"></i><%= item.label %>
+                        <%= item.label %>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="nav<%= item.label.replace(/W/g, '') %>">
                         <% item.children.forEach(function (child) { %>

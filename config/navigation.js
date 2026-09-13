@@ -25,6 +25,9 @@ const NAV = [
       // offered to them; they reach their own farm through Monitoring instead.
       { label: 'Applications', icon: 'file-earmark-text', href: '/applicants', page: 'applicants', roles: ['admin', 'applicant'] },
       { label: 'Documents', icon: 'folder', href: '/documents', page: 'documents', roles: ALL },
+      // Account management is admin-only; nested here rather than a top-level
+      // item so the bar does not overflow on laptop widths.
+      { label: 'Accounts', icon: 'people', href: '/admin/accounts', page: 'accounts', roles: ['admin'] },
     ],
   },
 
@@ -49,7 +52,6 @@ const NAV = [
     ],
   },
 
-  { label: 'Accounts', icon: 'people', href: '/admin/accounts', page: 'accounts', roles: ['admin'] },
   { label: 'Directory', icon: 'building', href: '/directory', page: 'directory', roles: ['admin', 'operator'] },
   { label: 'Community', icon: 'chat-dots', href: '/community', page: 'community', roles: ALL },
   { label: 'Messages', icon: 'envelope', href: '/messages', page: 'messages', roles: ALL },

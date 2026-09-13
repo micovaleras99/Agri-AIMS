@@ -181,8 +181,8 @@ h1, h2, h3, h4, h5, h6 {
 .nav-link {
     color: var(--text-primary);
     font-weight: 500;
-    padding: 8px 16px;
-    margin: 0 4px;
+    padding: 8px 10px;
+    margin: 0;
     border-radius: 8px;
     transition: var(--transition-base);
 }
