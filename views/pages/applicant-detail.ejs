@@ -106,7 +106,7 @@
                             <% if (role === 'admin') { %>
                             <form action="/applicants/delete/<%= applicant.id %>"
                                   method="POST"
-                                  data-confirm="Delete this application?">
+                                  data-confirm="Permanently delete this applicant and ALL its records — documents, self-assessment, development plan and accreditation history? This cannot be undone. To only stop the login, deactivate the account from Accounts instead.">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <button class="btn btn-outline-danger"
                                         aria-label="Delete this application" title="Delete this application">

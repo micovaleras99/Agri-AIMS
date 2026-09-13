@@ -6,6 +6,7 @@ const express = require('express');
 const applicantModel = require('../models/applicantModel');
 const documentModel = require('../models/documentModel');
 const assessmentModel = require('../models/assessmentModel');
+const accountAudit = require('../models/accountAuditModel');
 const { FACILITIES, ACCREDITATION_STEPS } = require('../config/accreditationChecklists');
 const { checkArea } = require('../config/farmEligibility');
 const { isWithinPhilippines } = require('../utils/validation');
@@ -220,6 +221,7 @@ router.post('/geotag/:id', async (req, res) => {
 });
 
 router.post('/delete/:id', async (req, res) => {
+  const { currentUser } = res.locals;
   if (res.locals.role !== 'admin') {
     return res.status(403).render('pages/error', {
       title: 'Access Denied',
@@ -227,7 +229,22 @@ router.post('/delete/:id', async (req, res) => {
       message: 'Only administrators can delete applications.',
     });
   }
-  await applicantModel.remove(parseInt(req.params.id, 10));
+  const id = parseInt(req.params.id, 10);
+  // Permanent, and the one place accreditation history is actually destroyed
+  // (documents, assessments, development plan, etc. cascade). Record it against
+  // the application id first, so the audit trail outlives the record itself —
+  // account deactivation is the non-destructive alternative for a lost login.
+  const applicant = await applicantModel.findById(id);
+  if (applicant) {
+    await accountAudit.log({
+      applicationId: applicant.applicationId,
+      action: 'deleted',
+      actorId: currentUser ? currentUser.id : null,
+      actorName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : 'admin',
+      detail: 'Applicant record and all its documents/assessments permanently deleted.',
+    });
+  }
+  await applicantModel.remove(id);
   res.redirect('/applicants?success=deleted');
 });
 

@@ -160,7 +160,7 @@
                                         </a>
                                         <form action="/applicants/delete/<%= a.id %>"
                                               method="POST" style="display:inline"
-                                              data-confirm="Delete this application?">
+                                              data-confirm="Permanently delete this applicant and ALL its records — documents, self-assessment, development plan and accreditation history? This cannot be undone. To only stop the login, deactivate the account from Accounts instead.">
                                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                             <button type="submit"
                                                     class="btn btn-sm btn-outline-danger" title="Delete">
