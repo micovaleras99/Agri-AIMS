@@ -6,6 +6,7 @@
 const express = require('express');
 const adminFarmerController = require('../controllers/adminFarmerController');
 const elearningController = require('../controllers/elearningController');
+const userModel = require('../models/userModel');
 
 const router = express.Router();
 
@@ -25,6 +26,34 @@ router.get('/farmers/new', async (req, res) => {
 
 router.post('/farmers', async (req, res) => {
   await adminFarmerController.createFarmer(req, res);
+});
+
+/**
+ * Account management: list login accounts with their lifecycle status and the
+ * applicant each is linked to. Deactivate / reactivate / re-link / delete are
+ * driven from here through the /api/users endpoints.
+ */
+router.get('/accounts', async (req, res) => {
+  const { data, meta } = await userModel.findPaginated({
+    page: Number(req.query.page) || 1,
+    limit: 20,
+    search: req.query.search,
+    role: req.query.role,
+    status: req.query.status,
+    sort: 'created_at',
+    order: 'desc',
+  });
+  res.render('pages/admin/accounts', {
+    title: 'Accounts — Agri-AIMS',
+    page: 'accounts',
+    accounts: data,
+    meta,
+    filters: {
+      search: req.query.search || '',
+      role: req.query.role || '',
+      status: req.query.status || '',
+    },
+  });
 });
 
 router.get('/elearning', async (req, res) => {

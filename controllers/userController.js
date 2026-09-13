@@ -5,8 +5,15 @@
 const bcrypt = require('bcrypt');
 const { removeStored } = require('../config/upload');
 const userModel = require('../models/userModel');
+const applicantModel = require('../models/applicantModel');
+const accountAudit = require('../models/accountAuditModel');
 const { checkEmail, isStrongPassword, PASSWORD_RULES } = require('../utils/validation');
 const { asyncHandler } = require('../utils/asyncHandler');
+
+/** The signed-in admin's display name, for the audit trail. */
+function actorName(u) {
+  return `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || `#${u.id}`;
+}
 
 const listUsers = asyncHandler(async (req, res) => {
   const { page, limit, search, role, sort, order } = req.query;
@@ -161,15 +168,148 @@ const updateUser = asyncHandler(async (req, res) => {
   res.json({ success: true, data: user });
 });
 
-const deleteUser = asyncHandler(async (req, res) => {
+/** The account lifecycle history for one user (admin only). */
+const getUserAudit = asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  const existing = await userModel.findById(id);
+  const applicationId = existing ? existing.applicationId : '';
+  const entries = await accountAudit.listForUser(id, applicationId);
+  res.json({ success: true, data: entries });
+});
+
+/**
+ * Deactivate an account (the default, non-destructive "delete"). The login is
+ * disabled and the account is stamped, but the applicant record, applications,
+ * documents, assessments, development plans and monitoring history are all
+ * preserved — none of them depend on the user row.
+ */
+const deactivateUser = asyncHandler(async (req, res) => {
   const id = Number(req.params.id);
   if (id === req.authUser.id) {
-    return res.status(400).json({ success: false, error: 'You cannot delete your own account via this endpoint' });
+    return res.status(400).json({ success: false, error: 'You cannot deactivate your own account.' });
   }
   const existing = await userModel.findById(id);
   if (!existing) {
     return res.status(404).json({ success: false, error: 'User not found' });
   }
+  const status = ['inactive', 'suspended', 'archived'].includes(req.body.status) ? req.body.status : 'inactive';
+  await userModel.deactivate(id, status);
+  await accountAudit.log({
+    userId: id,
+    applicationId: existing.applicationId,
+    // 'inactive' is recorded as the generic 'deactivated'; the others by name.
+    action: status === 'inactive' ? 'deactivated' : status,
+    actorId: req.authUser.id,
+    actorName: actorName(req.authUser),
+    detail: `Set to ${status}. Applicant records preserved.`,
+  });
+  res.json({ success: true, data: await userModel.findById(id) });
+});
+
+/** Restore a deactivated account. No applicant data is created or duplicated. */
+const reactivateUser = asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  const existing = await userModel.findById(id);
+  if (!existing) {
+    return res.status(404).json({ success: false, error: 'User not found' });
+  }
+  try {
+    await userModel.reactivate(id);
+  } catch (err) {
+    // uq_users_active_application: another active account already holds this
+    // applicant, so reactivating this one would create two active logins for it.
+    if (err && err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({
+        success: false,
+        error: 'Another active account is already linked to this applicant. Re-link or deactivate that one first.',
+      });
+    }
+    throw err;
+  }
+  await accountAudit.log({
+    userId: id,
+    applicationId: existing.applicationId,
+    action: 'reactivated',
+    actorId: req.authUser.id,
+    actorName: actorName(req.authUser),
+  });
+  res.json({ success: true, data: await userModel.findById(id) });
+});
+
+/**
+ * Account recovery (req. 6): attach this login to an existing applicant record
+ * by its application id, instead of creating a duplicate applicant. Passing an
+ * empty id unlinks the account.
+ */
+const relinkUser = asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  const existing = await userModel.findById(id);
+  if (!existing) {
+    return res.status(404).json({ success: false, error: 'User not found' });
+  }
+
+  const raw = (req.body.applicationId || '').trim();
+  let applicationId = null;
+  if (raw) {
+    const applicant = await applicantModel.findByApplicationId(raw);
+    if (!applicant) {
+      return res.status(404).json({ success: false, error: `No applicant found with application id ${raw}.` });
+    }
+    applicationId = applicant.applicationId;
+  }
+
+  try {
+    await userModel.relink(id, applicationId);
+  } catch (err) {
+    if (err && err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({
+        success: false,
+        error: 'That applicant already has an active account. Deactivate it before re-linking.',
+      });
+    }
+    throw err;
+  }
+  await accountAudit.log({
+    userId: id,
+    applicationId: applicationId || existing.applicationId,
+    action: 'relinked',
+    actorId: req.authUser.id,
+    actorName: actorName(req.authUser),
+    detail: applicationId ? `Linked to ${applicationId}` : 'Unlinked from applicant',
+  });
+  res.json({ success: true, data: await userModel.findById(id) });
+});
+
+/**
+ * Permanent deletion. Destroys only the login account (the applicant record and
+ * all accreditation history are independent and remain). Guarded by an explicit
+ * confirm flag so it can never happen by accident; admin-only at the route.
+ */
+const deleteUser = asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  if (id === req.authUser.id) {
+    return res.status(400).json({ success: false, error: 'You cannot delete your own account via this endpoint' });
+  }
+  if (String(req.query.confirm) !== 'permanent') {
+    return res.status(400).json({
+      success: false,
+      error: 'Permanent deletion requires ?confirm=permanent. Deactivate the account instead to preserve access records.',
+    });
+  }
+  const existing = await userModel.findById(id);
+  if (!existing) {
+    return res.status(404).json({ success: false, error: 'User not found' });
+  }
+  // Log before the row is gone; the FK on account_audit is SET NULL, so the
+  // trail (with application_id) survives the deletion.
+  await accountAudit.log({
+    userId: id,
+    applicationId: existing.applicationId,
+    action: 'deleted',
+    actorId: req.authUser.id,
+    actorName: actorName(req.authUser),
+    detail: 'Login account permanently deleted. Applicant records preserved.',
+  });
   await userModel.remove(id);
   // The row is gone; without this its picture would sit in uploads/ forever,
   // with nothing left pointing at it.
@@ -182,5 +322,9 @@ module.exports = {
   getUser,
   createUser,
   updateUser,
+  getUserAudit,
+  deactivateUser,
+  reactivateUser,
+  relinkUser,
   deleteUser,
 };

@@ -1,0 +1,254 @@
+<%- include('../../partials/header') %>
+<%- include('../../partials/navbar', { page, currentUser, role }) %>
+
+<div class="main-wrapper">
+    <div class="page-content">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Accounts</h1>
+                <p class="page-subtitle">
+                    Login accounts and the applicant each is linked to. Deactivating an account
+                    disables sign-in but preserves the applicant's records, documents, assessments
+                    and accreditation history.
+                </p>
+            </div>
+            <a href="/admin/farmers/new" class="btn btn-primary">
+                <i class="ph ph-user-plus me-2"></i>Register Farmer
+            </a>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4 p-3">
+            <form method="GET" action="/admin/accounts" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="search" class="form-label small fw-semibold">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="ph ph-magnifying-glass"></i></span>
+                        <input id="search" type="text" class="form-control" name="search"
+                               placeholder="Name or email..." value="<%= filters.search %>">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="role" class="form-label small fw-semibold">Role</label>
+                    <select id="role" class="form-select" name="role">
+                        <option value="">All Roles</option>
+                        <% ['admin','evaluator','operator','applicant'].forEach(function (r) { %>
+                        <option value="<%= r %>" <%= filters.role === r ? 'selected' : '' %>><%= r.charAt(0).toUpperCase() + r.slice(1) %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label small fw-semibold">Status</label>
+                    <select id="status" class="form-select" name="status">
+                        <option value="">All Statuses</option>
+                        <% ['active','inactive','suspended','archived'].forEach(function (s) { %>
+                        <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill"><i class="ph ph-funnel me-1"></i>Filter</button>
+                    <a href="/admin/accounts" class="btn btn-outline-secondary" title="Clear"><i class="ph ph-x"></i></a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Accounts table -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Linked Applicant</th>
+                                <th class="text-end pe-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!accounts.length) { %>
+                            <tr><td colspan="6" class="text-center text-muted py-4">No accounts match your filters.</td></tr>
+                            <% } %>
+                            <% accounts.forEach(function (a) {
+                                 const badge = { active:'success', inactive:'secondary', suspended:'warning', archived:'dark' }[a.status] || 'secondary';
+                            %>
+                            <tr>
+                                <td class="ps-3 fw-semibold"><%= a.firstName %> <%= a.lastName %></td>
+                                <td class="text-muted small"><%= a.email %></td>
+                                <td><span class="badge bg-primary-subtle text-primary text-uppercase"><%= a.role %></span></td>
+                                <td><span class="badge bg-<%= badge %>-subtle text-<%= badge %> text-uppercase"><%= a.status %></span></td>
+                                <td>
+                                    <% if (a.applicationId) { %>
+                                    <a href="/applicants?search=<%= encodeURIComponent(a.applicationId) %>" class="text-decoration-none">
+                                        <%= a.applicationId %>
+                                    </a>
+                                    <% } else { %><span class="text-muted small">—</span><% } %>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="d-inline-flex gap-1 flex-wrap justify-content-end">
+                                        <button type="button" class="btn btn-xs btn-outline-secondary"
+                                                data-act="history" data-id="<%= a.id %>" data-name="<%= a.firstName %> <%= a.lastName %>">
+                                            <i class="ph ph-clock-counter-clockwise"></i> History
+                                        </button>
+                                        <% if (a.role === 'applicant') { %>
+                                        <button type="button" class="btn btn-xs btn-outline-primary"
+                                                data-act="relink" data-id="<%= a.id %>">
+                                            <i class="ph ph-link"></i> Re-link
+                                        </button>
+                                        <% } %>
+                                        <% if (a.status === 'active') { %>
+                                        <button type="button" class="btn btn-xs btn-outline-warning"
+                                                data-act="deactivate" data-id="<%= a.id %>" data-name="<%= a.firstName %> <%= a.lastName %>">
+                                            <i class="ph ph-user-minus"></i> Deactivate
+                                        </button>
+                                        <% } else { %>
+                                        <button type="button" class="btn btn-xs btn-outline-success"
+                                                data-act="reactivate" data-id="<%= a.id %>">
+                                            <i class="ph ph-user-plus"></i> Reactivate
+                                        </button>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <% if (meta.totalPages > 1) { %>
+        <nav class="mt-3" aria-label="Accounts pages">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                <% for (let p = 1; p <= meta.totalPages; p++) {
+                     const qs = new URLSearchParams({ ...filters, page: p }).toString(); %>
+                <li class="page-item <%= p === meta.page ? 'active' : '' %>">
+                    <a class="page-link" href="/admin/accounts?<%= qs %>"><%= p %></a>
+                </li>
+                <% } %>
+            </ul>
+        </nav>
+        <% } %>
+
+    </div>
+</div>
+
+<!-- History modal -->
+<div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="auditTitle">Account history</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="auditBody">
+                <p class="text-muted">Loading…</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>
+<%- include('../../partials/scripts') %>
+<%- include('../../partials/chatbot') %>
+
+<script nonce="<%= cspNonce %>">
+(function () {
+  function csrf() {
+    const m = /(?:^|;\s*)agri_csrf=([^;]+)/.exec(document.cookie);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+  async function api(url, method) {
+    const res = await fetch(url, {
+      method: method || 'POST',
+      credentials: 'same-origin',
+      headers: { 'x-csrf-token': csrf() },
+    });
+    return res;
+  }
+  async function act(url, method, okReload) {
+    const res = await api(url, method);
+    if (res.status === 204 || res.ok) { if (okReload) location.reload(); return; }
+    let msg = 'The action could not be completed.';
+    try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) { /* keep default */ }
+    window.alert(msg);
+  }
+
+  const ACTION_LABELS = {
+    account_created: 'Account created', applicant_created: 'Applicant profile created',
+    deactivated: 'Deactivated', reactivated: 'Reactivated', relinked: 'Re-linked',
+    suspended: 'Suspended', archived: 'Archived', deleted: 'Permanently deleted',
+  };
+
+  async function showHistory(id, name) {
+    const body = document.getElementById('auditBody');
+    document.getElementById('auditTitle').textContent = 'History — ' + name;
+    body.innerHTML = '<p class="text-muted">Loading…</p>';
+    const modal = new bootstrap.Modal(document.getElementById('auditModal'));
+    modal.show();
+    try {
+      const res = await fetch('/api/users/' + id + '/audit', { credentials: 'same-origin' });
+      const json = await res.json();
+      const rows = (json && json.data) || [];
+      if (!rows.length) { body.innerHTML = '<p class="text-muted">No history recorded.</p>'; return; }
+      body.innerHTML = '<ul class="list-group list-group-flush">' + rows.map(function (r) {
+        const when = new Date(r.createdAt).toLocaleString();
+        return '<li class="list-group-item px-0">'
+          + '<div class="d-flex justify-content-between"><strong>' + esc(ACTION_LABELS[r.action] || r.action) + '</strong>'
+          + '<span class="text-muted small">' + esc(when) + '</span></div>'
+          + (r.detail ? '<div class="small">' + esc(r.detail) + '</div>' : '')
+          + '<div class="small text-muted">by ' + esc(r.actorName || 'system') + '</div></li>';
+      }).join('') + '</ul>';
+    } catch (e) {
+      body.innerHTML = '<p class="text-danger">Could not load history.</p>';
+    }
+  }
+
+  document.addEventListener('click', function (ev) {
+    const btn = ev.target.closest('[data-act]');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+    const name = btn.getAttribute('data-name') || 'this account';
+    const action = btn.getAttribute('data-act');
+
+    if (action === 'history') { showHistory(id, name); return; }
+
+    if (action === 'deactivate') {
+      if (!window.confirm('Deactivate ' + name + '?\n\nThis will prevent the user from logging in, but the applicant’s accreditation and historical records will be preserved.')) return;
+      act('/api/users/' + id + '/deactivate', 'POST', true);
+      return;
+    }
+    if (action === 'reactivate') {
+      if (!window.confirm('Reactivate this account so the user can log in again?')) return;
+      act('/api/users/' + id + '/reactivate', 'POST', true);
+      return;
+    }
+    if (action === 'relink') {
+      const appId = window.prompt('Re-link this login to an existing applicant.\nEnter the application id (e.g. LSA-2026-0001), or leave blank to unlink:');
+      if (appId === null) return;
+      const qs = 'applicationId=' + encodeURIComponent(appId.trim());
+      fetch('/api/users/' + id + '/relink', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'x-csrf-token': csrf(), 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: qs,
+      }).then(function (res) {
+        if (res.ok) { location.reload(); return; }
+        res.json().then(function (j) { window.alert((j && j.error) || 'Re-link failed.'); }).catch(function () { window.alert('Re-link failed.'); });
+      });
+      return;
+    }
+  });
+})();
+</script>
+</body>
+</html>

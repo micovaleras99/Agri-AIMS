@@ -7,13 +7,13 @@ const { rowToCamel } = require('../utils/caseConvert');
 
 const SELECT_SAFE = `
   SELECT id, first_name, last_name, email, role, position, office, region, avatar, photo, phone, farm_id, application_id,
-         created_at, updated_at
+         is_active, status, deleted_at, created_at, updated_at
   FROM users
 `;
 
 const SELECT_WITH_HASH = `
   SELECT id, first_name, last_name, email, password_hash, role, position, office, region, avatar, photo, phone, farm_id, application_id,
-         created_at, updated_at
+         is_active, status, deleted_at, created_at, updated_at
   FROM users
 `;
 
@@ -21,6 +21,7 @@ function formatPublic(row) {
   if (!row) return null;
   const o = rowToCamel(row);
   if (o.farmId != null) o.farmId = Number(o.farmId);
+  if (o.isActive != null) o.isActive = Number(o.isActive) === 1;
   return o;
 }
 
@@ -139,6 +140,41 @@ async function updatePhoto(id, storedName) {
   await query('UPDATE users SET photo = ? WHERE id = ?', [storedName || null, id]);
 }
 
+/**
+ * Soft-delete: the account can no longer log in, but nothing it owns is
+ * touched. status is the richer state the admin UI shows; is_active is kept in
+ * lock-step so the login gate and older queries agree. deleted_at stamps when.
+ * @param {number} id
+ * @param {'inactive'|'suspended'|'archived'} [status='inactive']
+ */
+async function deactivate(id, status = 'inactive') {
+  const s = ['inactive', 'suspended', 'archived'].includes(status) ? status : 'inactive';
+  await query(
+    'UPDATE users SET status = ?, is_active = 0, deleted_at = NOW() WHERE id = ?',
+    [s, id]
+  );
+}
+
+/** Restore a deactivated account so it can log in again. */
+async function reactivate(id) {
+  await query(
+    "UPDATE users SET status = 'active', is_active = 1, deleted_at = NULL WHERE id = ?",
+    [id]
+  );
+}
+
+/**
+ * Point this account at an existing applicant record (account recovery, req. 6).
+ * The DB's uq_users_active_application key rejects a second ACTIVE account for
+ * the same applicant with ER_DUP_ENTRY, which the caller turns into a 409.
+ * @param {number} id
+ * @param {string|null} applicationId  an existing applicants.application_id, or null to unlink
+ */
+async function relink(id, applicationId) {
+  await query('UPDATE users SET application_id = ? WHERE id = ?', [applicationId ?? null, id]);
+}
+
+/** Permanent removal. Reserved for authorised admins; prefer deactivate(). */
 async function remove(id) {
   await query('DELETE FROM users WHERE id = ?', [id]);
 }
@@ -162,6 +198,10 @@ async function findPaginated(opts = {}) {
   if (opts.role) {
     clauses.push('role = ?');
     params.push(opts.role);
+  }
+  if (opts.status) {
+    clauses.push('status = ?');
+    params.push(opts.status);
   }
   if (opts.search) {
     const q = likeTerm(opts.search);
@@ -226,6 +266,9 @@ module.exports = {
   createUser,
   updateUser,
   updatePasswordHash,
+  deactivate,
+  reactivate,
+  relink,
   remove,
   findPaginated,
   formatPublic,

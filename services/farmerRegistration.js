@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 const { getPool } = require('../config/database');
 const applicantModel = require('../models/applicantModel');
 const userModel = require('../models/userModel');
+const accountAudit = require('../models/accountAuditModel');
 const locationModel = require('../models/locationModel');
 const { requirementsFor } = require('../config/documentRequirements');
 const { STEP_PROGRESS } = require('../controllers/accreditationHelpers');
@@ -171,6 +172,23 @@ async function attemptRegister(input, createAccount) {
     }
 
     await conn.commit();
+
+    // Audit trail (req. 13). Written after commit and outside the transaction —
+    // a logging hiccup must never roll back a successful registration.
+    const who = input.createdByAdmin ? 'ATI administrator' : 'Self-registration';
+    try {
+      await accountAudit.log({
+        userId, applicationId, action: 'applicant_created', actorName: who,
+        detail: 'Applicant profile created at registration.',
+      });
+      if (userId) {
+        await accountAudit.log({
+          userId, applicationId, action: 'account_created', actorName: who,
+          detail: 'Login account created and linked to the applicant.',
+        });
+      }
+    } catch { /* audit is best-effort; registration already succeeded */ }
+
     return { userId, applicationId };
   } catch (err) {
     await conn.rollback();

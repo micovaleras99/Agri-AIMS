@@ -159,6 +159,16 @@ const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ success: false, error: 'Invalid credentials' });
   }
 
+  // A deactivated / suspended / archived account keeps all its records but can
+  // no longer sign in (req. 4). Checked after the password so it cannot be used
+  // to probe which emails exist.
+  if (Number(row.isActive) === 0 || (row.status && row.status !== 'active')) {
+    return res.status(403).json({
+      success: false,
+      error: 'This account has been deactivated. Please contact the ATI administrator.',
+    });
+  }
+
   const user = await userModel.findById(row.id);
   const token = signToken(user);
   setAuthCookie(res, token);

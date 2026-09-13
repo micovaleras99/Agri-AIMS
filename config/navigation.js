@@ -49,6 +49,7 @@ const NAV = [
     ],
   },
 
+  { label: 'Accounts', icon: 'people', href: '/admin/accounts', page: 'accounts', roles: ['admin'] },
   { label: 'Directory', icon: 'building', href: '/directory', page: 'directory', roles: ['admin', 'operator'] },
   { label: 'Community', icon: 'chat-dots', href: '/community', page: 'community', roles: ALL },
   { label: 'Messages', icon: 'envelope', href: '/messages', page: 'messages', roles: ALL },

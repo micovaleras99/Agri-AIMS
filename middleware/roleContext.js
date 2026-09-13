@@ -30,7 +30,13 @@ async function roleContext(req, res, next) {
     if (token && process.env.JWT_SECRET) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        currentUser = await userModel.findById(Number(decoded.sub));
+        const found = await userModel.findById(Number(decoded.sub));
+        // A still-valid token from an account deactivated mid-session must not
+        // keep it signed in — treat a non-active account as a guest so the
+        // lockout takes effect immediately, not only when the token expires.
+        currentUser = found && found.isActive !== false && (!found.status || found.status === 'active')
+          ? found
+          : null;
       } catch {
         /* invalid or expired token — the caller stays a guest */
       }

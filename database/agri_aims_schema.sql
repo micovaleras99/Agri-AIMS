@@ -8,6 +8,23 @@
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- ---------- account_audit ----------
+DROP TABLE IF EXISTS `account_audit`;
+CREATE TABLE `account_audit` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned DEFAULT NULL,
+  `application_id` varchar(32) NOT NULL DEFAULT '',
+  `action` enum('account_created','applicant_created','deactivated','reactivated','relinked','suspended','archived','deleted') NOT NULL,
+  `actor_id` int(10) unsigned DEFAULT NULL,
+  `actor_name` varchar(255) NOT NULL DEFAULT '',
+  `detail` varchar(500) NOT NULL DEFAULT '',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_account_audit_user` (`user_id`),
+  KEY `idx_account_audit_application` (`application_id`),
+  CONSTRAINT `fk_account_audit_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ---------- applicants ----------
 DROP TABLE IF EXISTS `applicants`;
 CREATE TABLE `applicants` (
@@ -605,15 +622,20 @@ CREATE TABLE `users` (
   `application_id` varchar(32) DEFAULT NULL,
   `created_by_admin` tinyint(1) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `status` enum('active','inactive','suspended','archived') NOT NULL DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `deleted_at` datetime DEFAULT NULL,
+  `active_application_key` varchar(32) GENERATED ALWAYS AS (if(`status` = 'active',`application_id`,NULL)) VIRTUAL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_users_email` (`email`),
+  UNIQUE KEY `uq_users_active_application` (`active_application_key`),
   KEY `idx_users_role` (`role`),
   KEY `idx_users_application` (`application_id`),
   KEY `fk_users_farm` (`farm_id`),
   KEY `idx_users_barangay` (`barangay_id`),
   KEY `idx_users_is_active` (`is_active`),
+  KEY `idx_users_status` (`status`),
   CONSTRAINT `fk_users_application` FOREIGN KEY (`application_id`) REFERENCES `applicants` (`application_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_users_barangay` FOREIGN KEY (`barangay_id`) REFERENCES `barangays` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_users_farm` FOREIGN KEY (`farm_id`) REFERENCES `farms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
