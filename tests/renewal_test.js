@@ -156,21 +156,9 @@ async function main() {
     });
     check('an operator cannot renew someone else\'s site -> 403', foreign.status === 403);
 
-    const evaluatorId = await userModel.createUser({
-      firstName: 'Renewal', lastName: 'Evaluator', email: `renew.eval.${stamp}@example.com`,
-      passwordHash: await bcrypt.hash('RenewPw#2026', 12), role: 'evaluator', region: 'Region V', avatar: 'RE',
-    });
-    made.users.push(evaluatorId);
-    const evalToken = signToken({ id: evaluatorId, role: 'evaluator', email: `renew.eval.${stamp}@example.com` });
-
-    const reviewed = await request(server, 'POST', `/renewal/${open.id}/review`, { token: evalToken });
-    check('an evaluator can take it under review', reviewed.headers.location === '/renewal?success=review');
+    const reviewed = await request(server, 'POST', `/renewal/${open.id}/review`, { token: adminToken });
+    check('an admin can take it under review', reviewed.headers.location === '/renewal?success=review');
     check('the status moved', (await renewalModel.findById(open.id)).status === 'under_review');
-
-    const evalApprove = await request(server, 'POST', `/renewal/${open.id}/decide`, {
-      token: evalToken, form: { decision: 'approve' },
-    });
-    check('an evaluator cannot approve, as at Step 7 -> 403', evalApprove.status === 403);
 
     const noRemarks = await request(server, 'POST', `/renewal/${open.id}/decide`, {
       token: adminToken, form: { decision: 'reject', remarks: '' },

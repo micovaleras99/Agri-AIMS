@@ -14,7 +14,7 @@ const { toRecord, SCHEMA } = require('./api/exportRoutes');
 
 const router = express.Router();
 
-const STAFF = ['admin', 'evaluator'];
+const STAFF = ['admin'];
 
 router.get('/', async (req, res) => {
   if (!STAFF.includes(res.locals.role)) {

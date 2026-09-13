@@ -39,7 +39,7 @@ const selfAssessmentDoc = require('../services/selfAssessmentDoc');
  */
 function mayHandleApplication(res, applicant) {
   const { role, currentUser } = res.locals;
-  if (['admin', 'evaluator'].includes(role)) return true;
+  if (['admin'].includes(role)) return true;
   return Boolean(
     applicant && currentUser && currentUser.applicationId
     && applicant.applicationId === currentUser.applicationId
@@ -109,7 +109,7 @@ const { validUntilFrom } = require('../config/renewal');
 // GET /accreditation/:id/step/1 — Show briefer content
 router.get('/:id/step/1', async (req, res) => {
     const { role } = res.locals;
-    if (!['admin','evaluator','applicant'].includes(role)) {
+    if (!['admin','applicant'].includes(role)) {
         return res.redirect(`/applicants/${req.params.id}`);
     }
 
@@ -384,7 +384,7 @@ router.post('/:id/step/3', async (req, res) => {
 // GET /accreditation/:id/step/4
 router.get('/:id/step/4', async (req, res) => {
     const { role } = res.locals;
-    if (!['admin','evaluator'].includes(role)) {
+    if (!['admin'].includes(role)) {
         return res.status(403).render('pages/error', {
             title: 'Access Denied', code: 403,
             message: 'Step 4 — Document Evaluation is restricted to ATI Evaluators.'
@@ -422,7 +422,7 @@ router.get('/:id/step/4', async (req, res) => {
 // POST /accreditation/:id/step/4 — Evaluator submits assessment result
 router.post('/:id/step/4', async (req, res) => {
     const { role, currentUser } = res.locals;
-    if (!['admin','evaluator'].includes(role)) {
+    if (!['admin'].includes(role)) {
         return res.status(403).render('pages/error', {
             title: 'Access Denied', code: 403, message: 'Unauthorized.'
         });
@@ -458,7 +458,7 @@ router.post('/:id/step/4', async (req, res) => {
 // GET /accreditation/:id/step/5
 router.get('/:id/step/5', async (req, res) => {
     const { role } = res.locals;
-    if (!['admin','evaluator'].includes(role)) {
+    if (!['admin'].includes(role)) {
         return res.status(403).render('pages/error', {
             title: 'Access Denied', code: 403,
             message: 'Step 5 — Field Validation is restricted to ATI Evaluators (TWG).'
@@ -502,7 +502,7 @@ router.get('/:id/step/5', async (req, res) => {
 router.post('/:id/step/5', upload.single('file'), requireCsrfAfterUpload, async (req, res) => {
     const { role, currentUser } = res.locals;
     const discard = () => { if (req.file) removeStored(req.file.filename); };
-    if (!['admin','evaluator'].includes(role)) {
+    if (!['admin'].includes(role)) {
         discard();
         return res.status(403).render('pages/error', {
             title: 'Access Denied', code: 403, message: 'Unauthorized.'
@@ -575,7 +575,7 @@ router.post('/:id/step/5', upload.single('file'), requireCsrfAfterUpload, async 
 // GET /accreditation/:id/step/6
 router.get('/:id/step/6', async (req, res) => {
     const { role } = res.locals;
-    if (!['admin','evaluator'].includes(role)) {
+    if (!['admin'].includes(role)) {
         return res.status(403).render('pages/error', {
             title: 'Access Denied', code: 403,
             message: 'Step 6 — Endorsement is restricted to ATI-RTC Evaluators.'
@@ -615,7 +615,7 @@ router.get('/:id/step/6', async (req, res) => {
 router.post('/:id/step/6', upload.single('file'), requireCsrfAfterUpload, async (req, res) => {
     const { role, currentUser } = res.locals;
     const discard = () => { if (req.file) removeStored(req.file.filename); };
-    if (!['admin','evaluator'].includes(role)) {
+    if (!['admin'].includes(role)) {
         discard();
         return res.status(403).render('pages/error', {
             title: 'Access Denied', code: 403, message: 'Unauthorized.'

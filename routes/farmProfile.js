@@ -23,7 +23,7 @@ async function resolveApplicant(req) {
     const id = await farmModel.getApplicantIdForFarm(currentUser.farmId);
     return id ? applicantModel.findById(id) : null;
   }
-  if (['admin', 'evaluator'].includes(role) && (req.query.applicant || req.body.applicant)) {
+  if (['admin'].includes(role) && (req.query.applicant || req.body.applicant)) {
     return applicantModel.findById(parseInt(req.query.applicant || req.body.applicant, 10));
   }
   return null;

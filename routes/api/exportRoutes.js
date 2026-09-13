@@ -97,7 +97,7 @@ function toXml(records, meta) {
 
 // GET /api/export/lsa-registry?format=json|csv|xml
 router.get('/lsa-registry', async (req, res) => {
-  if (!['admin', 'evaluator'].includes(res.locals.role)) {
+  if (!['admin'].includes(res.locals.role)) {
     return res.status(403).json({ success: false, error: 'Staff only.' });
   }
 

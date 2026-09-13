@@ -5,7 +5,6 @@
 // Same map the navbar uses, so the badge here reads identically.
 const roleConfig = {
     admin:     { label: 'Admin',        color: 'danger'    },
-    evaluator: { label: 'Evaluator',    color: 'warning'   },
     operator:  { label: 'LSA Operator', color: 'success'   },
     applicant: { label: 'Applicant',    color: 'primary'   },
     guest:     { label: 'Guest',        color: 'secondary' }
@@ -13,7 +12,7 @@ const roleConfig = {
 const rc = roleConfig[role] || roleConfig.guest;
 // Position and office describe an ATI post. A farmer does not hold one, so the
 // fields are shown only to the roles that do.
-const isStaff = role === 'admin' || role === 'evaluator';
+const isStaff = role === 'admin';
 %>
 
 <div class="page-container">

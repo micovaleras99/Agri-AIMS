@@ -9,7 +9,7 @@
                 <h1 class="page-title">Monitoring &amp; Reports</h1>
                 <p class="page-subtitle mb-0">Semestral accomplishment reports — visitors, trainings and technology demonstrations.</p>
             </div>
-            <% if (['operator','admin','evaluator'].includes(role)) { %>
+            <% if (['operator','admin'].includes(role)) { %>
             <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#reportForm"
                     aria-expanded="<%= (role==='operator' && openPeriods.length) ? 'true' : 'false' %>" aria-controls="reportForm">
                 <i class="ph ph-file-plus me-1"></i>Submit Semestral Report
@@ -39,7 +39,7 @@
         </div>
         <% } %>
 
-        <% if (['operator','admin','evaluator'].includes(role)) { %>
+        <% if (['operator','admin'].includes(role)) { %>
         <div class="collapse mb-4 <%= (role==='operator' && openPeriods.length) ? 'show' : '' %>" id="reportForm">
             <form method="POST" action="/reports" class="card report-form">
                 <div class="card-header bg-transparent border-0 pt-3 pb-0 px-4">

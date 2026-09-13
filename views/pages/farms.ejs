@@ -16,13 +16,13 @@
                     <span class="text-success fw-semibold">
                         <i class="ph-fill ph-map-pin me-1"></i><%= geoTagged.length %> geo-tagged
                     </span>
-                    <% if (geoPending.length > 0 && ['admin','evaluator'].includes(role)) { %>
+                    <% if (geoPending.length > 0 && ['admin'].includes(role)) { %>
                     · <span class="text-warning fw-semibold"><%= geoPending.length %> pending tag</span>
                     <% } %>
                 </p>
             </div>
-            <!-- View toggle (admin/evaluator) -->
-            <% if (['admin','evaluator'].includes(role)) { %>
+            <!-- View toggle (admin) -->
+            <% if (['admin'].includes(role)) { %>
             <div class="btn-group">
                 <a href="/farms?view=cards" class="btn btn-sm <%= filters.view==='cards' ? 'btn-primary' : 'btn-outline-primary' %>">
                     <i class="ph ph-squares-four me-1"></i>Cards
@@ -35,7 +35,7 @@
         </div>
 
         <!-- Filter bar -->
-        <% if (['admin','evaluator'].includes(role)) { %>
+        <% if (['admin'].includes(role)) { %>
         <div class="card mb-4 p-3">
             <form method="GET" action="/farms" class="row g-3 align-items-end">
                 <input type="hidden" name="view" value="<%= filters.view %>">
@@ -82,7 +82,7 @@
              Shows all tagged farms on Leaflet.js map
              Pending-tag farms shown with orange markers
              ══════════════════════════════════════════════════ -->
-        <% if (filters.view === 'map' && ['admin','evaluator'].includes(role)) { %>
+        <% if (filters.view === 'map' && ['admin'].includes(role)) { %>
 
         <div class="row g-4">
             <div class="col-lg-8">

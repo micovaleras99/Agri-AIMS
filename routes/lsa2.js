@@ -16,7 +16,7 @@ const { hasPrescribedForm } = require('../config/prescribedForms');
 
 const router = express.Router();
 
-const STAFF = ['admin', 'evaluator'];
+const STAFF = ['admin'];
 
 function denied(res, message) {
   return res.status(403).render('pages/error', { title: 'Access Denied', code: 403, message });

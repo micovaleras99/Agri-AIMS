@@ -219,7 +219,7 @@ async function start() {
     console.log(`\nAgri-AIMS → http://localhost:${PORT}`);
     console.log(`API base → http://localhost:${PORT}/api`);
     if (process.env.NODE_ENV !== 'production' && process.env.ALLOW_ROLE_SWITCH === 'true') {
-      console.log('Role switcher: ENABLED (development only) - ?role=admin|evaluator|operator|applicant');
+      console.log('Role switcher: ENABLED (development only) - ?role=admin|operator|applicant');
     } else {
       console.log('Role switcher: disabled. Sign in at / to use the app.');
     }

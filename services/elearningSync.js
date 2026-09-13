@@ -138,7 +138,7 @@ async function sync(opts = {}) {
   }
 
   const recipients = notifyMembers
-    ? await notificationModel.findUserIdsByRole(['operator', 'applicant', 'evaluator', 'admin'])
+    ? await notificationModel.findUserIdsByRole(['operator', 'applicant', 'admin'])
     : [];
 
   for (const item of limited) {
@@ -257,7 +257,7 @@ async function addManual({ title, summary, url, publishedAt, notifyMembers = tru
   }
   if (channels.length) {
     if (notifyMembers) {
-      const recipients = await notificationModel.findUserIdsByRole(['operator', 'applicant', 'evaluator', 'admin']);
+      const recipients = await notificationModel.findUserIdsByRole(['operator', 'applicant', 'admin']);
       notified = await notify.elearningArticle(article, recipients);
     }
     await articleModel.markPosted(articleId, firstChannelId, firstMessageId, notified);

@@ -60,10 +60,9 @@ async function renderDashboard(req, res) {
     .sort((a, b) => new Date(b.submissionDate) - new Date(a.submissionDate))
     .slice(0, 5);
 
-  // Admin and evaluator are one interface now (client §5): the administrator
-  // manages applications AND evaluates documents / field validation / Steps 4-7.
-  // Any evaluator account still logs in and lands on the same dashboard.
-  if (role === 'admin' || role === 'evaluator') {
+  // The administrator manages applications AND evaluates documents / field
+  // validation / Steps 4-7 — the former Evaluator role was merged into Admin.
+  if (role === 'admin') {
     const stats = {
       totalApplications: applicants.length,
       pendingActions: applicants.filter((a) => ['submitted', 'document_review', 'under_review'].includes(a.status))

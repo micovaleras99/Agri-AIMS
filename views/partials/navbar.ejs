@@ -1,6 +1,6 @@
 <!-- ═══════════════════════════════════════════════════════════════
      PARTIAL: navbar.ejs — Role-Based Top Navigation
-     Roles: admin | evaluator | operator | applicant
+     Roles: admin | operator | applicant
      Variables injected: page (string), currentUser (object), role (string)
      ═══════════════════════════════════════════════════════════════ -->
 
@@ -8,7 +8,6 @@
 // ── Role-color & icon map ──────────────────────────────────────
 const roleConfig = {
     admin:     { label: 'Admin',        color: 'danger',  icon: 'shield-lock-fill'       },
-    evaluator: { label: 'Evaluator',    color: 'warning', icon: 'clipboard2-check-fill'  },
     operator:  { label: 'LSA Operator', color: 'success', icon: 'tree-fill'              },
     applicant: { label: 'Applicant',    color: 'primary', icon: 'person-fill-add'        },
     guest:     { label: 'Guest',        color: 'secondary', icon: 'person'                 }

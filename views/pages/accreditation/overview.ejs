@@ -88,9 +88,9 @@
     // Role-based access for each step
     const canAccess =
         (s.step <= 3 && ['admin','applicant'].includes(role)) ||
-        (s.step === 4 && ['admin','evaluator'].includes(role)) ||
-        (s.step === 5 && ['admin','evaluator'].includes(role)) ||
-        (s.step === 6 && ['admin','evaluator'].includes(role)) ||
+        (s.step === 4 && ['admin'].includes(role)) ||
+        (s.step === 5 && ['admin'].includes(role)) ||
+        (s.step === 6 && ['admin'].includes(role)) ||
         (s.step === 7 && role === 'admin');
 %>
 <div class="acred-step-card <%= isCompleted ? 'completed' : isActive ? 'active' : 'pending' %>">

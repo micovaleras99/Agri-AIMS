@@ -610,7 +610,7 @@ CREATE TABLE `users` (
   `last_name` varchar(120) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `role` enum('admin','evaluator','operator','applicant') NOT NULL DEFAULT 'applicant',
+  `role` enum('admin','operator','applicant') NOT NULL DEFAULT 'applicant',
   `position` varchar(255) NOT NULL DEFAULT '',
   `office` varchar(255) NOT NULL DEFAULT '',
   `region` varchar(80) NOT NULL DEFAULT '',

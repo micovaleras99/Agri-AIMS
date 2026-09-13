@@ -19,11 +19,10 @@ const SMALL_TALK_REPLY = "Hello! I'm AgriBot, the LSA assistant. Ask me about th
 // account, never from the knowledge base. Anchored so a real question that
 // merely contains "role" (e.g. "what are the roles in the system?") is not
 // caught: those go to the normal answer path.
-const IDENTITY = /^\s*(who\s*am\s*i|who\s*is\s*(the\s*)?(current\s*)?user|what('?s| is)\s*my\s*(role|account|name)|what\s*am\s*i|am\s*i\s*(an?\s*)?(admin|administrator|operator|applicant|evaluator|staff|user))\b/i;
+const IDENTITY = /^\s*(who\s*am\s*i|who\s*is\s*(the\s*)?(current\s*)?user|what('?s| is)\s*my\s*(role|account|name)|what\s*am\s*i|am\s*i\s*(an?\s*)?(admin|administrator|operator|applicant|staff|user))\b/i;
 
 const ROLE_LABEL = {
   admin: 'Administrator',
-  evaluator: 'ATI Evaluator (staff)',
   operator: 'LSA Operator',
   applicant: 'Applicant',
 };

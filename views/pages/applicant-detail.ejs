@@ -90,7 +90,7 @@
                                 <%= applicant.status === 'approved' ? 'View Accreditation' : 'Manage Accreditation Steps' %>
                             </a>
                         </div>
-                        <% if (['admin','evaluator'].includes(role)) { %>
+                        <% if (['admin'].includes(role)) { %>
                         <div class="d-flex gap-2 mt-2">
                             <a href="/documents/package/<%= applicant.id %>"
                                class="btn btn-outline-success w-100"
@@ -262,7 +262,7 @@
                                     <% } %>
                                 </p>
                             </div>
-                            <% if (role === 'evaluator' || role === 'admin') { %>
+                            <% if (role === 'admin') { %>
                             <button class="btn btn-sm btn-outline-danger"
                                     data-call="toggleGeoPanel">
                                 <i class="ph ph-map-pin me-1"></i>
@@ -304,7 +304,7 @@
                                 Coordinates will be recorded by the ATI Evaluator (TWG)
                                 during Step 5 — Field/Virtual Validation.
                             </p>
-                            <% if (['evaluator','admin'].includes(role)) { %>
+                            <% if (['admin'].includes(role)) { %>
                             <button class="btn btn-sm btn-outline-danger mt-2"
                                     data-call="recordLocationNow" data-args='["@this"]'>
                                 <i class="ph ph-map-pin me-1"></i>Record Location Now
@@ -314,7 +314,7 @@
                         <% } %>
 
                         <!-- ── GEO-TAG INPUT FORM (Evaluator/Admin only) ── -->
-                        <% if (['evaluator','admin'].includes(role)) { %>
+                        <% if (['admin'].includes(role)) { %>
                         <div id="geoTagPanel" class="geo-tag-panel <%= applicant.geoTagStatus === 'tagged' ? 'd-none' : '' %>">
                             <div class="geo-tag-panel-header">
                                 <i class="ph-fill ph-map-pin text-danger me-2"></i>
@@ -627,7 +627,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
     <% } %>
 
     <!-- Self-assessment detail, for the evaluator reviewing the claim. -->
-    <% if (_selfAssessment.length && ['admin','evaluator'].includes(role)) { %>
+    <% if (_selfAssessment.length && ['admin'].includes(role)) { %>
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title mb-1"><i class="ph ph-user-check me-2"></i>Self-Assessment Detail</h5>

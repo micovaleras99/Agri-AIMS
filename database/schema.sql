@@ -233,7 +233,7 @@ CREATE TABLE `users` (
   `last_name` VARCHAR(120) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
   `password_hash` VARCHAR(255) NOT NULL,
-  `role` ENUM('admin','evaluator','operator','applicant') NOT NULL DEFAULT 'applicant',
+  `role` ENUM('admin','operator','applicant') NOT NULL DEFAULT 'applicant',
   `position` VARCHAR(255) NOT NULL DEFAULT '',
   `office` VARCHAR(255) NOT NULL DEFAULT '',
   `region` VARCHAR(80) NOT NULL DEFAULT '',

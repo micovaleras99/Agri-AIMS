@@ -104,7 +104,7 @@ router.post('/add', (req, res) => res.redirect('/admin/farmers/new'));
 
 router.get('/edit/:id', async (req, res) => {
   const { role } = res.locals;
-  if (!['admin', 'evaluator'].includes(role)) {
+  if (!['admin'].includes(role)) {
     return res.status(403).render('pages/error', {
       title: 'Access Denied',
       code: 403,
@@ -126,7 +126,7 @@ router.get('/edit/:id', async (req, res) => {
 
 router.post('/edit/:id', async (req, res) => {
   const { role } = res.locals;
-  if (!['admin', 'evaluator'].includes(role)) {
+  if (!['admin'].includes(role)) {
     return res.status(403).render('pages/error', {
       title: 'Access Denied',
       code: 403,
@@ -180,7 +180,7 @@ router.post('/edit/:id', async (req, res) => {
 
 router.post('/geotag/:id', async (req, res) => {
   const { role, currentUser } = res.locals;
-  if (!['admin', 'evaluator'].includes(role)) {
+  if (!['admin'].includes(role)) {
     return res.status(403).render('pages/error', {
       title: 'Access Denied',
       code: 403,

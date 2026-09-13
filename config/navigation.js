@@ -11,9 +11,9 @@
  */
 
 /** Everyone who can sign in. */
-const ALL = ['admin', 'evaluator', 'operator', 'applicant'];
+const ALL = ['admin', 'operator', 'applicant'];
 /** The roles the LSA programme pages are built for. */
-const LSA = ['admin', 'evaluator', 'operator'];
+const LSA = ['admin', 'operator'];
 
 const NAV = [
   { label: 'Dashboard', icon: 'speedometer2', href: '/dashboard', page: 'dashboard', roles: ALL },
@@ -23,7 +23,7 @@ const NAV = [
     children: [
       // Operators are refused /applicants by routes/applicants.js, so it is not
       // offered to them; they reach their own farm through Monitoring instead.
-      { label: 'Applications', icon: 'file-earmark-text', href: '/applicants', page: 'applicants', roles: ['admin', 'evaluator', 'applicant'] },
+      { label: 'Applications', icon: 'file-earmark-text', href: '/applicants', page: 'applicants', roles: ['admin', 'applicant'] },
       { label: 'Documents', icon: 'folder', href: '/documents', page: 'documents', roles: ALL },
     ],
   },
@@ -34,9 +34,9 @@ const NAV = [
       { label: 'Farms', icon: 'tree', href: '/farms', page: 'farms', roles: LSA },
       { label: 'Compliance', icon: 'shield-check', href: '/compliance', page: 'compliance', roles: LSA },
       { label: 'Reports', icon: 'bar-chart', href: '/reports', page: 'reports', roles: LSA },
-      // RSC-07: the accredited-LSA registry export for ATI Services. Staff only,
-      // matching the export endpoint's own admin/evaluator gate.
-      { label: 'Registry Export', icon: 'box-arrow-up-right', href: '/registry', page: 'registry', roles: ['admin', 'evaluator'] },
+      // RSC-07: the accredited-LSA registry export for ATI Services. Admin only,
+      // matching the export endpoint's own gate.
+      { label: 'Registry Export', icon: 'box-arrow-up-right', href: '/registry', page: 'registry', roles: ['admin'] },
     ],
   },
 

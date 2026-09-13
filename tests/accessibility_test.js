@@ -189,9 +189,9 @@ async function main() {
     // The role selector only renders when ALLOW_ROLE_SWITCH is on, so the
     // markup is checked at the source rather than in this response.
     const login = fs.readFileSync('views/pages/index.ejs', 'utf8');
-    check('the role cards are a radio group, not four loose divs',
+    check('the role cards are a radio group, not loose divs',
       login.includes('role="radiogroup"'));
-    check('and each of the four is focusable', (login.match(/role="radio"/g) || []).length === 4);
+    check('and each of the three is focusable', (login.match(/role="radio"/g) || []).length === 3);
     check('selecting one un-checks the others for a screen reader',
       login.includes("c.setAttribute('aria-checked', 'false')")
       && login.includes("el.setAttribute('aria-checked', 'true')"));

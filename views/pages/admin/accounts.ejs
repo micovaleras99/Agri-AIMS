@@ -33,7 +33,7 @@
                     <label for="role" class="form-label small fw-semibold">Role</label>
                     <select id="role" class="form-select" name="role">
                         <option value="">All Roles</option>
-                        <% ['admin','evaluator','operator','applicant'].forEach(function (r) { %>
+                        <% ['admin','operator','applicant'].forEach(function (r) { %>
                         <option value="<%= r %>" <%= filters.role === r ? 'selected' : '' %>><%= r.charAt(0).toUpperCase() + r.slice(1) %></option>
                         <% }); %>
                     </select>

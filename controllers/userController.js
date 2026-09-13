@@ -15,6 +15,9 @@ function actorName(u) {
   return `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || `#${u.id}`;
 }
 
+/** The roles that exist. 'evaluator' was merged into 'admin' and removed. */
+const VALID_ROLES = new Set(['admin', 'operator', 'applicant']);
+
 const listUsers = asyncHandler(async (req, res) => {
   const { page, limit, search, role, sort, order } = req.query;
   const result = await userModel.findPaginated({
@@ -50,6 +53,9 @@ const createUser = asyncHandler(async (req, res) => {
       success: false,
       error: 'firstName, lastName, email, password, and role are required',
     });
+  }
+  if (!VALID_ROLES.has(role)) {
+    return res.status(400).json({ success: false, error: `role must be one of: ${[...VALID_ROLES].join(', ')}` });
   }
   const emailError = await checkEmail(email);
   if (emailError) {
@@ -105,6 +111,9 @@ const updateUser = asyncHandler(async (req, res) => {
 
   if (!isAdmin && (role || farmId !== undefined || applicationId !== undefined)) {
     return res.status(403).json({ success: false, error: 'Only administrators may change role or linkage fields' });
+  }
+  if (role && !VALID_ROLES.has(role)) {
+    return res.status(400).json({ success: false, error: `role must be one of: ${[...VALID_ROLES].join(', ')}` });
   }
 
   const nextEmail = (email || existing.email).trim().toLowerCase();

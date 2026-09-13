@@ -117,7 +117,7 @@ async function targetApplicant(req) {
     const id = await farmModel.getApplicantIdForFarm(currentUser.farmId);
     return id ? applicantModel.findById(id) : null;
   }
-  if (['admin', 'evaluator'].includes(role) && req.query.applicant) {
+  if (['admin'].includes(role) && req.query.applicant) {
     return applicantModel.findById(parseInt(req.query.applicant, 10));
   }
   return null;

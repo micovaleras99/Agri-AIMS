@@ -85,20 +85,13 @@ router.get('/', async (req, res) => {
     docStats,
     // Applicants and operators see the decision and its remarks; only the
     // people who make it get the controls.
-    canReview: ['admin', 'evaluator'].includes(role),
+    canReview: ['admin'].includes(role),
     filters: { status, type, search, success: req.query.success, error: req.query.error },
   });
 });
 
 router.get('/submit', async (req, res) => {
   const { role, currentUser } = res.locals;
-  if (role === 'evaluator') {
-    return res.status(403).render('pages/error', {
-      title: 'Access Denied',
-      code: 403,
-      message: 'Evaluators review documents but do not submit them.',
-    });
-  }
 
   let applicants = [];
 
@@ -156,7 +149,7 @@ router.get('/submit', async (req, res) => {
       const rank = { incomplete: 0, missing: 1, pending_review: 2, verified: 3 };
       // Staff also file the admin-owned forms (field validation report,
       // acceptance, endorsement, checklist, qualification); applicants do not.
-      const base = ['admin', 'evaluator'].includes(role)
+      const base = ['admin'].includes(role)
         ? [...requirementsFor(appRow), ...adminRequirementsFor(appRow)]
         : requirementsFor(appRow);
       // Uploading from the LSA II up-scaling page: its packet is separate from
@@ -205,14 +198,6 @@ router.post('/submit', upload.single('file'), requireCsrfAfterUpload, async (req
   const discard = () => { if (req.file) removeStored(req.file.filename); };
 
   const { role, currentUser } = res.locals;
-  if (role === 'evaluator') {
-    discard();
-    return res.status(403).render('pages/error', {
-      title: 'Access Denied',
-      code: 403,
-      message: 'Unauthorized.',
-    });
-  }
 
   const selectedApplicantId = parseInt(req.body.applicantId, 10);
   
@@ -303,7 +288,7 @@ router.post('/submit', upload.single('file'), requireCsrfAfterUpload, async (req
 // evaluator can now say so per document, and the applicant is told which one.
 router.post('/:id/review', async (req, res) => {
   const { role, currentUser } = res.locals;
-  if (!['admin', 'evaluator'].includes(role)) {
+  if (!['admin'].includes(role)) {
     return res.status(403).render('pages/error', {
       title: 'Access Denied',
       code: 403,
@@ -355,7 +340,7 @@ router.get('/:id/file', async (req, res) => {
     });
   }
 
-  let allowed = ['admin', 'evaluator'].includes(role);
+  let allowed = ['admin'].includes(role);
   if (role === 'applicant') allowed = doc.applicationId === currentUser.applicationId;
   if (role === 'operator' && currentUser.farmId) {
     allowed = (await farmModel.getApplicantIdForFarm(currentUser.farmId)) === doc.applicantId;
@@ -388,7 +373,7 @@ router.get('/:id/history', async (req, res) => {
   const doc = await documentModel.findById(parseInt(req.params.id, 10));
   if (!doc) return res.status(404).json({ success: false, error: 'Not found' });
 
-  let allowed = ['admin', 'evaluator'].includes(role);
+  let allowed = ['admin'].includes(role);
   if (role === 'applicant') allowed = doc.applicationId === currentUser.applicationId;
   if (role === 'operator' && currentUser.farmId) {
     allowed = (await farmModel.getApplicantIdForFarm(currentUser.farmId)) === doc.applicantId;
@@ -408,7 +393,7 @@ router.get('/:id/history', async (req, res) => {
 // attaches, rather than collecting files by hand.
 router.get('/package/:applicantId', async (req, res) => {
   const { role } = res.locals;
-  if (!['admin', 'evaluator'].includes(role)) {
+  if (!['admin'].includes(role)) {
     return res.status(403).render('pages/error', {
       title: 'Access Denied', code: 403,
       message: 'Only ATI administrators may download the submission package.',

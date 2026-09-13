@@ -187,7 +187,7 @@ async function documentReviewed(applicant, documentName, status, remarks, doc = 
 
 async function documentSubmitted(applicant, documentName) {
   return safely('documentSubmitted', async () => {
-    const reviewers = await notificationModel.findUserIdsByRole(['admin', 'evaluator']);
+    const reviewers = await notificationModel.findUserIdsByRole(['admin']);
     return createMany(reviewers, {
       type: 'document_submitted',
       title: 'A document is waiting for review',
@@ -293,7 +293,7 @@ async function renewalDue(farm, daysLeft) {
     const recipients = new Set();
     const operatorId = await notificationModel.findUserIdByFarmId(farm.id);
     if (operatorId) recipients.add(operatorId);
-    for (const id of await notificationModel.findUserIdsByRole(['admin', 'evaluator'])) recipients.add(id);
+    for (const id of await notificationModel.findUserIdsByRole(['admin'])) recipients.add(id);
     if (!recipients.size) return 0;
 
     return createMany([...recipients], {
@@ -309,7 +309,7 @@ async function renewalDue(farm, daysLeft) {
 /** An operator has applied to renew; the reviewers need to see it. */
 async function renewalSubmitted(farm, renewalId) {
   return safely('renewalSubmitted', async () => {
-    const staff = await notificationModel.findUserIdsByRole(['admin', 'evaluator']);
+    const staff = await notificationModel.findUserIdsByRole(['admin']);
     if (!staff.length) return 0;
     return createMany(staff, {
       type: 'renewal_submitted',
@@ -330,7 +330,7 @@ async function renewalSubmitted(farm, renewalId) {
  */
 async function reportSubmitted(farm, report) {
   return safely('reportSubmitted', async () => {
-    const staff = await notificationModel.findUserIdsByRole(['admin', 'evaluator']);
+    const staff = await notificationModel.findUserIdsByRole(['admin']);
     if (!staff.length) return 0;
     return createMany(staff, {
       type: 'report_submitted',
