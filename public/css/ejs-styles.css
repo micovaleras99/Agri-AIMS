@@ -1721,6 +1721,14 @@ tr.table-danger  td { background: rgba(220, 53, 69,.07) !important; }
     font-size: 12px; font-weight: 600; color: var(--text-secondary);
     white-space: nowrap;
 }
+/* On a phone the head is too narrow for icon + title + counts on one line:
+   flex:1 gives the title basis 0, so it yields to the counts and its text
+   wraps one character per line. Let the head wrap and drop the counts to
+   their own line so the title keeps the full width. */
+@media (max-width: 575.98px) {
+    .doc-type__head { flex-wrap: wrap; }
+    .doc-type__counts { flex-basis: 100%; justify-content: flex-start; }
+}
 
 /* The submissions inside one requirement — several applicants side by side. */
 .doc-type__items {
