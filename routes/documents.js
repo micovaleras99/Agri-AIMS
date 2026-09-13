@@ -276,9 +276,11 @@ router.post('/submit', upload.single('file'), requireCsrfAfterUpload, async (req
     // the type reliably, the docName only as a convenience.
     name: req.body.docName || LABELS[docType] || 'Document',
     type: docType,
-    // Store a readable name built from the requirement + applicant (like the
-    // generated forms), not the raw upload name (e.g. "scan_0012.pdf").
-    filename: submissionFilename(req.body.docName || LABELS[docType], applicant, req.file.originalname),
+    // Store a readable name built from the document TYPE + applicant (like the
+    // generated forms), not the raw upload name (e.g. "scan_0012.pdf") and not
+    // any label the applicant's form supplied. The canonical type label wins;
+    // only a custom "other" type with no catalogue entry falls back to docName.
+    filename: submissionFilename(LABELS[docType] || req.body.docName || docType, applicant, req.file.originalname),
     storedName: req.file.filename,
     mimeType: req.file.mimetype,
     sizeBytes: req.file.size,
