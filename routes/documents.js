@@ -189,6 +189,19 @@ router.get('/submit', async (req, res) => {
   });
 });
 
+/**
+ * A readable filename for a submission, matching the generated forms'
+ * "Development-Plan-Laarni-Nacario.pdf" style: the requirement label and the
+ * applicant, keeping the uploaded file's own extension.
+ */
+function submissionFilename(label, applicant, originalName) {
+  const slug = (s) => String(s || '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-');
+  const ext = (String(originalName || '').match(/\.[A-Za-z0-9]+$/) || [''])[0].toLowerCase();
+  const base = slug(label) || 'Document';
+  const who = applicant ? slug(`${applicant.firstName || ''} ${applicant.lastName || ''}`) : '';
+  return `${base}${who ? `-${who}` : ''}${ext}`;
+}
+
 router.post('/submit', upload.single('file'), requireCsrfAfterUpload, async (req, res) => {
   if (req.uploadRejected === 'type') return res.redirect('/documents/submit?error=type');
   if (!req.file) return res.redirect('/documents/submit?error=missing');
@@ -263,7 +276,9 @@ router.post('/submit', upload.single('file'), requireCsrfAfterUpload, async (req
     // the type reliably, the docName only as a convenience.
     name: req.body.docName || LABELS[docType] || 'Document',
     type: docType,
-    filename: req.file.originalname,
+    // Store a readable name built from the requirement + applicant (like the
+    // generated forms), not the raw upload name (e.g. "scan_0012.pdf").
+    filename: submissionFilename(req.body.docName || LABELS[docType], applicant, req.file.originalname),
     storedName: req.file.filename,
     mimeType: req.file.mimetype,
     sizeBytes: req.file.size,
