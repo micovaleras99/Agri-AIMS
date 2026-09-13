@@ -93,7 +93,7 @@
                 </button>
                 <div class="chat-input">
                     <input type="text" class="form-control" id="messageInput"
-                           placeholder="Type a message… (log in from the home page first)"
+                           placeholder="<%= currentUser ? 'Type a message…' : 'Type a message… (log in from the home page first)' %>"
                            autocomplete="off">
                     <button class="btn btn-primary" type="button" id="sendButton"
                             aria-label="Send message" title="Send message" disabled
