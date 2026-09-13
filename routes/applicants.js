@@ -71,8 +71,11 @@ router.get('/', async (req, res) => {
     applicants = await applicantModel.findFiltered({ status, province, search, barangayId });
   }
 
-  const provinces = await applicantModel.findDistinctProvinces();
-  const total = await applicantModel.countAll();
+  // An applicant only ever sees their own application, so the province list
+  // (distinct provinces of every applicant) and the system-wide count are not
+  // theirs to know — scope both to what they can actually see.
+  const provinces = role === 'applicant' ? [] : await applicantModel.findDistinctProvinces();
+  const total = role === 'applicant' ? applicants.length : await applicantModel.countAll();
 
   res.render('pages/applicants', {
     title: 'Applications — Agri-AIMS',

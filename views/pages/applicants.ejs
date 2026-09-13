@@ -32,7 +32,10 @@
         </div>
         <% } %>
 
-        <!-- ── Filter Bar ── -->
+        <!-- ── Filter Bar ── (staff only; an applicant's list is fixed to their
+             own application, so filtering would do nothing and the province
+             options would leak other applicants' provinces) -->
+        <% if (role !== 'applicant') { %>
         <div class="card mb-4 p-3">
             <form method="GET" action="/applicants" class="row g-3 align-items-end">
                 <div class="col-md-4">
@@ -75,6 +78,7 @@
                 </div>
             </form>
         </div>
+        <% } %>
 
         <!-- ── Applicants Table ── -->
         <div class="card">
