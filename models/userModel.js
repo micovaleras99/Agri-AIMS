@@ -4,6 +4,7 @@
 
 const { query, pool } = require('../config/database');
 const { rowToCamel } = require('../utils/caseConvert');
+const { likeTerm } = require('../utils/search');
 
 const SELECT_SAFE = `
   SELECT id, first_name, last_name, email, role, position, office, region, avatar, photo, phone, farm_id, application_id,
