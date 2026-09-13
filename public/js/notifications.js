@@ -45,7 +45,7 @@
 
     if (!items.length) {
       body.innerHTML =
-        '<div class="notif-item"><i class="bi bi-inbox text-secondary"></i>' +
+        '<div class="notif-item"><i class="ph ph-tray text-secondary"></i>' +
         '<div><div class="notif-title">No notifications yet</div>' +
         '<div class="notif-time">Updates about your applications and activities appear here.</div></div></div>';
       return;
@@ -54,8 +54,11 @@
     body.innerHTML = items
       .map((n) => {
         const cls = n.isRead ? 'notif-item' : 'notif-item unread';
+        // Icons are stored as Phosphor classes (e.g. "ph ph-medal"); older rows
+        // may hold a bare Bootstrap name — fall back to a neutral bell for those.
+        const iconCls = /ph-/.test(n.icon || '') ? n.icon : 'ph ph-bell';
         const inner =
-          '<i class="bi bi-' + escapeHtml(n.icon || 'bell') + '"></i>' +
+          '<i class="' + escapeHtml(iconCls) + '"></i>' +
           '<div><div class="notif-title">' + escapeHtml(n.title) + '</div>' +
           (n.body ? '<div class="notif-body-text small text-muted">' + escapeHtml(n.body) + '</div>' : '') +
           '<div class="notif-time">' + escapeHtml(relativeTime(n.createdAt)) + '</div></div>';

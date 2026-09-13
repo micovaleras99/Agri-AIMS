@@ -22,13 +22,13 @@
             <div class="col-lg-8">
 
                 <% if (query.error === 'type' && query.pick) { %>
-                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Choose which document type you are submitting.</div>
+                <div class="alert alert-danger"><i class="ph ph-warning me-2"></i>Choose which document type you are submitting.</div>
                 <% } else if (query.error === 'type') { %>
-                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>That file type is not accepted. Upload a PDF, JPG, PNG or WebP.</div>
+                <div class="alert alert-danger"><i class="ph ph-warning me-2"></i>That file type is not accepted. Upload a PDF, JPG, PNG or WebP.</div>
                 <% } else if (query.error === 'missing') { %>
-                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Choose a file to upload.</div>
+                <div class="alert alert-danger"><i class="ph ph-warning me-2"></i>Choose a file to upload.</div>
                 <% } else if (query.error === 'size') { %>
-                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>That file is larger than 10 MB.</div>
+                <div class="alert alert-danger"><i class="ph ph-warning me-2"></i>That file is larger than 10 MB.</div>
                 <% } %>
 
                 <form action="/documents/submit" method="POST" enctype="multipart/form-data" id="submitForm">
@@ -57,7 +57,7 @@
                             </div>
                             <% if (!lockApplicant) { %>
                             <a href="/documents/submit" class="btn btn-sm btn-outline-secondary mt-2">
-                                <i class="bi bi-arrow-left-right me-1"></i>Change applicant
+                                <i class="ph ph-arrows-left-right me-1"></i>Change applicant
                             </a>
                             <% } %>
                             <% } else { %>
@@ -66,7 +66,7 @@
                             <label for="applicantId" class="form-label">Applicant</label>
                             <% if (applicants.length > 8) { %>
                             <div class="submit-search mb-2">
-                                <i class="bi bi-search"></i>
+                                <i class="ph ph-magnifying-glass"></i>
                                 <input type="text" class="form-control" id="applicantSearch"
                                        data-filter="#applicantId" placeholder="Search by name or application ID…"
                                        autocomplete="off">
@@ -97,7 +97,7 @@
                             </p>
                             <% if (requirements.length > 6) { %>
                             <div class="submit-search mb-2">
-                                <i class="bi bi-search"></i>
+                                <i class="ph ph-magnifying-glass"></i>
                                 <input type="text" class="form-control" id="reqSearch"
                                        data-filter=".req-picker" data-item=".req-option"
                                        placeholder="Search requirements…" autocomplete="off">
@@ -124,15 +124,15 @@
                                         <% if (r.form) { %><span class="req-option__form"><%= r.form %></span><% } %>
                                         <% if (['lsa1_field_validation_report','lsa1_rtwg_endorsement','lsa1_checklist','lsa2_checklist','lsa1_qualification_form','lsa2_qualification_form','self_assessment','farm_profile'].includes(r.type)) { %>
                                         <a class="req-option__download" href="/forms/<%= r.type %>/filled?applicant=<%= submittingFor ? submittingFor.id : '' %>">
-                                            <i class="bi bi-magic me-1"></i>Generate filled form
+                                            <i class="ph ph-magic-wand me-1"></i>Generate filled form
                                         </a>
                                         <% } else if (r.hasForm) { %>
                                         <a class="req-option__download" href="/forms/<%= r.type %>">
-                                            <i class="bi bi-download me-1"></i>Download form
+                                            <i class="ph ph-download me-1"></i>Download form
                                         </a>
                                         <% } %>
                                         <% if (r.status === 'incomplete' && r.remarks) { %>
-                                        <span class="req-option__remark"><i class="bi bi-arrow-return-right me-1"></i><%= r.remarks %></span>
+                                        <span class="req-option__remark"><i class="ph ph-arrow-bend-up-right me-1"></i><%= r.remarks %></span>
                                         <% } %>
                                     </span>
                                     <span class="status-badge <%= tone %>"><%= label %></span>
@@ -150,7 +150,7 @@
                                         <span class="req-option__name">Other document</span>
                                         <span class="req-option__form">A type not in the list above</span>
                                     </span>
-                                    <span class="status-badge"><i class="bi bi-plus-lg"></i></span>
+                                    <span class="status-badge"><i class="ph ph-plus"></i></span>
                                 </label>
                                 <% } %>
                             </div>
@@ -159,7 +159,7 @@
                             <div id="otherType" class="other-type mt-2" hidden>
                                 <label for="docTypeOther" class="form-label small">Document type</label>
                                 <div class="submit-search mb-2">
-                                    <i class="bi bi-search"></i>
+                                    <i class="ph ph-magnifying-glass"></i>
                                     <input type="text" class="form-control" id="docTypeSearch"
                                            data-filter="#docTypeOther" placeholder="Search document type…" autocomplete="off">
                                 </div>
@@ -173,14 +173,14 @@
 
                             <p class="req-picker__empty text-muted small mt-2" hidden>No requirement matches your search.</p>
                             <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="reqChange" hidden>
-                                <i class="bi bi-arrow-left-right me-1"></i>Choose a different requirement
+                                <i class="ph ph-arrows-left-right me-1"></i>Choose a different requirement
                             </button>
                             <p class="form-text mt-2" id="reqHint">
                                 Uploading for a requirement that already has a file replaces it and sends the new one for review.
                             </p>
                             <% } else { %>
                             <div class="req-awaiting text-muted">
-                                <i class="bi bi-arrow-up me-1"></i>Choose an applicant above to see their requirements.
+                                <i class="ph ph-arrow-up me-1"></i>Choose an applicant above to see their requirements.
                             </div>
                             <% } %>
                         </div>
@@ -193,7 +193,7 @@
                             <h2 class="submit-step__title">Attach the file</h2>
                             <div class="file-upload-area" id="dropZone" role="button" tabindex="0"
                                  aria-label="Choose a file to upload">
-                                <i class="bi bi-cloud-upload"></i>
+                                <i class="ph ph-cloud-arrow-up"></i>
                                 <p class="mb-1 fw-semibold">Click to browse, or drag &amp; drop your file here</p>
                                 <small class="text-muted">PDF, JPG, PNG or WebP — up to 10&nbsp;MB</small>
                                 <input type="file" id="fileInput" name="file" required style="display:none"
@@ -201,7 +201,7 @@
                             </div>
                             <div id="filePreview" class="mt-2" hidden>
                                 <div class="alert alert-success py-2 d-flex align-items-center gap-2 mb-0">
-                                    <i class="bi bi-file-earmark-check fs-5"></i>
+                                    <i class="ph ph-file-text fs-5"></i>
                                     <span id="fileName" class="fw-semibold"></span>
                                     <span class="ms-auto text-muted small" id="fileSize"></span>
                                     <button type="button" class="btn-close" id="clearFile" aria-label="Remove file"></button>
@@ -212,10 +212,10 @@
 
                     <div class="d-flex gap-3 justify-content-end mt-4">
                         <a href="/documents" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-lg me-2"></i>Cancel
+                            <i class="ph ph-x me-2"></i>Cancel
                         </a>
                         <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <i class="bi bi-upload me-2"></i>Submit for review
+                            <i class="ph ph-upload me-2"></i>Submit for review
                         </button>
                     </div>
                 </form>

@@ -18,24 +18,24 @@
             <span class="text-muted"><%= new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) %></span>
         </p>
     </div>
-    <a href="/admin/farmers/new" class="btn btn-primary"><i class="bi bi-person-plus me-2"></i>Register Farmer</a>
+    <a href="/admin/farmers/new" class="btn btn-primary"><i class="ph ph-user-plus me-2"></i>Register Farmer</a>
 </div>
 
 <div class="row g-4 mb-4">
     <div class="col-6 col-xl-3">
-        <div class="stat-card"><div class="stat-icon bg-primary"><i class="bi bi-file-earmark-text"></i></div>
+        <div class="stat-card"><div class="stat-icon bg-primary"><i class="ph ph-file-text"></i></div>
         <div class="stat-info"><h3><%= stats.totalApplications %></h3><p>Total Applications</p><small class="text-primary"><%= stats.pendingActions %> need action</small></div></div>
     </div>
     <div class="col-6 col-xl-3">
-        <div class="stat-card"><div class="stat-icon bg-success"><i class="bi bi-patch-check"></i></div>
+        <div class="stat-card"><div class="stat-icon bg-success"><i class="ph ph-seal-check"></i></div>
         <div class="stat-info"><h3><%= stats.activeFarms %></h3><p>Active LSA Farms</p><small class="text-success"><%= stats.approved %> fully accredited</small></div></div>
     </div>
     <div class="col-6 col-xl-3">
-        <div class="stat-card"><div class="stat-icon bg-warning"><i class="bi bi-folder-check"></i></div>
+        <div class="stat-card"><div class="stat-icon bg-warning"><i class="ph ph-folder"></i></div>
         <div class="stat-info"><h3><%= stats.pendingDocReview %></h3><p>Docs Pending Review</p><small class="text-warning"><%= stats.totalDocuments %> total uploaded</small></div></div>
     </div>
     <div class="col-6 col-xl-3">
-        <div class="stat-card"><div class="stat-icon bg-info"><i class="bi bi-file-bar-graph"></i></div>
+        <div class="stat-card"><div class="stat-icon bg-info"><i class="ph ph-file-text"></i></div>
         <div class="stat-info"><h3><%= stats.pendingReports %></h3><p>Reports for Review</p><small class="text-info">Semestral submissions</small></div></div>
     </div>
 </div>
@@ -45,7 +45,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="card-header-row mb-4">
-                    <h5 class="card-title mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Applications</h5>
+                    <h5 class="card-title mb-0"><i class="ph ph-clock-counter-clockwise me-2 text-primary"></i>Recent Applications</h5>
                     <a href="/applicants" class="btn btn-sm btn-outline-primary">View All</a>
                 </div>
                 <div class="table-responsive">
@@ -71,9 +71,9 @@
                             <td class="text-end">
                                 <a href="<%= goHref %>" class="btn btn-xs btn-outline-primary text-nowrap">
                                     <% if (a.status === 'approved') { %>
-                                    <i class="bi bi-eye me-1"></i>View
+                                    <i class="ph ph-eye me-1"></i>View
                                     <% } else { %>
-                                    <i class="bi bi-arrow-right-circle me-1"></i>Step <%= a.accreditationStep %>
+                                    <i class="ph ph-arrow-circle-right me-1"></i>Step <%= a.accreditationStep %>
                                     <% } %>
                                 </a>
                             </td>
@@ -88,18 +88,18 @@
     <div class="col-lg-5">
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title mb-3"><i class="bi bi-pie-chart me-2 text-primary"></i>Applications by Status</h5>
+                <h5 class="card-title mb-3"><i class="ph ph-chart-pie me-2 text-primary"></i>Applications by Status</h5>
                 <div style="height:200px;position:relative;"><canvas id="statusChart"></canvas></div>
             </div>
         </div>
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title mb-3"><i class="bi bi-lightning-charge me-2 text-warning"></i>Quick Actions</h5>
+                <h5 class="card-title mb-3"><i class="ph ph-lightning me-2 text-warning"></i>Quick Actions</h5>
                 <div class="quick-actions-grid">
-                    <a href="/admin/farmers/new" class="quick-action-btn"><i class="bi bi-person-plus"></i><span>Register Farmer</span></a>
-                    <a href="/documents"      class="quick-action-btn"><i class="bi bi-folder-check"></i><span>Review Docs</span></a>
-                    <a href="/reports"        class="quick-action-btn"><i class="bi bi-bar-chart-line"></i><span>View Reports</span></a>
-                    <a href="/directory"      class="quick-action-btn"><i class="bi bi-building"></i><span>LSA Directory</span></a>
+                    <a href="/admin/farmers/new" class="quick-action-btn"><i class="ph ph-user-plus"></i><span>Register Farmer</span></a>
+                    <a href="/documents"      class="quick-action-btn"><i class="ph ph-folder"></i><span>Review Docs</span></a>
+                    <a href="/reports"        class="quick-action-btn"><i class="ph ph-chart-bar"></i><span>View Reports</span></a>
+                    <a href="/directory"      class="quick-action-btn"><i class="ph ph-building"></i><span>LSA Directory</span></a>
                 </div>
             </div>
         </div>
@@ -110,14 +110,14 @@
         <div class="card">
             <div class="card-body">
                 <div class="card-header-row mb-3">
-                    <h5 class="card-title mb-0"><i class="bi bi-hourglass-split me-2 text-warning"></i>Documents Awaiting Review</h5>
+                    <h5 class="card-title mb-0"><i class="ph ph-hourglass me-2 text-warning"></i>Documents Awaiting Review</h5>
                     <a href="/documents?status=pending_review" class="btn btn-sm btn-outline-warning">View All</a>
                 </div>
                 <div class="row g-3">
                 <% pendingDocuments.forEach(d => { %>
                 <div class="col-md-3">
                     <div class="pending-doc-card">
-                        <i class="bi bi-file-earmark-pdf text-danger fs-4"></i>
+                        <i class="ph ph-file-pdf text-danger fs-4"></i>
                         <div class="flex-grow-1">
                             <div class="fw-semibold small"><%= d.name %></div>
                             <div class="text-muted" style="font-size:12px"><%= d.applicantName %></div>
@@ -138,7 +138,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title mb-3">
-                    <i class="bi bi-calendar-week me-2 text-info"></i>
+                    <i class="ph ph-calendar me-2 text-info"></i>
                     Field/Virtual Validation Schedule
                     <span class="badge bg-info-subtle text-info border ms-2" style="font-size:11px">Step 5 of 7</span>
                 </h5>
@@ -165,7 +165,7 @@
                             <td>
                                 <% if (v.type) { %>
                                 <span class="badge <%= v.type==='Field' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-info-subtle text-info border border-info-subtle' %>" style="font-size:11px">
-                                    <i class="bi bi-<%= v.type==='Field' ? 'geo-alt' : 'camera-video' %> me-1"></i><%= v.type %>
+                                    <i class="<%= ic(v.type==='Field' ? 'geo-alt' : 'camera-video') %> me-1"></i><%= v.type %>
                                 </span>
                                 <% } else { %>
                                 <span class="text-muted" style="font-size:11px">—</span>
@@ -174,11 +174,11 @@
                             <td>
                                 <% if (v.state === 'validated') { %>
                                 <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:11px">
-                                    <i class="bi bi-check-circle me-1"></i>Validated<%= v.result ? ' · ' + v.result : '' %>
+                                    <i class="ph ph-check-circle me-1"></i>Validated<%= v.result ? ' · ' + v.result : '' %>
                                 </span>
                                 <% } else { %>
                                 <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size:11px">
-                                    <i class="bi bi-hourglass-split me-1"></i>Awaiting visit
+                                    <i class="ph ph-hourglass me-1"></i>Awaiting visit
                                 </span>
                                 <% } %>
                             </td>
@@ -250,16 +250,16 @@ if (stats.daysToRenewal <= 180) {
                     <span class="badge bg-success align-middle"><%= myFarm.accreditationLevel %></span>
                 </div>
                 <p class="text-muted mb-0 small">
-                    <i class="bi bi-geo-alt me-1"></i><%= myFarm.municipality %>, <%= myFarm.province %>
+                    <i class="ph ph-map-pin me-1"></i><%= myFarm.municipality %>, <%= myFarm.province %>
                     <span class="mx-1">·</span>
-                    <i class="bi bi-tag me-1"></i><%= classificationLabel(myFarm.classification) %>
+                    <i class="ph ph-tag me-1"></i><%= classificationLabel(myFarm.classification) %>
                     <span class="mx-1">·</span>
-                    <i class="bi bi-calendar-check me-1"></i>Renews <%= myFarm.expiryDate %>
+                    <i class="ph ph-calendar-check me-1"></i>Renews <%= myFarm.expiryDate %>
                 </p>
             </div>
             <div class="col-lg-4 text-lg-end">
                 <a href="/reports" class="btn btn-success fw-bold">
-                    <i class="bi bi-file-earmark-plus me-2"></i>Submit Semestral Report
+                    <i class="ph ph-file-plus me-2"></i>Submit Semestral Report
                 </a>
             </div>
         </div>
@@ -270,11 +270,11 @@ if (stats.daysToRenewal <= 180) {
 <% if (attention.length) { %>
 <div class="attention-panel mb-4">
     <div class="attention-panel__head">
-        <i class="bi bi-bell-fill"></i><span>Needs your attention</span>
+        <i class="ph-fill ph-bell"></i><span>Needs your attention</span>
     </div>
     <% attention.forEach((a) => { %>
     <div class="attention-item attention-item--<%= a.tone %>">
-        <i class="bi bi-<%= a.icon %> attention-item__icon"></i>
+        <i class="<%= ic(a.icon) %> attention-item__icon"></i>
         <span class="attention-item__text"><%- a.text %></span>
         <a href="<%= a.href %>" class="btn btn-sm btn-<%= a.tone %>"><%= a.cta %></a>
     </div>
@@ -286,7 +286,7 @@ if (stats.daysToRenewal <= 180) {
 <div class="row g-4 mb-4">
     <div class="col-6 col-xl-3">
         <a href="/reports" class="stat-card border-start border-info border-4 text-decoration-none">
-            <div class="stat-icon bg-info"><i class="bi bi-people"></i></div>
+            <div class="stat-icon bg-info"><i class="ph ph-users"></i></div>
             <div class="stat-info">
                 <h3><%= stats.visitorsThisYear %></h3><p>Visitors This Year</p>
                 <small class="text-info">Farm visits &amp; training participants</small>
@@ -295,7 +295,7 @@ if (stats.daysToRenewal <= 180) {
     </div>
     <div class="col-6 col-xl-3">
         <a href="/reports" class="stat-card border-start border-primary border-4 text-decoration-none">
-            <div class="stat-icon bg-primary"><i class="bi bi-mortarboard"></i></div>
+            <div class="stat-icon bg-primary"><i class="ph ph-graduation-cap"></i></div>
             <div class="stat-info">
                 <h3><%= stats.trainingSessions %></h3><p>Training Sessions</p>
                 <small class="text-primary">Lectures &amp; orientations</small>
@@ -308,7 +308,7 @@ if (stats.daysToRenewal <= 180) {
              : stats.complianceScore >= 60 ? 'warning' : 'danger'; %>
         <a href="/compliance" class="stat-card border-start border-<%= scoreTone %> border-4 text-decoration-none">
             <div class="stat-icon bg-<%= scoreTone %>">
-                <i class="bi bi-shield-check"></i>
+                <i class="ph ph-shield-check"></i>
             </div>
             <div class="stat-info">
                 <% if (!complianceAssessed) { %>
@@ -326,7 +326,7 @@ if (stats.daysToRenewal <= 180) {
     <div class="col-6 col-xl-3">
         <a href="/renewal" class="stat-card border-start border-<%= renewalTone %> border-4 text-decoration-none">
             <div class="stat-icon bg-<%= renewalTone %>">
-                <i class="bi bi-calendar-check"></i>
+                <i class="ph ph-calendar-check"></i>
             </div>
             <div class="stat-info">
                 <h3><%= stats.daysToRenewal %></h3><p>Days to Renewal</p>
@@ -344,18 +344,18 @@ if (stats.daysToRenewal <= 180) {
             <div class="card-body">
                 <div class="card-header-row mb-4">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-bar-chart-line me-2 text-primary"></i>
+                        <i class="ph ph-chart-bar me-2 text-primary"></i>
                         Visitors &amp; Training per Reporting Period
                     </h5>
                     <% if (activity.periods) { %>
                     <span class="badge bg-success-subtle text-success border">
-                        <i class="bi bi-people me-1"></i><%= activity.totalVisitors %> visitors reported
+                        <i class="ph ph-users me-1"></i><%= activity.totalVisitors %> visitors reported
                     </span>
                     <% } %>
                 </div>
                 <% if (!activity.periods) { %>
                 <div class="text-center text-muted py-5">
-                    <i class="bi bi-bar-chart-line d-block mb-2" style="font-size:2rem;opacity:.35;"></i>
+                    <i class="ph ph-chart-bar d-block mb-2" style="font-size:2rem;opacity:.35;"></i>
                     <p class="mb-1">No semestral report has been submitted yet.</p>
                     <small>
                         Visitor and training figures come from the semestral accomplishment
@@ -384,7 +384,7 @@ if (stats.daysToRenewal <= 180) {
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title mb-1">
-                    <i class="bi bi-shield-check me-2 text-success"></i>
+                    <i class="ph ph-shield-check me-2 text-success"></i>
                     Compliance Score Breakdown
                 </h5>
                 <p class="text-muted small mb-3">
@@ -444,7 +444,7 @@ if (stats.daysToRenewal <= 180) {
                 <% const tone = (COMPLIANCE_TONE[item.status] || COMPLIANCE_TONE.pending); %>
                 <div class="compliance-resp-item">
                     <div class="compliance-resp-icon bg-<%= tone.tone %>-subtle text-<%= tone.tone %>">
-                        <i class="bi bi-<%= item.icon %>"></i>
+                        <i class="<%= ic(item.icon) %>"></i>
                     </div>
                     <div class="flex-grow-1 min-w-0">
                         <div class="fw-semibold" style="font-size:12px;line-height:1.3">
@@ -456,7 +456,7 @@ if (stats.daysToRenewal <= 180) {
                     </div>
                     <span class="badge flex-shrink-0 bg-<%= tone.tone %>-subtle text-<%= tone.tone %> border"
                           style="font-size:10px;">
-                        <i class="bi bi-<%= tone.icon %> me-1"></i><%= item.statusLabel %>
+                        <i class="<%= ic(tone.icon) %> me-1"></i><%= item.statusLabel %>
                     </span>
                 </div>
                 <% }) %>
@@ -474,7 +474,7 @@ if (stats.daysToRenewal <= 180) {
                 <div class="card-header-row mb-4">
                     <div>
                         <h5 class="card-title mb-0">
-                            <i class="bi bi-calendar3-range me-2 text-success"></i>
+                            <i class="ph ph-calendar-blank me-2 text-success"></i>
                             Semestral Report Calendar
                             <span class="badge bg-success-subtle text-success border ms-2" style="font-size:11px">
                                 5-Year Accreditation Period
@@ -509,14 +509,14 @@ if (stats.daysToRenewal <= 180) {
                                 <span class="fw-bold"><%= r.period %></span>
                                 <% if (r.status === 'upcoming') { %>
                                 <span class="badge bg-warning text-dark ms-2" style="font-size:10px;">
-                                    <i class="bi bi-alarm me-1"></i>Next Due
+                                    <i class="ph ph-alarm me-1"></i>Next Due
                                 </span>
                                 <% } %>
                             </td>
                             <td class="text-muted small"><%= r.dueDate %></td>
                             <td class="small">
                                 <% if (r.submitted) { %>
-                                <span class="text-success"><i class="bi bi-check-circle me-1"></i><%= r.submitted %></span>
+                                <span class="text-success"><i class="ph ph-check-circle me-1"></i><%= r.submitted %></span>
                                 <% } else if (r.status === 'upcoming') { %>
                                 <span class="text-warning">Pending</span>
                                 <% } else if (r.status === 'overdue') { %>
@@ -559,7 +559,7 @@ if (stats.daysToRenewal <= 180) {
                 <div class="col-md-3">
                     <div class="responsibility-reminder-card <%= r.urgent ? 'urgent' : '' %>">
                         <div class="reminder-icon">
-                            <i class="bi bi-<%= r.urgent ? 'exclamation-triangle-fill text-danger' : 'check-circle text-success' %>"></i>
+                            <i class="<%= ic(r.urgent ? 'exclamation-triangle-fill text-danger' : 'check-circle text-success') %>"></i>
                         </div>
                         <div>
                             <div class="fw-semibold" style="font-size:12px;"><%= r.task %></div>
@@ -580,8 +580,8 @@ if (stats.daysToRenewal <= 180) {
 <div class="card mt-4">
     <div class="card-body">
         <div class="card-header-row mb-1">
-            <h5 class="card-title mb-0"><i class="bi bi-patch-check me-2 text-success"></i>Your LSA Certificate &amp; Documents</h5>
-            <a href="/documents" class="btn btn-sm btn-outline-success"><i class="bi bi-folder2-open me-1"></i>All Documents</a>
+            <h5 class="card-title mb-0"><i class="ph ph-seal-check me-2 text-success"></i>Your LSA Certificate &amp; Documents</h5>
+            <a href="/documents" class="btn btn-sm btn-outline-success"><i class="ph ph-folder-open me-1"></i>All Documents</a>
         </div>
         <p class="text-muted small mb-3">
             Documents ATI issued for your Learning Site. Click to view or download.
@@ -589,14 +589,14 @@ if (stats.daysToRenewal <= 180) {
         <div class="doc-checklist-list">
         <% atiDocs.forEach(d => { %>
         <div class="doc-checklist-item">
-            <i class="bi bi-<%= d.icon %> text-success flex-shrink-0"></i>
+            <i class="<%= ic(d.icon) %> text-success flex-shrink-0"></i>
             <div class="flex-grow-1 min-w-0">
                 <div class="small fw-semibold"><%= d.label %></div>
                 <div class="text-muted" style="font-size:10px">Issued at Step <%= d.step %> · <%= d.uploadDate %></div>
             </div>
             <a href="/documents/<%= d.id %>/file" target="_blank" rel="noopener"
                class="btn btn-xs btn-outline-success flex-shrink-0">
-                <i class="bi bi-download me-1"></i>View
+                <i class="ph ph-download me-1"></i>View
             </a>
         </div>
         <% }) %>
@@ -681,8 +681,8 @@ new Chart(document.getElementById('visitorChart'), {
             <div class="col-lg-6">
                 <h5 class="fw-bold mb-1"><%= myApp.farmName %></h5>
                 <p class="text-muted mb-3 small">
-                    <i class="bi bi-geo-alt me-1"></i><%= myApp.municipality %>, <%= myApp.province %> ·
-                    <i class="bi bi-tag me-1 ms-2"></i><%= classificationLabel(myApp.classification) %>
+                    <i class="ph ph-map-pin me-1"></i><%= myApp.municipality %>, <%= myApp.province %> ·
+                    <i class="ph ph-tag me-1 ms-2"></i><%= classificationLabel(myApp.classification) %>
                 </p>
                 <div class="d-flex justify-content-between mb-1">
                     <span class="fw-semibold">Overall Progress</span>
@@ -720,14 +720,14 @@ new Chart(document.getElementById('visitorChart'), {
                         : `/accreditation/${myApp.id}`;
                 %>
                 <div class="card-header-row mb-4">
-                    <h5 class="card-title mb-0"><i class="bi bi-diagram-3 me-2 text-primary"></i>7-Step LSA Accreditation Process</h5>
+                    <h5 class="card-title mb-0"><i class="ph ph-tree-structure me-2 text-primary"></i>7-Step LSA Accreditation Process</h5>
                     <a href="<%= continueHref %>" class="btn btn-sm btn-primary">
-                        <% if (approved) { %><i class="bi bi-award me-1"></i>View Accreditation<% } else { %><i class="bi bi-arrow-right-circle me-1"></i>Continue<% } %>
+                        <% if (approved) { %><i class="ph ph-medal me-1"></i>View Accreditation<% } else { %><i class="ph ph-arrow-circle-right me-1"></i>Continue<% } %>
                     </a>
                 </div>
                 <% if (returned) { %>
                 <div class="alert alert-warning py-2 px-3 small mb-3">
-                    <i class="bi bi-arrow-return-left me-1"></i>
+                    <i class="ph ph-arrow-bend-up-left me-1"></i>
                     ATI returned your documents for revision. Re-submit the flagged requirements to continue.
                 </div>
                 <% } %>
@@ -750,7 +750,7 @@ new Chart(document.getElementById('visitorChart'), {
                 %>
                 <div class="lsa-step-item <%= st %>">
                     <div class="lsa-step-circle">
-                        <% if (st==='completed') { %><i class="bi bi-check-lg"></i><% } else { %><%= s.step %><% } %>
+                        <% if (st==='completed') { %><i class="ph ph-check"></i><% } else { %><%= s.step %><% } %>
                     </div>
                     <div class="lsa-step-content">
                         <div class="lsa-step-title">
@@ -769,8 +769,8 @@ new Chart(document.getElementById('visitorChart'), {
         <div class="card h-100">
             <div class="card-body">
                 <div class="card-header-row mb-3">
-                    <h5 class="card-title mb-0"><i class="bi bi-folder-check me-2 text-primary"></i>Documentary Requirements</h5>
-                    <a href="/documents/submit" class="btn btn-sm btn-primary"><i class="bi bi-upload me-1"></i>Upload</a>
+                    <h5 class="card-title mb-0"><i class="ph ph-folder me-2 text-primary"></i>Documentary Requirements</h5>
+                    <a href="/documents/submit" class="btn btn-sm btn-primary"><i class="ph ph-upload me-1"></i>Upload</a>
                 </div>
                 <div class="doc-progress-summary mb-3">
                     <div class="d-flex justify-content-between mb-1">
@@ -786,11 +786,11 @@ new Chart(document.getElementById('visitorChart'), {
                 <% docChecklist.forEach(d => { %>
                 <div class="doc-checklist-item">
                     <% if (d.status==='verified') { %>
-                    <i class="bi bi-check-circle-fill text-success flex-shrink-0"></i>
+                    <i class="ph-fill ph-check-circle text-success flex-shrink-0"></i>
                     <% } else if (d.status==='pending_review') { %>
-                    <i class="bi bi-clock-fill text-warning flex-shrink-0"></i>
+                    <i class="ph-fill ph-clock text-warning flex-shrink-0"></i>
                     <% } else { %>
-                    <i class="bi bi-circle text-secondary flex-shrink-0"></i>
+                    <i class="ph ph-circle text-secondary flex-shrink-0"></i>
                     <% } %>
                     <div class="flex-grow-1 min-w-0">
                         <div class="small <%= d.status==='missing' ? 'text-muted' : 'fw-semibold' %>"><%= d.name %></div>
@@ -823,21 +823,21 @@ new Chart(document.getElementById('visitorChart'), {
 <% if (typeof atiDocs !== 'undefined' && atiDocs.length) { %>
 <div class="card mt-4">
     <div class="card-body">
-        <h5 class="card-title mb-1"><i class="bi bi-file-earmark-check me-2 text-success"></i>Documents from ATI</h5>
+        <h5 class="card-title mb-1"><i class="ph ph-file-text me-2 text-success"></i>Documents from ATI</h5>
         <p class="text-muted small mb-3">
             Completed documents ATI has issued for your application. Click to view or download.
         </p>
         <div class="doc-checklist-list">
         <% atiDocs.forEach(d => { %>
         <div class="doc-checklist-item">
-            <i class="bi bi-<%= d.icon %> text-success flex-shrink-0"></i>
+            <i class="<%= ic(d.icon) %> text-success flex-shrink-0"></i>
             <div class="flex-grow-1 min-w-0">
                 <div class="small fw-semibold"><%= d.label %></div>
                 <div class="text-muted" style="font-size:10px">Issued at Step <%= d.step %> · <%= d.uploadDate %></div>
             </div>
             <a href="/documents/<%= d.id %>/file" target="_blank" rel="noopener"
                class="btn btn-xs btn-outline-success flex-shrink-0">
-                <i class="bi bi-download me-1"></i>View
+                <i class="ph ph-download me-1"></i>View
             </a>
         </div>
         <% }) %>

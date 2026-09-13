@@ -22,7 +22,7 @@
                     <button type="button" class="btn btn-sm btn-outline-primary chat-add-channel"
                             id="addChannelToggle" aria-label="Add a channel" title="Add a channel"
                             data-call="toggleChannelForm">
-                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        <i class="ph ph-plus" aria-hidden="true"></i>
                     </button>
                     <% } %>
                 </div>
@@ -56,7 +56,7 @@
                          data-desc="<%= (ch.description || '').replace(/"/g, '&quot;') %>"
                          data-call="selectChannel" data-args='["@this"]'>
                         <div class="channel-name">
-                            <i class="bi bi-<%= ch.channelType==='public' ? 'megaphone' : ch.channelType==='regional' ? 'geo-alt' : 'tag' %>"></i>
+                            <i class="<%= ic(ch.channelType==='public' ? 'megaphone' : ch.channelType==='regional' ? 'geo-alt' : 'tag') %>"></i>
                             <%= ch.name %>
                         </div>
                         <div class="channel-desc"><%= ch.description %></div>
@@ -65,12 +65,12 @@
                             <button type="button" class="msg-action" data-chan="edit"
                                     data-slug="<%= ch.slug %>"
                                     aria-label="Rename <%= ch.name %>" title="Rename">
-                                <i class="bi bi-pencil" aria-hidden="true"></i>
+                                <i class="ph ph-pencil-simple" aria-hidden="true"></i>
                             </button>
                             <button type="button" class="msg-action" data-chan="delete"
                                     data-slug="<%= ch.slug %>"
                                     aria-label="Delete <%= ch.name %>" title="Delete">
-                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                <i class="ph ph-trash" aria-hidden="true"></i>
                             </button>
                         </div>
                         <% } %>
@@ -89,7 +89,7 @@
                 <div class="chat-messages" id="chatMessages"></div>
                 <button class="chat-jump" id="chatJump" type="button" hidden
                         data-call="jumpToLatest">
-                    <i class="bi bi-arrow-down"></i> <span id="chatJumpCount">New messages</span>
+                    <i class="ph ph-arrow-down"></i> <span id="chatJumpCount">New messages</span>
                 </button>
                 <div class="chat-input">
                     <input type="text" class="form-control" id="messageInput"
@@ -98,7 +98,7 @@
                     <button class="btn btn-primary" type="button" id="sendButton"
                             aria-label="Send message" title="Send message" disabled
                             data-call="sendMessage">
-                        <i class="bi bi-send" aria-hidden="true"></i>
+                        <i class="ph ph-paper-plane-right" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -167,7 +167,7 @@
   /** The text of a bubble: the message, or a tombstone where one used to be. */
   function textHtml(m) {
     if (m.deleted) {
-      return '<span class="message-deleted"><i class="bi bi-slash-circle" aria-hidden="true"></i> ' +
+      return '<span class="message-deleted"><i class="ph ph-prohibit" aria-hidden="true"></i> ' +
              'This message was deleted</span>';
     }
     return linkify(esc(m.body || ''));
@@ -191,11 +191,11 @@
     const parts = [];
     if (own) {
       parts.push('<button type="button" class="msg-action" data-act="edit" data-id="' + m.id +
-                 '" aria-label="Edit message" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></button>');
+                 '" aria-label="Edit message" title="Edit"><i class="ph ph-pencil-simple" aria-hidden="true"></i></button>');
     }
     if (own || isAdmin) {
       parts.push('<button type="button" class="msg-action" data-act="delete" data-id="' + m.id +
-                 '" aria-label="Delete message" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>');
+                 '" aria-label="Delete message" title="Delete"><i class="ph ph-trash" aria-hidden="true"></i></button>');
     }
     return '<div class="message-actions">' + parts.join('') + '</div>';
   }
@@ -770,14 +770,14 @@
     row.dataset.desc = channel.description || '';
     row.onclick = function () { selectChannel(row); };
     row.innerHTML =
-      '<div class="channel-name"><i class="bi bi-tag" aria-hidden="true"></i> ' +
+      '<div class="channel-name"><i class="ph ph-tag" aria-hidden="true"></i> ' +
       esc(channel.name) + '</div>' +
       '<div class="channel-desc">' + esc(channel.description || '') + '</div>' +
       (isAdmin ? '<div class="channel-actions">' +
         '<button type="button" class="msg-action" data-chan="edit" data-slug="' + esc(channel.slug) +
-        '" aria-label="Rename channel" title="Rename"><i class="bi bi-pencil" aria-hidden="true"></i></button>' +
+        '" aria-label="Rename channel" title="Rename"><i class="ph ph-pencil-simple" aria-hidden="true"></i></button>' +
         '<button type="button" class="msg-action" data-chan="delete" data-slug="' + esc(channel.slug) +
-        '" aria-label="Delete channel" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>' +
+        '" aria-label="Delete channel" title="Delete"><i class="ph ph-trash" aria-hidden="true"></i></button>' +
         '</div>' : '');
     list.appendChild(row);
     selectChannel(row);

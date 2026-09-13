@@ -21,7 +21,7 @@
     <div class="d-flex gap-2">
         <% if (applicant.step2_completedDate) { %>
         <span class="badge bg-success px-3 py-2">
-            <i class="bi bi-clipboard-check me-1"></i>Submitted
+            <i class="ph ph-clipboard-text me-1"></i>Submitted
         </span>
         <% } %>
         <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">Overview</a>
@@ -30,19 +30,19 @@
 
 <% if (applicant.step2_completedDate && submitted) { %>
 <div class="alert alert-success mb-4 d-flex flex-wrap align-items-center gap-2">
-    <i class="bi bi-check-circle-fill me-1"></i>
+    <i class="ph-fill ph-check-circle me-1"></i>
     <span>Self-assessment submitted on <strong><%= applicant.step2_completedDate %></strong>. The system
         filled the official form from your answers.</span>
     <a href="/forms/self_assessment/download?applicant=<%= applicant.id %>"
        class="btn btn-sm btn-outline-success">
-        <i class="bi bi-file-earmark-word me-1"></i>Preview / Download form
+        <i class="ph ph-file-doc me-1"></i>Preview / Download form
     </a>
     <% if (!readonly) { %>
     <form action="/forms/self_assessment/regenerate" method="POST" class="d-inline">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input type="hidden" name="applicant" value="<%= applicant.id %>">
         <button type="submit" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-arrow-repeat me-1"></i>Regenerate
+            <i class="ph ph-arrows-clockwise me-1"></i>Regenerate
         </button>
     </form>
     <% } %>
@@ -58,7 +58,7 @@
         <div class="card mb-4">
             <div class="card-body p-4">
                 <h5 class="section-title mb-2">
-                    <i class="bi bi-clipboard-check me-2 text-info"></i>Eligibility Checklist
+                    <i class="ph ph-clipboard-text me-2 text-info"></i>Eligibility Checklist
                     (<%= section.title %>)
                 </h5>
                 <p class="text-muted">
@@ -69,7 +69,7 @@
 
                 <% if (missing && missing.length) { %>
                 <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <i class="ph-fill ph-warning me-2"></i>
                     Some required information is missing, so the form can't be completed yet. Please
                     add the following to the application first:
                     <ul class="mb-0 mt-1"><% missing.forEach(function (m) { %><li><%= m %></li><% }); %></ul>
@@ -78,14 +78,14 @@
 
                 <% if (typeof certError !== 'undefined' && certError) { %>
                 <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <i class="ph-fill ph-warning me-2"></i>
                     Please tick the certification box to confirm your answers before submitting.
                 </div>
                 <% } %>
 
                 <% if (typeof regenerated !== 'undefined' && regenerated) { %>
                 <div class="alert alert-success">
-                    <i class="bi bi-check-circle-fill me-2"></i>The form was regenerated from your latest information.
+                    <i class="ph-fill ph-check-circle me-2"></i>The form was regenerated from your latest information.
                 </div>
                 <% } %>
 
@@ -135,11 +135,11 @@
                     </div>
 
                     <button type="submit" class="btn btn-info text-white btn-lg">
-                        <i class="bi bi-clipboard-check me-2"></i>Submit Self-Assessment &amp; Proceed to Step 3
+                        <i class="ph ph-clipboard-text me-2"></i>Submit Self-Assessment &amp; Proceed to Step 3
                     </button>
                     <% } else if (applicant.step2_completedDate) { %>
                     <p class="text-muted mb-0">
-                        <i class="bi bi-info-circle me-1"></i>Your self-assessment has been submitted.
+                        <i class="ph ph-info me-1"></i>Your self-assessment has been submitted.
                         Use <strong>Preview / Download form</strong> above to open the completed Word document.
                     </p>
                     <% } %>

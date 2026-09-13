@@ -16,7 +16,7 @@
         <!-- Alerts -->
         <% if (typeof query !== 'undefined' && query.geotagged) { %>
         <div class="alert alert-success alert-dismissible fade show mb-4">
-            <i class="bi bi-geo-alt-fill me-2"></i>
+            <i class="ph-fill ph-map-pin me-2"></i>
             <strong>Geo-tag recorded successfully!</strong>
             Farm location has been logged. Application advanced to Step 5 — Field Validation.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -24,7 +24,7 @@
         <% } %>
         <% if (typeof query !== 'undefined' && query.certified) { %>
         <div class="alert alert-success alert-dismissible fade show mb-4">
-            <i class="bi bi-award-fill me-2"></i>
+            <i class="ph-fill ph-medal me-2"></i>
             <strong>Certificate issued.</strong>
             <%= applicant.farmName %> is now an accredited Learning Site
             <% if (query.farm) { %>—
@@ -36,20 +36,20 @@
         <% } %>
         <% if (typeof query !== 'undefined' && query.geoerror) { %>
         <div class="alert alert-danger alert-dismissible fade show mb-4">
-            <i class="bi bi-exclamation-triangle me-2"></i>
+            <i class="ph ph-warning me-2"></i>
             Invalid coordinates. Please enter valid coordinates within the Philippines (Lat: 10–20°N, Lng: 118–128°E).
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <% } %>
         <% if (typeof query !== 'undefined' && query.success) { %>
         <div class="alert alert-success alert-dismissible fade show mb-4">
-            <i class="bi bi-check-circle me-2"></i>Application updated successfully.
+            <i class="ph ph-check-circle me-2"></i>Application updated successfully.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <% } %>
         <% if (typeof query !== 'undefined' && query.nopackage) { %>
         <div class="alert alert-warning alert-dismissible fade show mb-4">
-            <i class="bi bi-exclamation-triangle me-2"></i>
+            <i class="ph ph-warning me-2"></i>
             No validated documents yet — accept the application's documents before downloading the package.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -70,23 +70,23 @@
                         </span>
                         <div class="detail-info-list text-start mt-2">
                             <div class="detail-info-item">
-                                <i class="bi bi-hash"></i>
+                                <i class="ph ph-hash"></i>
                                 <span class="app-id-link"><%= applicant.applicationId %></span>
                             </div>
                             <div class="detail-info-item">
-                                <i class="bi bi-envelope"></i><span><%= applicant.email %></span>
+                                <i class="ph ph-envelope"></i><span><%= applicant.email %></span>
                             </div>
                             <div class="detail-info-item">
-                                <i class="bi bi-phone"></i><span><%= applicant.phone %></span>
+                                <i class="ph ph-phone"></i><span><%= applicant.phone %></span>
                             </div>
                             <div class="detail-info-item">
-                                <i class="bi bi-calendar3"></i><span>Submitted: <%= applicant.submissionDate %></span>
+                                <i class="ph ph-calendar-blank"></i><span>Submitted: <%= applicant.submissionDate %></span>
                             </div>
                         </div>
                         <div class="d-flex gap-2 mt-4 flex-wrap">
                             <a href="/accreditation/<%= applicant.id %>"
                                class="btn btn-success w-100 mb-1">
-                                <i class="bi bi-diagram-3 me-1"></i>
+                                <i class="ph ph-tree-structure me-1"></i>
                                 <%= applicant.status === 'approved' ? 'View Accreditation' : 'Manage Accreditation Steps' %>
                             </a>
                         </div>
@@ -95,13 +95,13 @@
                             <a href="/documents/package/<%= applicant.id %>"
                                class="btn btn-outline-success w-100"
                                title="Download all validated documents as a ZIP for the Central Office submission">
-                                <i class="bi bi-file-earmark-zip me-1"></i>Download Validated Documents
+                                <i class="ph ph-file-zip me-1"></i>Download Validated Documents
                             </a>
                         </div>
                         <div class="d-flex gap-2 mt-2">
                             <a href="/applicants/edit/<%= applicant.id %>"
                                class="btn btn-primary flex-fill">
-                                <i class="bi bi-pencil me-1"></i>Edit
+                                <i class="ph ph-pencil-simple me-1"></i>Edit
                             </a>
                             <% if (role === 'admin') { %>
                             <form action="/applicants/delete/<%= applicant.id %>"
@@ -110,7 +110,7 @@
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <button class="btn btn-outline-danger"
                                         aria-label="Delete this application" title="Delete this application">
-                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                    <i class="ph ph-trash" aria-hidden="true"></i>
                                 </button>
                             </form>
                             <% } %>
@@ -123,30 +123,30 @@
                 <div class="card">
                     <div class="card-body">
                         <h6 class="card-title mb-3">
-                            <i class="bi bi-tree me-2 text-success"></i>Farm Information
+                            <i class="ph ph-tree me-2 text-success"></i>Farm Information
                         </h6>
                         <div class="detail-info-list">
                             <div class="detail-info-item">
-                                <i class="bi bi-building"></i><span><%= applicant.farmName %></span>
+                                <i class="ph ph-building"></i><span><%= applicant.farmName %></span>
                             </div>
                             <div class="detail-info-item">
-                                <i class="bi bi-rulers"></i>
+                                <i class="ph ph-ruler"></i>
                                 <span><%= applicant.farmArea.toLocaleString() %> sq.m.</span>
                             </div>
                             <div class="detail-info-item">
-                                <i class="bi bi-geo-alt"></i>
+                                <i class="ph ph-map-pin"></i>
                                 <span><%= applicant.municipality %>, <%= applicant.province %></span>
                             </div>
                             <div class="detail-info-item">
-                                <i class="bi bi-map"></i>
+                                <i class="ph ph-map-trifold"></i>
                                 <span><%= applicant.farmAddress %></span>
                             </div>
                             <div class="detail-info-item">
-                                <i class="bi bi-tag"></i>
+                                <i class="ph ph-tag"></i>
                                 <span><%= classificationLabel(applicant.classification) %></span>
                             </div>
                             <div class="detail-info-item">
-                                <i class="bi bi-award"></i>
+                                <i class="ph ph-medal"></i>
                                 <span><%= applicant.lsaType.toUpperCase() %></span>
                             </div>
                         </div>
@@ -162,7 +162,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-diagram-3 me-2 text-primary"></i>Accreditation Progress
+                                <i class="ph ph-tree-structure me-2 text-primary"></i>Accreditation Progress
                             </h5>
                             <span class="fs-5 fw-bold text-primary"><%= applicant.progress %>%</span>
                         </div>
@@ -171,7 +171,7 @@
                         </div>
                         <div class="d-flex justify-content-between small text-muted">
                             <span>Step <%= applicant.accreditationStep %> of 7</span>
-                            <span><i class="bi bi-folder me-1"></i>Documents: <%= applicant.documents %>/<%= applicant.totalDocs %></span>
+                            <span><i class="ph ph-folder me-1"></i>Documents: <%= applicant.documents %>/<%= applicant.totalDocs %></span>
                         </div>
                     </div>
                 </div>
@@ -180,19 +180,19 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <div class="stat-card">
-                            <div class="stat-icon bg-success"><i class="bi bi-patch-check"></i></div>
+                            <div class="stat-icon bg-success"><i class="ph ph-seal-check"></i></div>
                             <div class="stat-info"><h3><%= docStats.verified %></h3><p>Verified</p></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="stat-card">
-                            <div class="stat-icon bg-warning"><i class="bi bi-hourglass"></i></div>
+                            <div class="stat-icon bg-warning"><i class="ph ph-hourglass"></i></div>
                             <div class="stat-info"><h3><%= docStats.pending %></h3><p>Pending</p></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="stat-card">
-                            <div class="stat-icon bg-danger"><i class="bi bi-exclamation-circle"></i></div>
+                            <div class="stat-icon bg-danger"><i class="ph ph-warning-circle"></i></div>
                             <div class="stat-info"><h3><%= docStats.missing %></h3><p>Missing</p></div>
                         </div>
                     </div>
@@ -202,7 +202,7 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title mb-4">
-                            <i class="bi bi-list-check me-2 text-primary"></i>7-Step LSA Accreditation
+                            <i class="ph ph-list-checks me-2 text-primary"></i>7-Step LSA Accreditation
                         </h5>
                         <div class="accreditation-tracker">
                         <% accreditationSteps.forEach((s, i) => {
@@ -212,14 +212,14 @@
                         <div class="tracker-step <%= sc %>">
                             <div class="tracker-circle">
                                 <% if (sc === 'completed') { %>
-                                    <i class="bi bi-check-lg"></i>
+                                    <i class="ph ph-check"></i>
                                 <% } else { %><%= s.step %><% } %>
                             </div>
                             <% if (i < accreditationSteps.length - 1) { %>
                             <div class="tracker-line <%= sc === 'completed' ? 'completed' : '' %>"></div>
                             <% } %>
                             <div class="tracker-label">
-                                <i class="bi bi-<%= s.icon %>"></i>
+                                <i class="<%= ic(s.icon) %>"></i>
                                 <span><%= s.label %></span>
                                 <% if (s.step === 5) { %>
                                 <span class="geo-step-badge">GIS</span>
@@ -244,12 +244,12 @@
                         <div class="card-header-row mb-3">
                             <div>
                                 <h5 class="card-title mb-0">
-                                    <i class="bi bi-geo-alt-fill me-2 text-danger"></i>
+                                    <i class="ph-fill ph-map-pin me-2 text-danger"></i>
                                     Geo-Tagging &amp; GIS Location
                                     <span class="badge bg-<%= applicant.geoTagStatus === 'tagged' ? 'success' : 'secondary' %>-subtle
                                                   text-<%= applicant.geoTagStatus === 'tagged' ? 'success' : 'secondary' %>
                                                   border ms-2" style="font-size:11px;">
-                                        <i class="bi bi-<%= applicant.geoTagStatus === 'tagged' ? 'check-circle' : 'clock' %> me-1"></i>
+                                        <i class="<%= ic(applicant.geoTagStatus === 'tagged' ? 'check-circle' : 'clock') %> me-1"></i>
                                         <%= applicant.geoTagStatus === 'tagged' ? 'Tagged' : 'Pending Tag' %>
                                     </span>
                                 </h5>
@@ -265,7 +265,7 @@
                             <% if (role === 'evaluator' || role === 'admin') { %>
                             <button class="btn btn-sm btn-outline-danger"
                                     data-call="toggleGeoPanel">
-                                <i class="bi bi-geo-alt me-1"></i>
+                                <i class="ph ph-map-pin me-1"></i>
                                 <%= applicant.geoTagStatus === 'tagged' ? 'Update Tag' : 'Record Location' %>
                             </button>
                             <% } %>
@@ -276,29 +276,29 @@
                         <div id="farmMap" class="farm-map-container mb-3"></div>
                         <div class="geo-coords-display">
                             <div class="geo-coord-item">
-                                <i class="bi bi-crosshair text-danger"></i>
+                                <i class="ph ph-crosshair text-danger"></i>
                                 <span class="fw-semibold">Latitude:</span>
                                 <span class="font-monospace"><%= applicant.latitude %>°N</span>
                             </div>
                             <div class="geo-coord-item">
-                                <i class="bi bi-crosshair text-primary"></i>
+                                <i class="ph ph-crosshair text-primary"></i>
                                 <span class="fw-semibold">Longitude:</span>
                                 <span class="font-monospace"><%= applicant.longitude %>°E</span>
                             </div>
                             <div class="geo-coord-item">
-                                <i class="bi bi-person-badge text-success"></i>
+                                <i class="ph ph-identification-badge text-success"></i>
                                 <span class="fw-semibold">Tagged by:</span>
                                 <span><%= applicant.geoTaggedBy || '—' %></span>
                             </div>
                             <div class="geo-coord-item">
-                                <i class="bi bi-calendar3 text-info"></i>
+                                <i class="ph ph-calendar-blank text-info"></i>
                                 <span class="fw-semibold">Date:</span>
                                 <span><%= applicant.geoTaggedDate || '—' %></span>
                             </div>
                         </div>
                         <% } else { %>
                         <div class="geo-pending-placeholder">
-                            <i class="bi bi-geo-alt fs-1 text-secondary d-block mb-2"></i>
+                            <i class="ph ph-map-pin fs-1 text-secondary d-block mb-2"></i>
                             <p class="text-muted mb-1 fw-semibold">Farm not yet geo-tagged</p>
                             <p class="text-muted small">
                                 Coordinates will be recorded by the ATI Evaluator (TWG)
@@ -307,7 +307,7 @@
                             <% if (['evaluator','admin'].includes(role)) { %>
                             <button class="btn btn-sm btn-outline-danger mt-2"
                                     data-call="recordLocationNow" data-args='["@this"]'>
-                                <i class="bi bi-geo-alt me-1"></i>Record Location Now
+                                <i class="ph ph-map-pin me-1"></i>Record Location Now
                             </button>
                             <% } %>
                         </div>
@@ -317,7 +317,7 @@
                         <% if (['evaluator','admin'].includes(role)) { %>
                         <div id="geoTagPanel" class="geo-tag-panel <%= applicant.geoTagStatus === 'tagged' ? 'd-none' : '' %>">
                             <div class="geo-tag-panel-header">
-                                <i class="bi bi-pin-map-fill text-danger me-2"></i>
+                                <i class="ph-fill ph-map-pin text-danger me-2"></i>
                                 <strong>Record GPS Coordinates</strong>
                                 <span class="ms-2 text-muted small">Step 5 — Field/Virtual Validation (ATI Briefer)</span>
                             </div>
@@ -327,7 +327,7 @@
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-5">
                                         <label for="latInput" class="form-label fw-semibold small">
-                                            <i class="bi bi-crosshair text-danger me-1"></i>
+                                            <i class="ph ph-crosshair text-danger me-1"></i>
                                             Latitude <span class="text-muted fw-normal">(e.g. 13.6218)</span>
                                         </label>
                                         <input type="number" class="form-control font-monospace"
@@ -341,7 +341,7 @@
                                     </div>
                                     <div class="col-md-5">
                                         <label for="lngInput" class="form-label fw-semibold small">
-                                            <i class="bi bi-crosshair text-primary me-1"></i>
+                                            <i class="ph ph-crosshair text-primary me-1"></i>
                                             Longitude <span class="text-muted fw-normal">(e.g. 123.1948)</span>
                                         </label>
                                         <input type="number" class="form-control font-monospace"
@@ -358,7 +358,7 @@
                                                 class="btn btn-outline-secondary w-100"
                                                 data-call="useCurrentLocation"
                                                 title="Use device GPS">
-                                            <i class="bi bi-crosshair"></i>
+                                            <i class="ph ph-crosshair"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -370,14 +370,14 @@
 
                                 <div class="d-flex gap-2 align-items-center">
                                     <button type="submit" class="btn btn-danger">
-                                        <i class="bi bi-geo-alt-fill me-2"></i>Save Geo-Tag
+                                        <i class="ph-fill ph-map-pin me-2"></i>Save Geo-Tag
                                     </button>
                                     <button type="button" class="btn btn-outline-secondary"
                                             data-call="hideGeoPanel">
                                         Cancel
                                     </button>
                                     <small class="text-muted ms-2">
-                                        <i class="bi bi-info-circle me-1"></i>
+                                        <i class="ph ph-info me-1"></i>
                                         This will advance the application to Step 5 — Field Validation
                                     </small>
                                 </div>
@@ -416,14 +416,14 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
     <div class="card mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-1">
-                <h6 class="mb-0"><i class="bi bi-person-vcard me-2"></i>Operator Qualifications</h6>
+                <h6 class="mb-0"><i class="ph ph-identification-card me-2"></i>Operator Qualifications</h6>
                 <% var _ops = _selfAssessment.filter(function (r) { return r.category === 'Operator'; }); %>
                 <% if (_ops.length) { %>
                 <span class="small text-muted"><%= _ops.filter(function (r) { return r.answer === 1; }).length %> of <%= _ops.length %> met</span>
                 <% } %>
             </div>
             <div class="detail-info-item mb-2">
-                <i class="bi bi-card-list"></i>
+                <i class="ph ph-list-bullets"></i>
                 <span>
                     RSBSA / NCFRS:
                     <% if (applicant.rsbsaNumber) { %>
@@ -438,9 +438,9 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
                 <% _ops.forEach(function (r) { %>
                 <li class="mb-1 d-flex gap-2">
                     <% if (r.answer === 1) { %>
-                    <i class="bi bi-check-circle-fill text-success flex-shrink-0"></i>
+                    <i class="ph-fill ph-check-circle text-success flex-shrink-0"></i>
                     <% } else { %>
-                    <i class="bi bi-x-circle text-danger flex-shrink-0"></i>
+                    <i class="ph ph-x-circle text-danger flex-shrink-0"></i>
                     <% } %>
                     <span><%= r.label %></span>
                 </li>
@@ -453,7 +453,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
             </p>
             <% } %>
             <p class="small text-secondary mb-0 mt-2">
-                <i class="bi bi-journal-text me-1"></i><em>LSA Guidelines — Qualification Requirements, The Operator.</em>
+                <i class="ph ph-notebook me-1"></i><em>LSA Guidelines — Qualification Requirements, The Operator.</em>
             </p>
         </div>
     </div>
@@ -462,7 +462,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
          which is not the same as declared eligible. -->
     <div class="card mb-4">
         <div class="card-body d-flex align-items-start gap-3">
-            <i class="bi bi-person-badge fs-4 text-<%= applicant.notDisqualified === 1 ? 'success' : 'secondary' %>"></i>
+            <i class="ph ph-identification-badge fs-4 text-<%= applicant.notDisqualified === 1 ? 'success' : 'secondary' %>"></i>
             <div class="flex-grow-1">
                 <div class="d-flex justify-content-between align-items-center">
                     <h6 class="mb-1">Disqualification Declaration</h6>
@@ -482,7 +482,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
                     <% } %>
                 </p>
                 <p class="small text-secondary mb-0">
-                    <i class="bi bi-journal-text me-1"></i><em>LSA Briefer — Disqualified persons:</em>
+                    <i class="ph ph-notebook me-1"></i><em>LSA Briefer — Disqualified persons:</em>
                     public officials and employees, their spouses, and their unmarried children under 18.
                 </p>
             </div>
@@ -494,7 +494,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
     <% if (_areaCheck) { %>
     <div class="card mb-4">
         <div class="card-body d-flex align-items-start gap-3">
-            <i class="bi bi-rulers fs-4 text-<%= _areaCheck.meets === false ? 'danger' : _areaCheck.meets === null ? 'secondary' : 'success' %>"></i>
+            <i class="ph ph-ruler fs-4 text-<%= _areaCheck.meets === false ? 'danger' : _areaCheck.meets === null ? 'secondary' : 'success' %>"></i>
             <div class="flex-grow-1">
                 <div class="d-flex justify-content-between align-items-center">
                     <h6 class="mb-1">Farm Area Requirement</h6>
@@ -518,7 +518,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
                     <% } %>
                 </p>
                 <p class="small text-secondary mb-0">
-                    <i class="bi bi-journal-text me-1"></i><em>LSA Briefer — Farm Requirements.</em>
+                    <i class="ph ph-notebook me-1"></i><em>LSA Briefer — Farm Requirements.</em>
                     <%= _areaCheck.rule %>
                 </p>
             </div>
@@ -529,7 +529,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
     <% if (_facilities.length) { %>
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title mb-1"><i class="bi bi-buildings me-2"></i>Basic Facilities</h5>
+            <h5 class="card-title mb-1"><i class="ph ph-buildings me-2"></i>Basic Facilities</h5>
             <p class="small text-muted mb-3">
                 Required of every Learning Site — <em>LSA Guidelines, Farm Requirements</em>.
                 Declared by the applicant in the self-assessment, confirmed by the TWG on site.
@@ -569,7 +569,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
                }); %>
             <% if (anyDiscrepancy) { %>
             <div class="alert alert-warning mt-3 mb-0 py-2 px-3 small">
-                <i class="bi bi-exclamation-triangle me-1"></i>
+                <i class="ph ph-warning me-1"></i>
                 One or more facilities were declared by the applicant but not found during field validation.
             </div>
             <% } %>
@@ -583,7 +583,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
     <div class="card mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start mb-1">
-                <h5 class="card-title mb-0"><i class="bi bi-clipboard-check me-2"></i>Field Validation Report</h5>
+                <h5 class="card-title mb-0"><i class="ph ph-clipboard-text me-2"></i>Field Validation Report</h5>
                 <span class="small text-muted">
                     <%= applicant.step5_validationType || 'Field' %> validation
                     <% if (applicant.step5_validationDate) { %> · <%= applicant.step5_validationDate %><% } %>
@@ -603,9 +603,9 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
                     </div>
                     <span class="flex-shrink-0">
                         <% if (r.answer === 1) { %>
-                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <i class="ph-fill ph-check-circle text-success"></i>
                         <% } else { %>
-                        <i class="bi bi-x-circle-fill text-danger"></i>
+                        <i class="ph-fill ph-x-circle text-danger"></i>
                         <% } %>
                     </span>
                 </li>
@@ -620,7 +620,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
     </div>
     <% } else if (applicant.step5_validationDate) { %>
     <div class="alert alert-secondary small">
-        <i class="bi bi-info-circle me-1"></i>
+        <i class="ph ph-info me-1"></i>
         This field validation was recorded before individual results were kept, so only the
         summary (<%= applicant.step5_checkedItems %> items met) is available.
     </div>
@@ -630,7 +630,7 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
     <% if (_selfAssessment.length && ['admin','evaluator'].includes(role)) { %>
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title mb-1"><i class="bi bi-person-check me-2"></i>Self-Assessment Detail</h5>
+            <h5 class="card-title mb-1"><i class="ph ph-user-check me-2"></i>Self-Assessment Detail</h5>
             <p class="small text-muted mb-3">
                 What the applicant declared in Step 2 — score <%= applicant.step2_selfAssessmentScore %>%.
             </p>
@@ -644,9 +644,9 @@ var _areaCheck       = typeof areaCheck       !== 'undefined' && areaCheck      
                         <% items.forEach(function (r) { %>
                         <li class="mb-1 d-flex gap-2">
                             <% if (r.answer === 1) { %>
-                            <i class="bi bi-check-circle-fill text-success flex-shrink-0"></i>
+                            <i class="ph-fill ph-check-circle text-success flex-shrink-0"></i>
                             <% } else { %>
-                            <i class="bi bi-x-circle text-danger flex-shrink-0"></i>
+                            <i class="ph ph-x-circle text-danger flex-shrink-0"></i>
                             <% } %>
                             <span><%= r.label %></span>
                         </li>
@@ -701,7 +701,7 @@ if (farmLat && farmLng) {
     // Custom marker icon
     const markerIcon = L.divIcon({
         html: `<div class="map-marker-pin">
-                 <i class="bi bi-geo-alt-fill"></i>
+                 <i class="ph-fill ph-map-pin"></i>
                </div>`,
         className: '',
         iconSize: [32, 40],
@@ -758,7 +758,7 @@ function useCurrentLocation() {
         return;
     }
     const btn = event.currentTarget;
-    btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i>';
+    btn.innerHTML = '<i class="ph ph-arrow-clockwise spin"></i>';
     btn.disabled  = true;
 
     navigator.geolocation.getCurrentPosition(
@@ -766,12 +766,12 @@ function useCurrentLocation() {
             document.getElementById('latInput').value = pos.coords.latitude.toFixed(4);
             document.getElementById('lngInput').value = pos.coords.longitude.toFixed(4);
             updateMapPreview();
-            btn.innerHTML = '<i class="bi bi-check-circle text-success"></i>';
+            btn.innerHTML = '<i class="ph ph-check-circle text-success"></i>';
             btn.disabled  = false;
         },
         (err) => {
             alert('Could not get location: ' + err.message);
-            btn.innerHTML = '<i class="bi bi-crosshair"></i>';
+            btn.innerHTML = '<i class="ph ph-crosshair"></i>';
             btn.disabled  = false;
         },
         { enableHighAccuracy: true, timeout: 10000 }

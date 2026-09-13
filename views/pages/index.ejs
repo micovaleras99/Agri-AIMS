@@ -28,7 +28,7 @@
             <h1>ATI LSA - AIMS</h1>
             <p style="font-weight: 600; color: rgba(45, 122, 62, 0.9); margin-bottom: 12px;">Agricultural Training Institute<br>Learning Site Accreditation</p>
             <div class="auth-badge">
-                <i class="bi bi-geo-alt-fill me-1"></i>ATI-RTC V · Bicol Region
+                <i class="ph-fill ph-map-pin me-1"></i>ATI-RTC V · Bicol Region
             </div>
         </div>
 
@@ -47,21 +47,21 @@
                 <div class="form-floating mb-3">
                     <input type="email" class="form-control" id="loginEmail"
                            placeholder="email" value="<%= demoLogin ? 'admin@ati-bicol.da.gov.ph' : '' %>" required>
-                    <label for="loginEmail"><i class="bi bi-envelope me-1"></i>Email Address</label>
+                    <label for="loginEmail"><i class="ph ph-envelope me-1"></i>Email Address</label>
                 </div>
                 <div class="form-floating mb-3">
                     <input type="password" class="form-control has-pw-toggle" id="loginPassword"
                            placeholder="Password" value="<%= demoLogin ? 'admin123' : '' %>" required>
-                    <label for="loginPassword"><i class="bi bi-lock me-1"></i>Password</label>
+                    <label for="loginPassword"><i class="ph ph-lock me-1"></i>Password</label>
                     <button type="button" class="pw-toggle" data-target="loginPassword"
-                            aria-label="Show password"><i class="bi bi-eye"></i></button>
+                            aria-label="Show password"><i class="ph ph-eye"></i></button>
                 </div>
 
                 <!-- ── Role Selector (development demo only) ── -->
                 <% if (demoLogin) { %>
                 <div class="role-selector mb-4">
                     <p class="role-selector-label">
-                        <i class="bi bi-person-badge me-1"></i>Login as:
+                        <i class="ph ph-identification-badge me-1"></i>Login as:
                     </p>
                     <div class="role-cards" id="roleCards" role="radiogroup" aria-label="Login as">
 
@@ -70,13 +70,13 @@
                              aria-label="Sign in as Administrator"
                              data-call="selectRole" data-args='["admin","admin@ati-bicol.da.gov.ph","admin123","@this"]'>
                             <div class="role-card-icon bg-danger">
-                                <i class="bi bi-shield-lock-fill"></i>
+                                <i class="ph-fill ph-shield"></i>
                             </div>
                             <div class="role-card-info">
                                 <div class="role-card-name">Administrator</div>
                                 <div class="role-card-desc">ATI Staff · Full Access</div>
                             </div>
-                            <i class="bi bi-check-circle-fill role-check text-danger"></i>
+                            <i class="ph-fill ph-check-circle role-check text-danger"></i>
                         </div>
 
                         <div class="role-card" data-role="evaluator"
@@ -84,13 +84,13 @@
                              aria-label="Sign in as Evaluator"
                              data-call="selectRole" data-args='["evaluator","evaluator@ati-bicol.da.gov.ph","eval123","@this"]'>
                             <div class="role-card-icon bg-warning">
-                                <i class="bi bi-clipboard2-check-fill"></i>
+                                <i class="ph-fill ph-clipboard-text"></i>
                             </div>
                             <div class="role-card-info">
                                 <div class="role-card-name">Evaluator</div>
                                 <div class="role-card-desc">TWG · Review & Validate</div>
                             </div>
-                            <i class="bi bi-check-circle-fill role-check text-warning" style="display:none;"></i>
+                            <i class="ph-fill ph-check-circle role-check text-warning" style="display:none;"></i>
                         </div>
 
                         <div class="role-card" data-role="operator"
@@ -98,13 +98,13 @@
                              aria-label="Sign in as LSA Operator"
                              data-call="selectRole" data-args='["operator","operator@lsa.ph","operator123","@this"]'>
                             <div class="role-card-icon bg-success">
-                                <i class="bi bi-tree-fill"></i>
+                                <i class="ph-fill ph-tree"></i>
                             </div>
                             <div class="role-card-info">
                                 <div class="role-card-name">LSA Operator</div>
                                 <div class="role-card-desc">Certified Farm Operator</div>
                             </div>
-                            <i class="bi bi-check-circle-fill role-check text-success" style="display:none;"></i>
+                            <i class="ph-fill ph-check-circle role-check text-success" style="display:none;"></i>
                         </div>
 
                         <div class="role-card" data-role="applicant"
@@ -112,13 +112,13 @@
                              aria-label="Sign in as Applicant"
                              data-call="selectRole" data-args='["applicant","applicant@email.com","applicant123","@this"]'>
                             <div class="role-card-icon bg-primary">
-                                <i class="bi bi-person-fill-add"></i>
+                                <i class="ph-fill ph-user-plus"></i>
                             </div>
                             <div class="role-card-info">
                                 <div class="role-card-name">Applicant</div>
                                 <div class="role-card-desc">New LSA Application</div>
                             </div>
-                            <i class="bi bi-check-circle-fill role-check text-primary" style="display:none;"></i>
+                            <i class="ph-fill ph-check-circle role-check text-primary" style="display:none;"></i>
                         </div>
 
                     </div>
@@ -128,7 +128,7 @@
 
             <!-- Fixed Button at Bottom -->
             <button type="submit" class="btn btn-primary w-100 btn-lg auth-form-button" id="loginSubmitBtn">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                <i class="ph ph-sign-in me-2"></i>Login
             </button>
         </form>
 
@@ -153,11 +153,11 @@
                 </div>
                 <div class="form-floating mb-3">
                     <input type="email" class="form-control" id="regEmail" placeholder="Email" required>
-                    <label for="regEmail"><i class="bi bi-envelope me-1"></i>Email Address</label>
+                    <label for="regEmail"><i class="ph ph-envelope me-1"></i>Email Address</label>
                 </div>
                 <div class="form-floating mb-3">
                     <input type="tel" class="form-control" id="regPhone" placeholder="Phone" required>
-                    <label for="regPhone"><i class="bi bi-phone me-1"></i>Contact Number</label>
+                    <label for="regPhone"><i class="ph ph-phone me-1"></i>Contact Number</label>
                 </div>
                 <div class="form-floating mb-3">
                     <select class="form-select" id="regRole" required>
@@ -165,12 +165,12 @@
                         <option value="applicant">Applicant — New LSA Application</option>
                         <option value="operator">LSA Operator — Certified Operator</option>
                     </select>
-                    <label for="regRole"><i class="bi bi-person-badge me-1"></i>Register As</label>
+                    <label for="regRole"><i class="ph ph-identification-badge me-1"></i>Register As</label>
                 </div>
                 <div id="regApplicantExtra" class="d-none">
                     <div class="form-floating mb-3">
                         <input type="text" class="form-control" id="regFarmName" placeholder="Farm name">
-                        <label for="regFarmName"><i class="bi bi-tree me-1"></i>Farm / enterprise name</label>
+                        <label for="regFarmName"><i class="ph ph-tree me-1"></i>Farm / enterprise name</label>
                     </div>
                     <!-- Asked for the "complete address", people typed the barangay and
                          city they were about to select again below. This field is for
@@ -255,21 +255,21 @@
                         <select class="form-select" id="regFarmId">
                             <option value="">Link to your LSA farm (optional)</option>
                         </select>
-                        <label for="regFarmId"><i class="bi bi-geo-alt me-1"></i>Accredited farm</label>
+                        <label for="regFarmId"><i class="ph ph-map-pin me-1"></i>Accredited farm</label>
                     </div>
                     <small class="text-muted">Choose the farm you operate so reports and maps match your account. You can leave this blank and an admin can link it later.</small>
                 </div>
                 <div class="form-floating mb-3">
                     <input type="password" class="form-control has-pw-toggle" id="regPass" placeholder="Password" required>
-                    <label for="regPass"><i class="bi bi-lock me-1"></i>Password</label>
+                    <label for="regPass"><i class="ph ph-lock me-1"></i>Password</label>
                     <button type="button" class="pw-toggle" data-target="regPass"
-                            aria-label="Show password"><i class="bi bi-eye"></i></button>
+                            aria-label="Show password"><i class="ph ph-eye"></i></button>
                 </div>
                 <div class="form-floating mb-3">
                     <input type="password" class="form-control has-pw-toggle" id="regConf" placeholder="Confirm" required>
-                    <label for="regConf"><i class="bi bi-lock-fill me-1"></i>Confirm Password</label>
+                    <label for="regConf"><i class="ph-fill ph-lock me-1"></i>Confirm Password</label>
                     <button type="button" class="pw-toggle" data-target="regConf"
-                            aria-label="Show password"><i class="bi bi-eye"></i></button>
+                            aria-label="Show password"><i class="ph ph-eye"></i></button>
                 </div>
                 <div class="form-check mb-3">
                     <input type="checkbox" class="form-check-input" id="agree" required>
@@ -281,7 +281,7 @@
 
             <!-- Fixed Button at Bottom -->
             <button type="submit" class="btn btn-primary w-100 btn-lg auth-form-button" id="registerSubmitBtn">
-                <i class="bi bi-person-plus me-2"></i>Create Account
+                <i class="ph ph-user-plus me-2"></i>Create Account
             </button>
         </form>
 
@@ -324,7 +324,7 @@ document.addEventListener('click', function (e) {
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
     btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-    btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    btn.querySelector('i').className = show ? 'ph ph-eye-slash' : 'ph ph-eye';
 });
 function switchAuthTab(tab, el) {
     document.getElementById('loginForm').style.display    = tab==='login'    ? 'block' : 'none';

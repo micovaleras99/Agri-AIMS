@@ -10,14 +10,14 @@
                 <p class="page-subtitle">Document verification and tracking</p>
             </div>
             <a href="/documents/submit" class="btn btn-primary">
-                <i class="bi bi-upload me-2"></i>Submit Document
+                <i class="ph ph-upload me-2"></i>Submit Document
             </a>
         </div>
 
         <!-- Success -->
         <% if (filters.success) { %>
         <div class="alert alert-success alert-dismissible fade show mb-4">
-            <i class="bi bi-check-circle me-2"></i><%
+            <i class="ph ph-check-circle me-2"></i><%
                 if (filters.success === 'replaced') { %>Document replaced — the previous file for this requirement was removed.<%
                 } else if (filters.success === 'accepted') { %>Document accepted. The applicant has been notified.<%
                 } else if (filters.success === 'rejected') { %>Document marked for revision. The applicant has been notified with your remarks.<%
@@ -28,7 +28,7 @@
 
         <% if (filters.error === 'review') { %>
         <div class="alert alert-warning alert-dismissible fade show mb-4">
-            <i class="bi bi-exclamation-triangle me-2"></i>Rejecting a document needs a reason — the applicant has to be told what to fix.
+            <i class="ph ph-warning me-2"></i>Rejecting a document needs a reason — the applicant has to be told what to fix.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <% } %>
@@ -37,25 +37,25 @@
         <div class="row g-3 mb-4">
             <div class="col-sm-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-primary"><i class="bi bi-files"></i></div>
+                    <div class="stat-icon bg-primary"><i class="ph ph-files"></i></div>
                     <div class="stat-info"><h3><%= docStats.total %></h3><p>Total Documents</p></div>
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-success"><i class="bi bi-patch-check"></i></div>
+                    <div class="stat-icon bg-success"><i class="ph ph-seal-check"></i></div>
                     <div class="stat-info"><h3><%= docStats.verified %></h3><p>Verified</p></div>
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-warning"><i class="bi bi-hourglass-split"></i></div>
+                    <div class="stat-icon bg-warning"><i class="ph ph-hourglass"></i></div>
                     <div class="stat-info"><h3><%= docStats.pending %></h3><p>Pending Review</p></div>
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div class="stat-icon bg-danger"><i class="ph ph-warning"></i></div>
                     <div class="stat-info"><h3><%= docStats.incomplete %></h3><p>Incomplete</p></div>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                 <div class="col-md-4">
                     <label for="search" class="form-label small fw-semibold">Search</label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <span class="input-group-text"><i class="ph ph-magnifying-glass"></i></span>
                         <input id="search" type="text" class="form-control" name="search"
                                placeholder="Document name or applicant..."
                                value="<%= filters.search || '' %>">
@@ -84,7 +84,7 @@
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-funnel me-1"></i>Filter
+                        <i class="ph ph-funnel me-1"></i>Filter
                     </button>
                 </div>
                 <div class="col-md-2">
@@ -98,7 +98,7 @@
         <% if (docGroups.length === 0) { %>
         <div class="card">
             <div class="card-body text-center py-5 text-muted">
-                <i class="bi bi-folder-x fs-1 d-block mb-2"></i>
+                <i class="ph ph-folder-minus fs-1 d-block mb-2"></i>
                 No documents found.
             </div>
         </div>
@@ -106,7 +106,7 @@
         <% docGroups.forEach((g) => { %>
         <section class="doc-type">
             <header class="doc-type__head">
-                <span class="doc-type__icon"><i class="bi bi-folder2-open"></i></span>
+                <span class="doc-type__icon"><i class="ph ph-folder-open"></i></span>
                 <div class="doc-type__title">
                     <h2><%= g.label %></h2>
                     <% if (g.form) { %><span class="doc-type__form"><%= g.form %></span><% } %>
@@ -132,14 +132,14 @@
                             <button type="button" class="btn btn-sm btn-link p-0 text-secondary doc-history-btn"
                                     data-doc-id="<%= d.id %>" data-doc-name="<%= d.name %>"
                                     title="Submission &amp; validation history">
-                                <i class="bi bi-clock-history"></i>
+                                <i class="ph ph-clock-counter-clockwise"></i>
                             </button>
                         </span>
                     </div>
 
                     <div class="doc-item__meta">
                         <span class="doc-item__file">
-                            <i class="bi bi-paperclip"></i>
+                            <i class="ph ph-paperclip"></i>
                             <% if (d.storedName) { %>
                             <a href="/documents/<%= d.id %>/file" target="_blank"><%= d.filename %></a>
                             <% } else { %>
@@ -147,7 +147,7 @@
                             <% } %>
                         </span>
                         <span class="doc-item__size"><%= d.size %></span>
-                        <span class="doc-item__date"><i class="bi bi-calendar3 me-1"></i><%= d.uploadDate || '—' %></span>
+                        <span class="doc-item__date"><i class="ph ph-calendar-blank me-1"></i><%= d.uploadDate || '—' %></span>
                     </div>
 
                     <% if (d.remarks || d.reviewedByName) { %>
@@ -160,14 +160,14 @@
                     <% if (!canReview && d.status === 'incomplete') { %>
                     <a class="doc-item__resubmit"
                        href="/documents/submit?type=<%= encodeURIComponent(d.type) %>&applicant=<%= d.applicantId %>&resubmit=1">
-                        <i class="bi bi-arrow-repeat me-1"></i>Re-submit
+                        <i class="ph ph-arrows-clockwise me-1"></i>Re-submit
                     </a>
                     <% } %>
 
                     <% if (canReview && d.status === 'verified') { %>
                     <div class="doc-item__actions">
                         <span class="badge bg-success-subtle text-success border border-success-subtle">
-                            <i class="bi bi-check-circle me-1"></i>Accepted
+                            <i class="ph ph-check-circle me-1"></i>Accepted
                         </span>
                     </div>
                     <% } else if (canReview) { %>
@@ -181,11 +181,11 @@
                         <div class="doc-item__actions">
                             <button type="submit" name="status" value="verified"
                                     class="btn btn-sm btn-success" title="Accept this document">
-                                <i class="bi bi-check-lg me-1"></i>Accept
+                                <i class="ph ph-check me-1"></i>Accept
                             </button>
                             <button type="submit" name="status" value="incomplete"
                                     class="btn btn-sm btn-outline-danger" title="Reject — a reason is required">
-                                <i class="bi bi-x-lg me-1"></i>Reject
+                                <i class="ph ph-x me-1"></i>Reject
                             </button>
                         </div>
                     </form>
@@ -205,7 +205,7 @@
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Document History</h5>
+                <h5 class="modal-title"><i class="ph ph-clock-counter-clockwise me-2"></i>Document History</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="docHistoryBody">
@@ -236,7 +236,7 @@
     document.querySelectorAll('.doc-history-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var id = btn.getAttribute('data-doc-id');
-            titleEl.innerHTML = '<i class="bi bi-clock-history me-2"></i>History &mdash; ' + esc(btn.getAttribute('data-doc-name') || 'Document');
+            titleEl.innerHTML = '<i class="ph ph-clock-counter-clockwise me-2"></i>History &mdash; ' + esc(btn.getAttribute('data-doc-name') || 'Document');
             body.innerHTML = '<div class="text-muted">Loading&hellip;</div>';
             modal.show();
             fetch('/documents/' + id + '/history', { headers: { Accept: 'application/json' } })

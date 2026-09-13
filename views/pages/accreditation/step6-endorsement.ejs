@@ -21,7 +21,7 @@
     <div class="d-flex gap-2">
         <a href="/documents/package/<%= applicant.id %>" class="btn btn-outline-success"
            title="Download all validated documents as a ZIP to email to ATI Central Office">
-            <i class="bi bi-file-earmark-zip me-1"></i>Download Validated Documents
+            <i class="ph ph-file-zip me-1"></i>Download Validated Documents
         </a>
         <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">Overview</a>
     </div>
@@ -29,7 +29,7 @@
 
 <% if (endorsed) { %>
 <div class="alert alert-success mb-4">
-    <i class="bi bi-send-check-fill me-2"></i>
+    <i class="ph-fill ph-paper-plane-right me-2"></i>
     Endorsement submitted on <strong><%= applicant.step6_endorsedDate %></strong>.
     Endorsement No.: <strong><%= applicant.step6_endorsementNo %></strong>
 </div>
@@ -42,7 +42,7 @@
         <div class="card mb-4">
             <div class="card-body p-4">
                 <h5 class="card-title mb-4">
-                    <i class="bi bi-envelope-paper me-2 text-purple"></i>Endorsement Letter Preview
+                    <i class="ph ph-envelope me-2 text-purple"></i>Endorsement Letter Preview
                 </h5>
 
                 <!-- Formal letter format -->
@@ -103,11 +103,11 @@
         <div class="card">
             <div class="card-body p-4">
                 <h5 class="card-title mb-4">
-                    <i class="bi bi-send-check me-2" style="color:#8e44ad;"></i>Submit Endorsement
+                    <i class="ph ph-paper-plane-right me-2" style="color:#8e44ad;"></i>Submit Endorsement
                 </h5>
                 <% if (confirmError) { %>
                 <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <i class="ph-fill ph-warning me-2"></i>
                     The confirmation must be ticked before endorsement can be submitted.
                 </div>
                 <% } %>
@@ -119,11 +119,11 @@
                         sign, then upload the signed copy to send with this endorsement to ATI Central Office.
                     </p>
                     <a href="/forms/lsa1_rtwg_endorsement/filled?applicant=<%= applicant.id %>" class="btn btn-outline-secondary mb-2" style="border-color:#8e44ad;color:#8e44ad;">
-                        <i class="bi bi-file-earmark-word me-1"></i>Generate Filled Checklist (Word)
+                        <i class="ph ph-file-doc me-1"></i>Generate Filled Checklist (Word)
                     </a>
                     <% if (endorsementDoc) { %>
                     <div class="alert alert-info py-2 px-3 small mb-0">
-                        <i class="bi bi-file-earmark-check me-1"></i>
+                        <i class="ph ph-file-text me-1"></i>
                         A completed endorsement is on file.
                         <a href="/documents/<%= endorsementDoc.id %>/file" target="_blank" rel="noopener">View current letter</a>.
                     </div>
@@ -149,7 +149,7 @@
                         </label>
                     </div>
                     <button type="submit" class="btn btn-lg fw-bold text-white" style="background:#8e44ad;">
-                        <i class="bi bi-send-check me-2"></i>Submit Endorsement to ATI-CO → Step 7
+                        <i class="ph ph-paper-plane-right me-2"></i>Submit Endorsement to ATI-CO → Step 7
                     </button>
                 </form>
             </div>

@@ -8,6 +8,7 @@
  */
 
 const notificationModel = require('../models/notificationModel');
+const { ic } = require('../config/icons');
 const userModel = require('../models/userModel');
 const mailer = require('../config/mailer');
 const logger = require('../utils/logger');
@@ -51,7 +52,14 @@ function emailInBackground(userIds, payload) {
  * rather than calling the model directly, so a new sender cannot accidentally
  * be in-app only — which is what the whole system was until now.
  */
+// Notifications carry a Bootstrap-style icon name; store it as the Phosphor
+// classes the client renders directly, so the whole app speaks one icon set.
+function withIcon(payload) {
+  return payload && payload.icon ? { ...payload, icon: ic(payload.icon) } : payload;
+}
+
 async function createOne(payload) {
+  payload = withIcon(payload);
   const id = await notificationModel.create(payload);
   emailInBackground([payload.userId], payload);
   return id;
@@ -59,6 +67,7 @@ async function createOne(payload) {
 
 /** The same for a fan-out to many recipients. */
 async function createMany(userIds, payload) {
+  payload = withIcon(payload);
   const written = await notificationModel.createForUsers(userIds, payload);
   emailInBackground(userIds, payload);
   return written;

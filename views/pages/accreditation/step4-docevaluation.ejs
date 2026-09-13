@@ -23,7 +23,7 @@
 
 <% if (evalResult === 'passed') { %>
 <div class="alert alert-success mb-4">
-    <i class="bi bi-check-circle-fill me-2"></i>Documents passed evaluation by <strong><%= applicant.step4_evalBy %></strong>
+    <i class="ph-fill ph-check-circle me-2"></i>Documents passed evaluation by <strong><%= applicant.step4_evalBy %></strong>
     on <strong><%= applicant.step4_evalDate %></strong>. Proceeding to field validation.
 </div>
 <% } %>
@@ -36,13 +36,13 @@
             <div class="card-body">
                 <div class="card-header-row mb-3">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-folder-check me-2 text-warning"></i>Submitted Documents
+                        <i class="ph ph-folder me-2 text-warning"></i>Submitted Documents
                     </h5>
                     <a href="/documents?search=<%= applicant.applicationId %>" class="btn btn-sm btn-outline-primary">All Docs</a>
                 </div>
                 <% if (myDocs.length === 0) { %>
                 <div class="text-center py-4 text-muted">
-                    <i class="bi bi-folder-x fs-1 d-block mb-2"></i>No documents submitted yet.
+                    <i class="ph ph-folder-minus fs-1 d-block mb-2"></i>No documents submitted yet.
                 </div>
                 <% } else { %>
                 <div class="table-responsive">
@@ -62,7 +62,7 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                    <i class="ph ph-file-pdf text-danger"></i>
                                     <a href="/documents/<%= d.id %>/file" target="_blank" rel="noopener"
                                        class="fw-semibold small text-decoration-none" title="Open the uploaded file">
                                         <%= d.name %>
@@ -71,7 +71,7 @@
                                 <% if (d.filename) { %>
                                 <a href="/documents/<%= d.id %>/file" target="_blank" rel="noopener"
                                    class="text-muted d-inline-flex align-items-center gap-1" style="font-size:11px">
-                                    <i class="bi bi-paperclip"></i><%= d.filename %>
+                                    <i class="ph ph-paperclip"></i><%= d.filename %>
                                 </a>
                                 <% } %>
                             </td>
@@ -89,7 +89,7 @@
                             <td class="text-end">
                                 <% if (d.status === 'verified') { %>
                                 <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                    <i class="bi bi-check-circle me-1"></i>Accepted
+                                    <i class="ph ph-check-circle me-1"></i>Accepted
                                 </span>
                                 <% } else { %>
                                 <form action="/documents/<%= d.id %>/review" method="POST" class="d-flex gap-1 justify-content-end">
@@ -101,11 +101,11 @@
                                            placeholder="Reason (required to reject)">
                                     <button type="submit" name="status" value="verified"
                                             class="btn btn-sm btn-success" title="Accept this document">
-                                        <i class="bi bi-check-lg"></i><span class="visually-hidden">Accept</span>
+                                        <i class="ph ph-check"></i><span class="visually-hidden">Accept</span>
                                     </button>
                                     <button type="submit" name="status" value="incomplete"
                                             class="btn btn-sm btn-outline-danger" title="Reject — a reason is required">
-                                        <i class="bi bi-x-lg"></i><span class="visually-hidden">Reject</span>
+                                        <i class="ph ph-x"></i><span class="visually-hidden">Reject</span>
                                     </button>
                                 </form>
                                 <% } %>
@@ -121,7 +121,7 @@
 
         <% if (blocked) { %>
         <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-shield-exclamation me-2"></i><%= passGate.reason || 'Every document must be accepted before this step can be passed.' %>
+            <i class="ph ph-shield-warning me-2"></i><%= passGate.reason || 'Every document must be accepted before this step can be passed.' %>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <% } %>
@@ -131,7 +131,7 @@
         <div class="card">
             <div class="card-body p-4">
                 <h5 class="card-title mb-4">
-                    <i class="bi bi-clipboard2-check me-2 text-warning"></i>Evaluation Decision
+                    <i class="ph ph-clipboard-text me-2 text-warning"></i>Evaluation Decision
                 </h5>
                 <form action="/accreditation/<%= applicant.id %>/step/4" method="POST">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -142,7 +142,7 @@
                     </div>
                     <% if (!passGate.ok) { %>
                     <div class="alert alert-warning d-flex align-items-start gap-2">
-                        <i class="bi bi-exclamation-triangle mt-1"></i>
+                        <i class="ph ph-warning mt-1"></i>
                         <div>
                             <strong>This step cannot be passed yet.</strong>
                             <div class="small"><%= passGate.reason %> Use the Accept and Reject buttons on each document above.</div>
@@ -154,7 +154,7 @@
                                 class="btn btn-success"
                                 <%= passGate.ok ? '' : 'disabled' %>
                                 <% if (!passGate.ok) { %>title="<%= passGate.reason %>"<% } %>>
-                            <i class="bi bi-check-circle me-2"></i>Pass — Proceed to Field Validation
+                            <i class="ph ph-check-circle me-2"></i>Pass — Proceed to Field Validation
                         </button>
                     </div>
                 </form>

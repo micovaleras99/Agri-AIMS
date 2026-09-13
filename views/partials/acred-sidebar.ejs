@@ -26,20 +26,20 @@ const sidebarSteps = [
             <div class="sidebar-step-icon bg-<%= done ? 'success' : active ? s.color : 'secondary' %>-subtle
                                             text-<%= done ? 'success' : active ? s.color : 'secondary' %>">
                 <% if (done) { %>
-                <i class="bi bi-check-lg"></i>
+                <i class="ph ph-check"></i>
                 <% } else { %>
-                <i class="bi bi-<%= s.icon %>"></i>
+                <i class="<%= ic(s.icon) %>"></i>
                 <% } %>
             </div>
             <div class="flex-grow-1">
                 <div class="sidebar-step-num">Step <%= s.n %></div>
                 <div class="sidebar-step-name"><%= s.label %></div>
-                <div class="sidebar-step-who"><i class="bi bi-person me-1"></i><%= s.who %></div>
+                <div class="sidebar-step-who"><i class="ph ph-user me-1"></i><%= s.who %></div>
             </div>
             <% if (active) { %>
-            <i class="bi bi-chevron-right text-<%= s.color %>"></i>
+            <i class="ph ph-caret-right text-<%= s.color %>"></i>
             <% } else if (done) { %>
-            <i class="bi bi-check-circle-fill text-success small"></i>
+            <i class="ph-fill ph-check-circle text-success small"></i>
             <% } %>
         </a>
         <% }) %>
@@ -52,19 +52,19 @@ const sidebarSteps = [
         <h6 class="fw-bold mb-3 text-muted">APPLICATION</h6>
         <div class="detail-info-list">
             <div class="detail-info-item">
-                <i class="bi bi-hash"></i>
+                <i class="ph ph-hash"></i>
                 <span class="app-id-link"><%= applicant.applicationId %></span>
             </div>
             <div class="detail-info-item">
-                <i class="bi bi-building"></i>
+                <i class="ph ph-building"></i>
                 <span style="font-size:13px"><%= applicant.farmName %></span>
             </div>
             <div class="detail-info-item">
-                <i class="bi bi-geo-alt"></i>
+                <i class="ph ph-map-pin"></i>
                 <span style="font-size:13px"><%= applicant.municipality %>, <%= applicant.province %></span>
             </div>
             <div class="detail-info-item">
-                <i class="bi bi-tag"></i>
+                <i class="ph ph-tag"></i>
                 <span style="font-size:12px"><%= classificationLabel(applicant.classification) %></span>
             </div>
         </div>

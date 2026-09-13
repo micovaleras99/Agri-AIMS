@@ -19,20 +19,20 @@
     </div>
     <div class="d-flex gap-2">
         <a href="/forms/farm_profile/filled?applicant=<%= applicant.id %>" class="btn btn-outline-secondary">
-            <i class="bi bi-file-earmark-word me-1"></i>Download (Word)
+            <i class="ph ph-file-doc me-1"></i>Download (Word)
         </a>
         <a href="/forms/farm_profile/download?applicant=<%= applicant.id %>" class="btn btn-outline-primary" target="_blank" rel="noopener">
-            <i class="bi bi-file-earmark-pdf me-1"></i>Preview (PDF)
+            <i class="ph ph-file-pdf me-1"></i>Preview (PDF)
         </a>
     </div>
 </div>
 
 <% if (saved) { %>
-<div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i>Farm Profile saved. The official form has been updated.</div>
+<div class="alert alert-success"><i class="ph-fill ph-check-circle me-2"></i>Farm Profile saved. The official form has been updated.</div>
 <% } %>
 <% if (missing && missing.length) { %>
 <div class="alert alert-warning">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <i class="ph-fill ph-warning me-2"></i>
     The profile is saved, but the form needs: <%= missing.join(', ') %>. Please complete it in the application first.
 </div>
 <% } %>
@@ -44,7 +44,7 @@
     <div class="card-body">
 
         <div class="alert alert-light border small mb-4">
-            <i class="bi bi-info-circle me-1"></i>
+            <i class="ph ph-info me-1"></i>
             Your name, date of birth, civil status, ethnic origin, educational attainment, home address, contact,
             e-mail, RSBSA no., farm address and area are filled automatically from your
             <a href="/profile">profile</a>. Complete the rest below.
@@ -121,7 +121,7 @@
         </div>
         <% if (!locked) { %>
         <button type="button" class="btn btn-sm btn-outline-secondary mb-4 add-row" data-cols="<%= t.cols.map(function(c){return c[0];}).join(',') %>" data-name="<%= t.name %>" data-target="tbl_<%= t.name %>">
-            <i class="bi bi-plus-lg me-1"></i>Add row
+            <i class="ph ph-plus me-1"></i>Add row
         </button>
         <% } %>
         <% }); %>
@@ -155,7 +155,7 @@
 
     <% if (!locked) { %>
     <div class="card-footer d-flex justify-content-end">
-        <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Farm Profile</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-floppy-disk me-1"></i>Save Farm Profile</button>
     </div>
     <% } %>
 </form>

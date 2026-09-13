@@ -34,7 +34,7 @@ const banner = MSG[query.success] || MSG[query.error];
 
     <div class="page-header">
         <div>
-            <h1 class="page-title mb-1"><i class="bi bi-arrow-repeat me-2"></i>Renewal &amp; Re-accreditation</h1>
+            <h1 class="page-title mb-1"><i class="ph ph-arrows-clockwise me-2"></i>Renewal &amp; Re-accreditation</h1>
             <p class="page-subtitle">
                 An LSA accreditation runs for <%= validityYears %> years from the date the certificate
                 is issued. Operators are reminded at
@@ -45,7 +45,7 @@ const banner = MSG[query.success] || MSG[query.error];
 
     <% if (banner) { %>
     <div class="alert alert-<%= banner[0] %> alert-dismissible">
-        <i class="bi bi-<%= banner[0] === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' %> me-2"></i><%= banner[1] %>
+        <i class="<%= ic(banner[0] === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill') %> me-2"></i><%= banner[1] %>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <% } %>
@@ -53,7 +53,7 @@ const banner = MSG[query.success] || MSG[query.error];
     <!-- ── Validity tracking ────────────────────────────────── -->
     <div class="card mb-4">
         <div class="card-header fw-semibold">
-            <i class="bi bi-calendar-check me-1"></i>Accreditation validity
+            <i class="ph ph-calendar-check me-1"></i>Accreditation validity
         </div>
         <div class="table-responsive">
             <table class="table align-middle mb-0 renewal-table">
@@ -73,7 +73,7 @@ const banner = MSG[query.success] || MSG[query.error];
                     <% if (!rows.length) { %>
                     <tr>
                         <td colspan="8" class="renewal-cell--full text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <i class="ph ph-tray fs-1 d-block mb-2"></i>
                             No accredited Learning Sites to renew yet.
                         </td>
                     </tr>
@@ -91,13 +91,13 @@ const banner = MSG[query.success] || MSG[query.error];
                         <td class="font-monospace" data-label="Accredited until"><%= r.farm.expiryDate || 'Not recorded' %></td>
                         <td data-label="Status">
                             <span class="badge bg-<%= st.cls %>-subtle text-<%= st.cls %> border">
-                                <i class="bi bi-<%= st.icon %> me-1"></i><%= r.validity.label %>
+                                <i class="<%= ic(st.icon) %> me-1"></i><%= r.validity.label %>
                             </span>
                         </td>
                         <td data-label="Renewal">
                             <% if (r.open) { %>
                             <span class="badge bg-light text-dark border">
-                                <i class="bi bi-<%= STATUS_ICON[r.open.status] %> me-1"></i><%= statusLabels[r.open.status] %>
+                                <i class="<%= ic(STATUS_ICON[r.open.status]) %> me-1"></i><%= statusLabels[r.open.status] %>
                             </span>
                             <% } else { %>
                             <span class="text-muted small">None in progress</span>
@@ -107,7 +107,7 @@ const banner = MSG[query.success] || MSG[query.error];
                             <% if (!r.open && r.canApply && r.validity.state !== 'active') { %>
                             <button type="button" class="btn btn-sm btn-primary"
                                     data-bs-toggle="collapse" data-bs-target="#apply<%= r.farm.id %>">
-                                <i class="bi bi-arrow-repeat me-1"></i>Apply to renew
+                                <i class="ph ph-arrows-clockwise me-1"></i>Apply to renew
                             </button>
                             <% } else if (!r.open && r.canApply) { %>
                             <span class="text-muted small">Not due yet</span>
@@ -132,7 +132,7 @@ const banner = MSG[query.success] || MSG[query.error];
                                 </div>
                                 <div class="col-md-3 d-grid">
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-send me-1"></i>Submit renewal
+                                        <i class="ph ph-paper-plane-right me-1"></i>Submit renewal
                                     </button>
                                 </div>
                             </form>
@@ -148,7 +148,7 @@ const banner = MSG[query.success] || MSG[query.error];
     <!-- ── Applications ─────────────────────────────────────── -->
     <div class="card">
         <div class="card-header fw-semibold">
-            <i class="bi bi-folder2-open me-1"></i>Renewal applications
+            <i class="ph ph-folder-open me-1"></i>Renewal applications
         </div>
         <div class="card-body">
             <% if (!history.length) { %>
@@ -165,7 +165,7 @@ const banner = MSG[query.success] || MSG[query.error];
                         </span>
                     </div>
                     <span class="badge bg-light text-dark border">
-                        <i class="bi bi-<%= STATUS_ICON[h.status] %> me-1"></i><%= statusLabels[h.status] %>
+                        <i class="<%= ic(STATUS_ICON[h.status]) %> me-1"></i><%= statusLabels[h.status] %>
                     </span>
                 </div>
 
@@ -177,7 +177,7 @@ const banner = MSG[query.success] || MSG[query.error];
                 <% } %>
                 <% if (h.status === 'approved') { %>
                 <p class="small mb-0 text-success">
-                    <i class="bi bi-patch-check me-1"></i>Renewed until <strong><%= h.newValidUntil %></strong>
+                    <i class="ph ph-seal-check me-1"></i>Renewed until <strong><%= h.newValidUntil %></strong>
                     <% if (h.newCertificateNo) { %> · certificate <%= h.newCertificateNo %><% } %>
                 </p>
                 <% } %>
@@ -189,7 +189,7 @@ const banner = MSG[query.success] || MSG[query.error];
                     <form method="POST" action="/renewal/<%= h.id %>/review">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-hourglass-split me-1"></i>Mark under review
+                            <i class="ph ph-hourglass me-1"></i>Mark under review
                         </button>
                     </form>
                     <% } %>
@@ -208,17 +208,17 @@ const banner = MSG[query.success] || MSG[query.error];
                     <div class="col-md-3 d-flex gap-2">
                         <% if (role === 'admin') { %>
                         <button type="submit" name="decision" value="approve" class="btn btn-sm btn-success flex-fill">
-                            <i class="bi bi-check-lg me-1"></i>Approve
+                            <i class="ph ph-check me-1"></i>Approve
                         </button>
                         <% } %>
                         <button type="submit" name="decision" value="reject" class="btn btn-sm btn-outline-danger flex-fill">
-                            <i class="bi bi-x-lg me-1"></i>Reject
+                            <i class="ph ph-x me-1"></i>Reject
                         </button>
                     </div>
                     <% if (role !== 'admin') { %>
                     <div class="col-12">
                         <p class="small text-muted mb-0">
-                            <i class="bi bi-info-circle me-1"></i>Only an administrator can approve a renewal,
+                            <i class="ph ph-info me-1"></i>Only an administrator can approve a renewal,
                             as with the original certificate at Step 7.
                         </p>
                     </div>

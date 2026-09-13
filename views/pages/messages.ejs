@@ -23,14 +23,14 @@
             <!-- Active thread -->
             <section class="dm-thread" id="dmThread">
                 <div class="dm-thread__empty text-muted" id="dmPlaceholder">
-                    <i class="bi bi-chat-square-text fs-1 d-block mb-2 opacity-50"></i>
+                    <i class="ph ph-chat-text fs-1 d-block mb-2 opacity-50"></i>
                     <p class="mb-0">Select a conversation, or start one from the <a href="/directory">Directory</a>.</p>
                 </div>
 
                 <div class="dm-thread__pane" id="dmPane" hidden>
                     <header class="dm-thread__head">
                         <button type="button" class="btn btn-sm btn-link d-lg-none p-0 me-2" id="dmBack" aria-label="Back to conversations">
-                            <i class="bi bi-arrow-left"></i>
+                            <i class="ph ph-arrow-left"></i>
                         </button>
                         <span class="dm-avatar" id="dmPeerAvatar">?</span>
                         <div class="min-w-0">
@@ -44,7 +44,7 @@
                     <form class="dm-composer" id="dmForm" autocomplete="off">
                         <input type="text" class="form-control" id="dmInput" placeholder="Write a message…" maxlength="4000" aria-label="Message">
                         <button type="submit" class="btn btn-primary" id="dmSend" aria-label="Send">
-                            <i class="bi bi-send"></i>
+                            <i class="ph ph-paper-plane-right"></i>
                         </button>
                     </form>
                 </div>
@@ -122,15 +122,15 @@
     function timeOf(iso) { try { return new Date(iso).toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
 
     function textHtml(m) {
-        if (m.deleted) return '<span class="dm-deleted"><i class="bi bi-slash-circle" aria-hidden="true"></i> This message was deleted</span>';
+        if (m.deleted) return '<span class="dm-deleted"><i class="ph ph-prohibit" aria-hidden="true"></i> This message was deleted</span>';
         return esc(m.body);
     }
     function timeHtml(m) { return timeOf(m.createdAt) + (m.edited ? ' · edited' : ''); }
     function actionsHtml(m) {
         if (m.deleted || !m.mine) return '';
         return '<div class="dm-actions">' +
-            '<button type="button" class="dm-action" data-act="edit" data-id="' + m.id + '" title="Edit" aria-label="Edit message"><i class="bi bi-pencil"></i></button>' +
-            '<button type="button" class="dm-action" data-act="delete" data-id="' + m.id + '" title="Delete" aria-label="Delete message"><i class="bi bi-trash"></i></button>' +
+            '<button type="button" class="dm-action" data-act="edit" data-id="' + m.id + '" title="Edit" aria-label="Edit message"><i class="ph ph-pencil-simple"></i></button>' +
+            '<button type="button" class="dm-action" data-act="delete" data-id="' + m.id + '" title="Delete" aria-label="Delete message"><i class="ph ph-trash"></i></button>' +
             '</div>';
     }
     function messageEl(id) { return msgsEl.querySelector('[data-msg-id="' + id + '"]'); }
@@ -148,7 +148,7 @@
         listEl.innerHTML = inbox.map(function (c) {
             var badge = c.unread ? '<span class="dm-unread">' + c.unread + '</span>' : '';
             var preview = c.lastDeleted
-                ? '<span class="dm-deleted"><i class="bi bi-slash-circle" aria-hidden="true"></i> Message deleted</span>'
+                ? '<span class="dm-deleted"><i class="ph ph-prohibit" aria-hidden="true"></i> Message deleted</span>'
                 : (c.lastFromMe ? 'You: ' : '') + esc(c.lastBody);
             return '<button type="button" class="dm-conv' + (c.otherId === activeId ? ' active' : '') + '" data-id="' + c.otherId + '" data-name="' + esc(c.other.name) + '" data-role="' + esc(c.other.role || '') + '" data-initials="' + esc(c.other.initials) + '">' +
                 '<span class="dm-avatar">' + esc(c.other.initials) + '</span>' +

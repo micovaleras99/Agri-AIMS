@@ -28,7 +28,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="section-title mb-4">
-                        <i class="bi bi-tag me-2"></i>Application Type
+                        <i class="ph ph-tag me-2"></i>Application Type
                     </h5>
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -85,7 +85,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="section-title mb-4">
-                        <i class="bi bi-person me-2"></i>Applicant Information
+                        <i class="ph ph-user me-2"></i>Applicant Information
                     </h5>
                     <div class="row g-3">
                         <div class="col-md-3">
@@ -125,7 +125,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="section-title mb-4">
-                        <i class="bi bi-tree me-2"></i>Farm / Enterprise Information
+                        <i class="ph ph-tree me-2"></i>Farm / Enterprise Information
                     </h5>
                     <div class="row g-3">
                         <div class="col-md-8">
@@ -162,10 +162,10 @@
             <!-- Form Actions -->
             <div class="d-flex gap-3 justify-content-end">
                 <a href="/applicants" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-2"></i>Cancel
+                    <i class="ph ph-arrow-left me-2"></i>Cancel
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-<%= applicant ? 'floppy' : 'send' %> me-2"></i>
+                    <i class="<%= ic(applicant ? 'floppy' : 'send') %> me-2"></i>
                     <%= applicant ? 'Save Changes' : 'Submit Application' %>
                 </button>
             </div>

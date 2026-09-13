@@ -38,14 +38,14 @@ const isStaff = role === 'admin' || role === 'evaluator';
     %>
     <% if (photoMsg) { %>
     <div class="alert alert-<%= photoMsg[0] %> alert-dismissible">
-        <i class="bi bi-<%= photoMsg[0] === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' %> me-2"></i><%= photoMsg[1] %>
+        <i class="<%= ic(photoMsg[0] === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill') %> me-2"></i><%= photoMsg[1] %>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <% } %>
 
     <% if (typeof personalSaved !== 'undefined' && personalSaved) { %>
     <div class="alert alert-success alert-dismissible">
-        <i class="bi bi-check-circle-fill me-2"></i>Personal details saved.
+        <i class="ph-fill ph-check-circle me-2"></i>Personal details saved.
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <% } %>
@@ -60,7 +60,7 @@ const isStaff = role === 'admin' || role === 'evaluator';
                         <%- include('../partials/avatar', { user: currentUser, cls: 'user-avatar-lg', color: rc.color }) %>
                         <button type="button" class="avatar-edit-btn" id="photoPick"
                                 title="Change profile picture" aria-label="Change profile picture">
-                            <i class="bi bi-camera-fill"></i>
+                            <i class="ph-fill ph-camera"></i>
                         </button>
                     </div>
 
@@ -84,7 +84,7 @@ const isStaff = role === 'admin' || role === 'evaluator';
                     <form method="POST" action="/profile/photo/remove" class="mt-2">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-trash me-1"></i>Remove picture
+                            <i class="ph ph-trash me-1"></i>Remove picture
                         </button>
                     </form>
                     <% } %>
@@ -118,7 +118,7 @@ const isStaff = role === 'admin' || role === 'evaluator';
         <div class="col-lg-8">
             <form id="detailsForm" class="card mb-4">
                 <div class="card-header fw-semibold">
-                    <i class="bi bi-person me-1"></i>Account details
+                    <i class="ph ph-user me-1"></i>Account details
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
@@ -159,7 +159,7 @@ const isStaff = role === 'admin' || role === 'evaluator';
                 </div>
                 <div class="card-footer d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i>Save changes
+                        <i class="ph ph-floppy-disk me-1"></i>Save changes
                     </button>
                 </div>
             </form>
@@ -169,7 +169,7 @@ const isStaff = role === 'admin' || role === 'evaluator';
             <form action="/profile/personal" method="POST" class="card mb-4">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <div class="card-header fw-semibold">
-                    <i class="bi bi-person-vcard me-1"></i>Personal details
+                    <i class="ph ph-identification-card me-1"></i>Personal details
                     <span class="text-muted fw-normal small">— used to auto-fill your Farm Profile form</span>
                 </div>
                 <div class="card-body">
@@ -208,7 +208,7 @@ const isStaff = role === 'admin' || role === 'evaluator';
                 </div>
                 <div class="card-footer d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i>Save personal details
+                        <i class="ph ph-floppy-disk me-1"></i>Save personal details
                     </button>
                 </div>
             </form>
@@ -217,7 +217,7 @@ const isStaff = role === 'admin' || role === 'evaluator';
             <!-- ── Password ───────────────────────────────────── -->
             <form id="passwordForm" class="card">
                 <div class="card-header fw-semibold">
-                    <i class="bi bi-key me-1"></i>Change password
+                    <i class="ph ph-key me-1"></i>Change password
                 </div>
                 <div class="card-body">
                     <p class="text-muted small">
@@ -250,7 +250,7 @@ const isStaff = role === 'admin' || role === 'evaluator';
                 </div>
                 <div class="card-footer d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-shield-lock me-1"></i>Update password
+                        <i class="ph ph-shield me-1"></i>Update password
                     </button>
                 </div>
             </form>

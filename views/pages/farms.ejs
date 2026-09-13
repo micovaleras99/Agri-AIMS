@@ -14,7 +14,7 @@
                 <p class="page-subtitle">
                     Showing <%= farms.length %> of <%= total %> accredited farms ·
                     <span class="text-success fw-semibold">
-                        <i class="bi bi-geo-alt-fill me-1"></i><%= geoTagged.length %> geo-tagged
+                        <i class="ph-fill ph-map-pin me-1"></i><%= geoTagged.length %> geo-tagged
                     </span>
                     <% if (geoPending.length > 0 && ['admin','evaluator'].includes(role)) { %>
                     · <span class="text-warning fw-semibold"><%= geoPending.length %> pending tag</span>
@@ -25,10 +25,10 @@
             <% if (['admin','evaluator'].includes(role)) { %>
             <div class="btn-group">
                 <a href="/farms?view=cards" class="btn btn-sm <%= filters.view==='cards' ? 'btn-primary' : 'btn-outline-primary' %>">
-                    <i class="bi bi-grid-3x3-gap me-1"></i>Cards
+                    <i class="ph ph-squares-four me-1"></i>Cards
                 </a>
                 <a href="/farms?view=map" class="btn btn-sm <%= filters.view==='map' ? 'btn-primary' : 'btn-outline-primary' %>">
-                    <i class="bi bi-map me-1"></i>GIS Map
+                    <i class="ph ph-map-trifold me-1"></i>GIS Map
                 </a>
             </div>
             <% } %>
@@ -42,7 +42,7 @@
                 <div class="col-md-4">
                     <label for="search" class="form-label small fw-semibold">Search</label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <span class="input-group-text"><i class="ph ph-magnifying-glass"></i></span>
                         <input id="search" type="text" class="form-control" name="search"
                                placeholder="Farm name or operator..."
                                value="<%= filters.search || '' %>">
@@ -68,9 +68,9 @@
                 </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary flex-fill">
-                        <i class="bi bi-funnel me-1"></i>Filter
+                        <i class="ph ph-funnel me-1"></i>Filter
                     </button>
-                    <a href="/farms" class="btn btn-outline-secondary" aria-label="Clear search and filters" title="Clear search and filters"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
+                    <a href="/farms" class="btn btn-outline-secondary" aria-label="Clear search and filters" title="Clear search and filters"><i class="ph ph-x" aria-hidden="true"></i></a>
                 </div>
             </form>
         </div>
@@ -98,7 +98,7 @@
                 <div class="card mb-3">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3">
-                            <i class="bi bi-map me-2 text-primary"></i>Map Legend
+                            <i class="ph ph-map-trifold me-2 text-primary"></i>Map Legend
                         </h6>
                         <div class="map-legend-item">
                             <div class="legend-dot" style="background:#27ae60;"></div>
@@ -129,7 +129,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3">
-                            <i class="bi bi-hourglass-split me-2 text-warning"></i>
+                            <i class="ph ph-hourglass me-2 text-warning"></i>
                             Pending Geo-Tag
                         </h6>
                         <% geoPending.forEach(a => { %>
@@ -145,7 +145,7 @@
                             </div>
                             <a href="/applicants/<%= a.id %>"
                                class="btn btn-xs btn-warning text-dark">
-                                <i class="bi bi-geo-alt me-1"></i>Tag
+                                <i class="ph ph-map-pin me-1"></i>Tag
                             </a>
                         </div>
                         <% }) %>
@@ -164,7 +164,7 @@
         <div class="row g-4">
             <% if (farms.length === 0) { %>
             <div class="col-12 text-center py-5">
-                <i class="bi bi-tree fs-1 text-muted d-block mb-2"></i>
+                <i class="ph ph-tree fs-1 text-muted d-block mb-2"></i>
                 <p class="text-muted">No farms found matching your filters.</p>
                 <a href="/farms" class="btn btn-outline-secondary">Clear filters</a>
             </div>
@@ -176,29 +176,29 @@
                         <div>
                             <h5 class="mb-1"><%= f.name %></h5>
                             <small class="text-muted">
-                                <i class="bi bi-person me-1"></i><%= f.operator %>
+                                <i class="ph ph-user me-1"></i><%= f.operator %>
                             </small>
                         </div>
                         <span class="badge bg-success"><%= f.accreditationLevel %></span>
                     </div>
                     <div class="farm-card-body">
                         <div class="farm-info-row">
-                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <i class="ph-fill ph-map-pin text-danger"></i>
                             <span><%= f.municipality %>, <%= f.province %></span>
                         </div>
                         <div class="farm-info-row">
-                            <i class="bi bi-tag-fill text-primary"></i>
+                            <i class="ph-fill ph-tag text-primary"></i>
                             <span><%= classificationLabel(f.classification) %></span>
                         </div>
                         <div class="farm-info-row">
-                            <i class="bi bi-rulers text-secondary"></i>
+                            <i class="ph ph-ruler text-secondary"></i>
                             <span><%= f.farmArea.toLocaleString() %> sq.m.</span>
                         </div>
                         <div class="farm-info-row">
-                            <i class="bi bi-crosshair text-<%= f.latitude ? 'success' : 'warning' %>"></i>
+                            <i class="ph ph-crosshair text-<%= f.latitude ? 'success' : 'warning' %>"></i>
                             <span class="<%= f.latitude ? 'text-success' : 'text-warning' %>" style="font-size:12px;">
                                 <% if (f.latitude) { %>
-                                <i class="bi bi-check-circle-fill me-1"></i>
+                                <i class="ph-fill ph-check-circle me-1"></i>
                                 <%= f.latitude.toFixed(4) %>°N, <%= f.longitude.toFixed(4) %>°E
                                 <% } else { %>
                                 Geo-tag pending
@@ -220,10 +220,10 @@
                     </div>
                     <div class="farm-card-footer">
                         <small class="text-muted">
-                            <i class="bi bi-calendar-check me-1"></i>Since <%= f.accreditedSince %>
+                            <i class="ph ph-calendar-check me-1"></i>Since <%= f.accreditedSince %>
                         </small>
                         <a href="/farms/<%= f.id %>" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-eye me-1"></i>View Details
+                            <i class="ph ph-eye me-1"></i>View Details
                         </a>
                     </div>
                 </div>
@@ -261,7 +261,7 @@ allFarms.forEach(farm => {
 
     const icon = L.divIcon({
         html: `<div class="gis-farm-pin approved">
-                 <i class="bi bi-tree-fill"></i>
+                 <i class="ph-fill ph-tree"></i>
                </div>`,
         className: '', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -36]
     });
@@ -291,7 +291,7 @@ geoTagged.forEach(app => {
     const isApproved = app.status === 'approved';
     const icon = L.divIcon({
         html: `<div class="gis-farm-pin ${isApproved ? 'approved' : 'review'}">
-                 <i class="bi bi-${isApproved ? 'patch-check' : 'hourglass-split'}"></i>
+                 <i class="ph ${isApproved ? 'ph-seal-check' : 'ph-hourglass'}"></i>
                </div>`,
         className: '', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -36]
     });

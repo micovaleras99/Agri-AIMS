@@ -21,7 +21,7 @@
     <div class="d-flex gap-2">
         <% if (!readonly) { %>
         <a href="/documents/submit" class="btn btn-warning text-dark">
-            <i class="bi bi-upload me-1"></i>Upload Document
+            <i class="ph ph-upload me-1"></i>Upload Document
         </a>
         <% } %>
         <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">Overview</a>
@@ -32,25 +32,25 @@
 <div class="row g-3 mb-4">
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-icon bg-primary"><i class="bi bi-files"></i></div>
+            <div class="stat-icon bg-primary"><i class="ph ph-files"></i></div>
             <div class="stat-info"><h3><%= totalRequired %></h3><p>Required</p></div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-icon bg-warning"><i class="bi bi-upload"></i></div>
+            <div class="stat-icon bg-warning"><i class="ph ph-upload"></i></div>
             <div class="stat-info"><h3><%= submittedCount %></h3><p>Submitted</p></div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-icon bg-success"><i class="bi bi-patch-check"></i></div>
+            <div class="stat-icon bg-success"><i class="ph ph-seal-check"></i></div>
             <div class="stat-info"><h3><%= verifiedCount %></h3><p>Verified</p></div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-icon bg-danger"><i class="bi bi-exclamation-circle"></i></div>
+            <div class="stat-icon bg-danger"><i class="ph ph-warning-circle"></i></div>
             <div class="stat-info"><h3><%= totalRequired - submittedCount %></h3><p>Missing</p></div>
         </div>
     </div>
@@ -63,7 +63,7 @@
         <div class="card mb-4">
             <div class="card-body">
                 <h5 class="card-title mb-4">
-                    <i class="bi bi-list-check me-2 text-warning"></i>
+                    <i class="ph ph-list-checks me-2 text-warning"></i>
                     Documentary Requirements Checklist
                 </h5>
                 <div class="table-responsive">
@@ -83,7 +83,7 @@
                             <td class="text-muted small"><%= i+1 %></td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-file-earmark-<%= d.submitted ? 'pdf text-danger' : 'text-secondary' %> fs-5"></i>
+                                    <i class="<%= ic(d.submitted ? 'file-earmark-pdf text-danger' : 'file-earmark text-secondary') %> fs-5"></i>
                                     <div>
                                         <div class="fw-semibold small"><%= d.label %></div>
                                         <% if (d.filename) { %>
@@ -102,19 +102,19 @@
                                 <% const GENERATED = ['self_assessment','development_plan','farm_profile']; %>
                                 <% if (d.type === 'self_assessment') { %>
                                 <a href="/forms/self_assessment/filled?applicant=<%= applicant.id %>" class="btn btn-xs btn-outline-info" title="Download filled Self-Assessment (Word)">
-                                    <i class="bi bi-download"></i> Form
+                                    <i class="ph ph-download"></i> Form
                                 </a>
                                 <% } else if (d.type === 'development_plan') { %>
                                 <a href="/development-plan?applicant=<%= applicant.id %>" class="btn btn-xs btn-outline-info" title="Fill in the Development Plan">
-                                    <i class="bi bi-pencil-square"></i> Plan
+                                    <i class="ph ph-pencil-simple-line"></i> Plan
                                 </a>
                                 <% } else if (d.type === 'farm_profile') { %>
                                 <a href="/farm-profile?applicant=<%= applicant.id %>" class="btn btn-xs btn-outline-info" title="Fill in the Farm Profile">
-                                    <i class="bi bi-pencil-square"></i> Profile
+                                    <i class="ph ph-pencil-simple-line"></i> Profile
                                 </a>
                                 <% } else if (d.hasForm) { %>
                                 <a href="/forms/<%= d.type %>" class="btn btn-xs btn-outline-info" title="Download prescribed form">
-                                    <i class="bi bi-download"></i> Form
+                                    <i class="ph ph-download"></i> Form
                                 </a>
                                 <% } %>
                                 <% if (!d.submitted && !readonly && !GENERATED.includes(d.type)) { %>
@@ -148,7 +148,7 @@
                     <form action="/accreditation/<%= applicant.id %>/step/3" method="POST">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn btn-warning text-dark fw-bold">
-                            <i class="bi bi-send me-2"></i>Submit for Evaluation →
+                            <i class="ph ph-paper-plane-right me-2"></i>Submit for Evaluation →
                         </button>
                     </form>
                 </div>

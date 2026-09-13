@@ -34,20 +34,20 @@ const FILTERS = [
         <div>
             <h1 class="page-title mb-1"><%= farm.name %></h1>
             <p class="page-subtitle mb-0">
-                <i class="bi bi-person me-1"></i><%= farm.operator %>
-                <span class="mx-1">·</span><i class="bi bi-geo-alt me-1"></i><%= farm.municipality %>, <%= farm.province %>
+                <i class="ph ph-user me-1"></i><%= farm.operator %>
+                <span class="mx-1">·</span><i class="ph ph-map-pin me-1"></i><%= farm.municipality %>, <%= farm.province %>
             </p>
         </div>
         <div class="d-flex gap-2">
             <% if (canRecord) { %>
-            <a href="/compliance" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>All Farms</a>
+            <a href="/compliance" class="btn btn-outline-secondary"><i class="ph ph-arrow-left me-1"></i>All Farms</a>
             <% } %>
-            <a href="/farms/<%= farm.id %>" class="btn btn-outline-primary"><i class="bi bi-tree me-1"></i>Farm Profile</a>
+            <a href="/farms/<%= farm.id %>" class="btn btn-outline-primary"><i class="ph ph-tree me-1"></i>Farm Profile</a>
         </div>
     </div>
 
     <% if (query.recorded) { %>
-    <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle-fill me-2"></i>Check recorded.<button class="btn-close" data-bs-dismiss="alert"></button></div>
+    <div class="alert alert-success alert-dismissible fade show"><i class="ph-fill ph-check-circle me-2"></i>Check recorded.<button class="btn-close" data-bs-dismiss="alert"></button></div>
     <% } %>
 
     <!-- Score + status breakdown -->
@@ -101,24 +101,24 @@ const FILTERS = [
                         <div class="flex-grow-1 min-w-0">
                             <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                                 <span class="badge bg-<%= tone %>-subtle text-<%= tone %> border border-<%= tone %>-subtle">
-                                    <i class="bi bi-<%= iconOf(item.status) %> me-1"></i><%= item.statusLabel %>
+                                    <i class="<%= ic(iconOf(item.status)) %> me-1"></i><%= item.statusLabel %>
                                 </span>
                                 <strong><%= item.title %></strong>
                             </div>
                             <p class="small text-muted mb-1"><%= item.description %></p>
                             <p class="small text-secondary mb-1">
-                                <i class="bi bi-journal-text me-1"></i><em>LSA Guidelines — <%= item.sourceReference %></em>
+                                <i class="ph ph-notebook me-1"></i><em>LSA Guidelines — <%= item.sourceReference %></em>
                                 · <%= item.frequency.replace('_', ' ') %>
                             </p>
                             <% if (item.check) { %>
                             <div class="small comp-check">
-                                <i class="bi bi-clock-history me-1 text-muted"></i>Checked <%= item.check.checkedAt %><%= item.check.checkedByName ? ' by ' + item.check.checkedByName : '' %>.
+                                <i class="ph ph-clock-counter-clockwise me-1 text-muted"></i>Checked <%= item.check.checkedAt %><%= item.check.checkedByName ? ' by ' + item.check.checkedByName : '' %>.
                                 <% if (item.check.remarks) { %><br><span class="text-muted">Remarks: <%= item.check.remarks %></span><% } %>
-                                <% if (item.check.correctiveAction) { %><br><span class="text-danger"><i class="bi bi-arrow-return-right me-1"></i>Corrective action: <%= item.check.correctiveAction %></span><% } %>
+                                <% if (item.check.correctiveAction) { %><br><span class="text-danger"><i class="ph ph-arrow-bend-up-right me-1"></i>Corrective action: <%= item.check.correctiveAction %></span><% } %>
                                 <% if (item.check.nextCheckDate) { %><br><span class="text-muted">Next check: <%= item.check.nextCheckDate %></span><% } %>
                             </div>
                             <% } else { %>
-                            <div class="small text-muted"><i class="bi bi-dash-circle me-1"></i>Not yet checked.</div>
+                            <div class="small text-muted"><i class="ph ph-minus-circle me-1"></i>Not yet checked.</div>
                             <% } %>
                         </div>
 
@@ -126,7 +126,7 @@ const FILTERS = [
                         <div class="flex-shrink-0">
                             <button class="btn btn-sm btn-outline-primary" type="button"
                                     data-bs-toggle="collapse" data-bs-target="#chk<%= item.id %>">
-                                <i class="bi bi-clipboard-check me-1"></i>Record check
+                                <i class="ph ph-clipboard-text me-1"></i>Record check
                             </button>
                         </div>
                         <% } %>
@@ -165,7 +165,7 @@ const FILTERS = [
                                        name="correctiveAction" placeholder="What the operator must do — sent to them as a notification">
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-save me-1"></i>Save</button>
+                                <button type="submit" class="btn btn-sm btn-primary w-100"><i class="ph ph-floppy-disk me-1"></i>Save</button>
                             </div>
                         </form>
                     </div>
@@ -178,7 +178,7 @@ const FILTERS = [
     <% }); %>
 
     <p id="compNoMatch" class="text-center text-muted py-4" hidden>
-        <i class="bi bi-search d-block mb-2 opacity-50"></i>No requirements in this filter.
+        <i class="ph ph-magnifying-glass d-block mb-2 opacity-50"></i>No requirements in this filter.
     </p>
 </div>
 

@@ -11,7 +11,7 @@
                 posted to the <code>#e-learning</code> Community Chat channel, and members are notified.
             </p>
         </div>
-        <a href="/community" class="btn btn-outline-secondary"><i class="bi bi-chat-dots me-1"></i>Community Chat</a>
+        <a href="/community" class="btn btn-outline-secondary"><i class="ph ph-chat-dots me-1"></i>Community Chat</a>
     </div>
 
     <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
@@ -36,7 +36,7 @@
         <div class="col-lg-5">
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="bi bi-plug me-2"></i>Source</h5>
+                    <h5 class="card-title mb-3"><i class="ph ph-plug me-2"></i>Source</h5>
                     <dl class="row small mb-3">
                         <dt class="col-5">Mode</dt>
                         <dd class="col-7">
@@ -105,7 +105,7 @@
                             <label class="form-check-label small" for="dryRun">Dry run — report only, change nothing</label>
                         </div>
                         <button class="btn btn-outline-primary w-100" type="submit">
-                            <i class="bi bi-arrow-repeat me-1"></i>Check for new items now
+                            <i class="ph ph-arrows-clockwise me-1"></i>Check for new items now
                         </button>
                     </form>
                     <p class="form-text mb-0 mt-2">
@@ -116,7 +116,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="bi bi-pencil-square me-2"></i>Add an announcement</h5>
+                    <h5 class="card-title mb-3"><i class="ph ph-pencil-simple-line me-2"></i>Add an announcement</h5>
                     <form method="POST" action="/admin/elearning/manual">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <div class="mb-2">
@@ -142,7 +142,7 @@
                             <label class="form-check-label small" for="notifyMembers">Notify members</label>
                         </div>
                         <button class="btn btn-primary w-100" type="submit">
-                            <i class="bi bi-send me-1"></i>Post to Community Chat
+                            <i class="ph ph-paper-plane-right me-1"></i>Post to Community Chat
                         </button>
                     </form>
                 </div>
@@ -152,7 +152,7 @@
         <div class="col-lg-7">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="bi bi-collection me-2"></i>Recorded items</h5>
+                    <h5 class="card-title mb-3"><i class="ph ph-stack me-2"></i>Recorded items</h5>
                     <% if (!articles.length) { %>
                     <p class="text-muted mb-0">Nothing recorded yet. Run a check or add an announcement.</p>
                     <% } else { %>

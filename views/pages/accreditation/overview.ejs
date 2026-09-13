@@ -15,21 +15,21 @@
 <!-- Alerts -->
 <% if (query.certified) { %>
 <div class="alert alert-success alert-dismissible fade show mb-4">
-    <i class="bi bi-award-fill me-2"></i>
+    <i class="ph-fill ph-medal me-2"></i>
     <strong>Congratulations!</strong> LSA Certificate has been issued. The application is now fully accredited.
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 <% } %>
 <% if (query.returned) { %>
 <div class="alert alert-warning alert-dismissible fade show mb-4">
-    <i class="bi bi-arrow-return-left me-2"></i>
+    <i class="ph ph-arrow-bend-up-left me-2"></i>
     Documents returned to applicant for revision/completion.
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 <% } %>
 <% if (query.noncompliant) { %>
 <div class="alert alert-danger alert-dismissible fade show mb-4">
-    <i class="bi bi-exclamation-triangle me-2"></i>
+    <i class="ph ph-warning me-2"></i>
     Farm did not pass field validation. Findings have been recorded. Applicant must address issues before proceeding.
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
@@ -38,11 +38,11 @@
 <% if (certificateDoc) { %>
 <div class="alert alert-success d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
     <span>
-        <i class="bi bi-patch-check-fill me-2"></i>
+        <i class="ph-fill ph-seal-check me-2"></i>
         Your LSA Certificate is ready.
     </span>
     <a href="/documents/<%= certificateDoc.id %>/file" class="btn btn-sm btn-success" target="_blank" rel="noopener">
-        <i class="bi bi-download me-1"></i>Download Certificate
+        <i class="ph ph-download me-1"></i>Download Certificate
     </a>
 </div>
 <% } %>
@@ -57,7 +57,7 @@
         </p>
     </div>
     <a href="/applicants/<%= applicant.id %>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-2"></i>Back to Application
+        <i class="ph ph-arrow-left me-2"></i>Back to Application
     </a>
 </div>
 
@@ -98,9 +98,9 @@
     <!-- Step number bubble -->
     <div class="acred-step-number bg-<%= s.color %>">
         <% if (isCompleted) { %>
-            <i class="bi bi-check-lg"></i>
+            <i class="ph ph-check"></i>
         <% } else { %>
-            <i class="bi bi-<%= s.icon %>"></i>
+            <i class="<%= ic(s.icon) %>"></i>
         <% } %>
     </div>
 
@@ -124,7 +124,7 @@
         <p class="text-muted small mb-2"><%= s.desc %></p>
         <div class="d-flex align-items-center justify-content-between">
             <span class="acred-who-badge">
-                <i class="bi bi-person me-1"></i><%= s.who %>
+                <i class="ph ph-user me-1"></i><%= s.who %>
             </span>
             <% if (canAccess && (isActive || (isCompleted && role !== 'applicant'))) { %>
             <a href="/accreditation/<%= applicant.id %>/step/<%= s.step %>"
@@ -140,19 +140,19 @@
         <% if (isCompleted) { %>
         <div class="acred-step-meta mt-2">
             <% if (s.step === 1 && applicant.step1_brieferDate) { %>
-            <small><i class="bi bi-calendar3 me-1"></i>Signed: <%= applicant.step1_brieferDate %></small>
+            <small><i class="ph ph-calendar-blank me-1"></i>Signed: <%= applicant.step1_brieferDate %></small>
             <% } else if (s.step === 2 && applicant.step2_selfAssessmentScore) { %>
-            <small><i class="bi bi-graph-up me-1"></i>Score: <%= applicant.step2_selfAssessmentScore %>%</small>
+            <small><i class="ph ph-chart-line-up me-1"></i>Score: <%= applicant.step2_selfAssessmentScore %>%</small>
             <% } else if (s.step === 3 && applicant.step3_submittedDate) { %>
-            <small><i class="bi bi-folder-check me-1"></i>Docs: <%= applicant.step3_docsSubmitted %>/<%= applicant.step3_docsRequired %> · <%= applicant.step3_submittedDate %></small>
+            <small><i class="ph ph-folder me-1"></i>Docs: <%= applicant.step3_docsSubmitted %>/<%= applicant.step3_docsRequired %> · <%= applicant.step3_submittedDate %></small>
             <% } else if (s.step === 4 && applicant.step4_evalDate) { %>
-            <small><i class="bi bi-check-circle me-1"></i>Evaluated: <%= applicant.step4_evalDate %> by <%= applicant.step4_evalBy %></small>
+            <small><i class="ph ph-check-circle me-1"></i>Evaluated: <%= applicant.step4_evalDate %> by <%= applicant.step4_evalBy %></small>
             <% } else if (s.step === 5 && applicant.step5_validationDate) { %>
-            <small><i class="bi bi-geo-alt me-1"></i><%= applicant.step5_validationType %> · <%= applicant.step5_validationDate %></small>
+            <small><i class="ph ph-map-pin me-1"></i><%= applicant.step5_validationType %> · <%= applicant.step5_validationDate %></small>
             <% } else if (s.step === 6 && applicant.step6_endorsedDate) { %>
-            <small><i class="bi bi-send-check me-1"></i>No.: <%= applicant.step6_endorsementNo %> · <%= applicant.step6_endorsedDate %></small>
+            <small><i class="ph ph-paper-plane-right me-1"></i>No.: <%= applicant.step6_endorsementNo %> · <%= applicant.step6_endorsedDate %></small>
             <% } else if (s.step === 7 && applicant.step7_certificateNo) { %>
-            <small><i class="bi bi-award me-1"></i>Cert: <%= applicant.step7_certificateNo %> · Valid until <%= applicant.step7_validUntil %></small>
+            <small><i class="ph ph-medal me-1"></i>Cert: <%= applicant.step7_certificateNo %> · Valid until <%= applicant.step7_validUntil %></small>
             <% } %>
         </div>
         <% } %>

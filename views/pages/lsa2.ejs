@@ -14,7 +14,7 @@ var stepIcons = ['folder-plus', 'search', 'geo-alt', 'send-check', 'award'];
 
     <div class="page-header">
         <div>
-            <h1 class="page-title mb-1"><i class="bi bi-arrow-up-circle me-2"></i>LSA II Up-scaling</h1>
+            <h1 class="page-title mb-1"><i class="ph ph-arrow-circle-up me-2"></i>LSA II Up-scaling</h1>
             <p class="page-subtitle mb-0">
                 Certified LSA I farms can be up-scaled to LSA II once four criteria are met —
                 two checked automatically, two assessed by ATI.
@@ -26,25 +26,25 @@ var stepIcons = ['folder-plus', 'search', 'geo-alt', 'send-check', 'award'];
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <div class="stat-card">
-                <div class="stat-icon bg-primary"><i class="bi bi-building"></i></div>
+                <div class="stat-icon bg-primary"><i class="ph ph-building"></i></div>
                 <div class="stat-info"><h3><%= totalFarms %></h3><p>LSA I Farms</p></div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="stat-card">
-                <div class="stat-icon bg-success"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-icon bg-success"><i class="ph ph-check-circle"></i></div>
                 <div class="stat-info"><h3><%= eligibleCount %></h3><p>Eligible to Apply</p></div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="stat-card">
-                <div class="stat-icon bg-warning"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-icon bg-warning"><i class="ph ph-hourglass"></i></div>
                 <div class="stat-info"><h3><%= inProgressCount %></h3><p>In Progress</p></div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="stat-card">
-                <div class="stat-icon bg-info"><i class="bi bi-award"></i></div>
+                <div class="stat-icon bg-info"><i class="ph ph-medal"></i></div>
                 <div class="stat-info"><h3><%= certifiedCount %></h3><p>Certified LSA II</p></div>
             </div>
         </div>
@@ -54,17 +54,17 @@ var stepIcons = ['folder-plus', 'search', 'geo-alt', 'send-check', 'award'];
     <div class="card mb-4">
         <div class="card-body p-3">
             <div class="small fw-semibold text-muted text-uppercase mb-2" style="letter-spacing:.04em;">
-                <i class="bi bi-signpost-split me-1"></i>How certification works
+                <i class="ph ph-signpost me-1"></i>How certification works
             </div>
             <div class="lsa2-legend">
                 <% steps.forEach(function (s, i) { %>
                 <div class="lsa2-legend__step">
-                    <span class="lsa2-legend__num"><i class="bi bi-<%= stepIcons[i] %>"></i></span>
+                    <span class="lsa2-legend__num"><i class="<%= ic(stepIcons[i]) %>"></i></span>
                     <div>
                         <div class="small fw-semibold">Step <%= s.step %>: <%= s.label %></div>
                         <div class="text-muted" style="font-size:11px;"><%= s.who %></div>
                     </div>
-                    <% if (i < steps.length - 1) { %><i class="bi bi-chevron-right text-muted d-none d-lg-inline lsa2-legend__arrow"></i><% } %>
+                    <% if (i < steps.length - 1) { %><i class="ph ph-caret-right text-muted d-none d-lg-inline lsa2-legend__arrow"></i><% } %>
                 </div>
                 <% }); %>
             </div>
@@ -92,7 +92,7 @@ var stepIcons = ['folder-plus', 'search', 'geo-alt', 'send-check', 'award'];
                     <tr>
                         <td>
                             <div class="fw-semibold"><%= r.farm.name %></div>
-                            <span class="small text-muted"><i class="bi bi-person me-1"></i><%= r.farm.operator %> · <%= r.farm.municipality %></span>
+                            <span class="small text-muted"><i class="ph ph-user me-1"></i><%= r.farm.operator %> · <%= r.farm.municipality %></span>
                         </td>
                         <td class="small text-muted"><%= r.farm.accreditedSince || '—' %></td>
                         <td>
@@ -107,7 +107,7 @@ var stepIcons = ['folder-plus', 'search', 'geo-alt', 'send-check', 'award'];
                         </td>
                         <td>
                             <% if (certified) { %>
-                            <span class="badge bg-success-subtle text-success"><i class="bi bi-award me-1"></i>Certified LSA II</span>
+                            <span class="badge bg-success-subtle text-success"><i class="ph ph-medal me-1"></i>Certified LSA II</span>
                             <% } else if (r.application) { %>
                             <span class="badge bg-primary-subtle text-primary">Step <%= r.application.step %> of <%= steps.length %></span>
                             <div class="text-muted" style="font-size:11px;"><%= r.application.referenceNo %></div>
@@ -119,14 +119,14 @@ var stepIcons = ['folder-plus', 'search', 'geo-alt', 'send-check', 'award'];
                         </td>
                         <td class="text-end">
                             <a href="/lsa2/farm/<%= r.farm.id %>" class="btn btn-sm btn-outline-primary">
-                                Open<i class="bi bi-chevron-right ms-1"></i>
+                                Open<i class="ph ph-caret-right ms-1"></i>
                             </a>
                         </td>
                     </tr>
                     <% }); %>
                     <% if (!rows.length) { %>
                     <tr><td colspan="5" class="text-center text-muted py-5">
-                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>No accredited farms to up-scale yet.
+                        <i class="ph ph-tray fs-3 d-block mb-2"></i>No accredited farms to up-scale yet.
                     </td></tr>
                     <% } %>
                 </tbody>

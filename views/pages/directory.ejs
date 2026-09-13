@@ -14,7 +14,7 @@
                 <div class="col-md-4">
                     <label for="search" class="form-label small fw-semibold">Search</label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <span class="input-group-text"><i class="ph ph-magnifying-glass"></i></span>
                         <input id="search" type="text" class="form-control" name="search"
                                placeholder="Farm name or operator..."
                                value="<%= filters.search || '' %>">
@@ -40,9 +40,9 @@
                 </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary flex-fill">
-                        <i class="bi bi-funnel me-1"></i>Filter
+                        <i class="ph ph-funnel me-1"></i>Filter
                     </button>
-                    <a href="/directory" class="btn btn-outline-secondary" aria-label="Clear search and filters" title="Clear search and filters"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
+                    <a href="/directory" class="btn btn-outline-secondary" aria-label="Clear search and filters" title="Clear search and filters"><i class="ph ph-x" aria-hidden="true"></i></a>
                 </div>
             </form>
         </div>
@@ -51,25 +51,25 @@
         <div class="row g-3 mb-4">
             <div class="col-sm-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-success"><i class="bi bi-building"></i></div>
+                    <div class="stat-icon bg-success"><i class="ph ph-building"></i></div>
                     <div class="stat-info"><h3><%= totalFarms %></h3><p>Active LSAs</p></div>
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-primary"><i class="bi bi-geo-alt"></i></div>
+                    <div class="stat-icon bg-primary"><i class="ph ph-map-pin"></i></div>
                     <div class="stat-info"><h3><%= provinces.length %></h3><p>Provinces</p></div>
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-info"><i class="bi bi-tags"></i></div>
+                    <div class="stat-icon bg-info"><i class="ph ph-tag"></i></div>
                     <div class="stat-info"><h3><%= classifications.length %></h3><p>Classifications</p></div>
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-warning"><i class="bi bi-people"></i></div>
+                    <div class="stat-icon bg-warning"><i class="ph ph-users"></i></div>
                     <div class="stat-info"><h3><%= totalVisitors.toLocaleString() %></h3><p>Total Visitors</p></div>
                 </div>
             </div>
@@ -79,7 +79,7 @@
         <div class="row g-4">
             <% if (farms.length === 0) { %>
             <div class="col-12 text-center py-5">
-                <i class="bi bi-search fs-1 text-muted d-block mb-2"></i>
+                <i class="ph ph-magnifying-glass fs-1 text-muted d-block mb-2"></i>
                 <p class="text-muted">No LSAs found matching your search.</p>
                 <a href="/directory" class="btn btn-outline-secondary">Clear filters</a>
             </div>
@@ -98,29 +98,29 @@
                     </div>
                     <div class="directory-card-body">
                         <div class="directory-info-row">
-                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <i class="ph-fill ph-map-pin text-danger"></i>
                             <span><%= f.province %>, <%= f.region %></span>
                         </div>
                         <div class="directory-info-row">
-                            <i class="bi bi-tag-fill text-primary"></i>
+                            <i class="ph-fill ph-tag text-primary"></i>
                             <span><span class="badge bg-primary-subtle text-primary"><%= classificationLabel(f.classification) %></span></span>
                         </div>
                         <div class="directory-info-row">
-                            <i class="bi bi-award-fill text-warning"></i>
+                            <i class="ph-fill ph-medal text-warning"></i>
                             <span><%= f.accreditationLevel %> Accredited</span>
                         </div>
                         <div class="directory-info-row">
-                            <i class="bi bi-people-fill text-info"></i>
+                            <i class="ph-fill ph-users text-info"></i>
                             <span><%= f.visitorsThisYear %> visitors this year</span>
                         </div>
                     </div>
                     <div class="directory-card-footer">
                         <a href="/farms/<%= f.id %>" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-eye me-1"></i>View Profile
+                            <i class="ph ph-eye me-1"></i>View Profile
                         </a>
                         <% if (f.operatorUserId && (!currentUser || f.operatorUserId !== currentUser.id)) { %>
                         <a href="/messages?to=<%= f.operatorUserId %>" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-envelope me-1"></i>Message
+                            <i class="ph ph-envelope me-1"></i>Message
                         </a>
                         <% } %>
                     </div>

@@ -48,6 +48,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// `ic('clipboard-check')` -> Phosphor classes, for icons chosen from data at
+// render time (config/route `icon:` fields keep their Bootstrap names).
+const { ic } = require('./config/icons');
+app.use((req, res, next) => { res.locals.ic = ic; next(); });
+
 app.use(
   helmet({
     contentSecurityPolicy: {

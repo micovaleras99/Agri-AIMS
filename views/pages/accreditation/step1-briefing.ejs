@@ -21,11 +21,11 @@
     <div class="d-flex gap-2 align-items-center">
         <% if (applicant.step1_brieferSigned) { %>
         <span class="badge bg-success px-3 py-2">
-            <i class="bi bi-check-circle-fill me-1"></i>Briefer Signed
+            <i class="ph-fill ph-check-circle me-1"></i>Briefer Signed
         </span>
         <% } %>
         <a href="/accreditation/<%= applicant.id %>" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Overview
+            <i class="ph ph-arrow-left me-1"></i>Overview
         </a>
     </div>
 </div>
@@ -63,7 +63,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="briefer-class-card">
-                                <h6><i class="bi bi-tree me-2 text-success"></i>1. Farming LSAs</h6>
+                                <h6><i class="ph ph-tree me-2 text-success"></i>1. Farming LSAs</h6>
                                 <ul class="briefer-list">
                                 <% lsaClassifications.farming.forEach(c => { %>
                                 <li><strong><%= c.code !== c.label ? c.code + ' — ' : '' %></strong><%= c.label %><% if (c.desc) { %><br><small class="text-muted"><%= c.desc %></small><% } %></li>
@@ -73,7 +73,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="briefer-class-card">
-                                <h6><i class="bi bi-gear me-2 text-primary"></i>2. Agri-Processing LSA</h6>
+                                <h6><i class="ph ph-gear me-2 text-primary"></i>2. Agri-Processing LSA</h6>
                                 <p class="small text-muted">Farmers and non-farmers engaged in processing of fruits & vegetables, meat, fish, and agricultural products including by-products.</p>
                             </div>
                         </div>
@@ -85,7 +85,7 @@
                     <h5 class="briefer-section-title">Farm / Enterprise Requirements</h5>
                     <% farmRequirements.forEach(r => { %>
                     <div class="briefer-req-item">
-                        <i class="bi bi-check-circle text-success"></i>
+                        <i class="ph ph-check-circle text-success"></i>
                         <div>
                             <span class="fw-semibold"><%= r.item %></span>
                             <% if (r.note) { %><br><small class="text-muted"><%= r.note %></small><% } %>
@@ -99,10 +99,10 @@
                     <h5 class="briefer-section-title">Farmer / Operator Requirements</h5>
                     <% operatorRequirements.forEach(r => { %>
                     <div class="briefer-req-item">
-                        <i class="bi bi-person-check text-primary"></i>
+                        <i class="ph ph-user-check text-primary"></i>
                         <div>
                             <span class="fw-semibold"><%= r.item %></span>
-                            <% if (r.doc) { %><br><small class="text-muted"><i class="bi bi-file-earmark me-1"></i><%= r.doc %></small><% } %>
+                            <% if (r.doc) { %><br><small class="text-muted"><i class="ph ph-file me-1"></i><%= r.doc %></small><% } %>
                         </div>
                     </div>
                     <% }) %>
@@ -110,7 +110,7 @@
 
                 <!-- Not Qualified -->
                 <div class="alert alert-danger mt-3">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <i class="ph-fill ph-warning me-2"></i>
                     <strong>NOT QUALIFIED to apply as LSA:</strong>
                     <% disqualified.forEach(d => { %>
                     <div class="mt-1 ms-3">• <%= d %></div>
@@ -124,11 +124,11 @@
         <div class="card">
             <div class="card-body p-4">
                 <h5 class="card-title mb-4">
-                    <i class="bi bi-pen me-2 text-primary"></i>Acknowledgment & Signature
+                    <i class="ph ph-pen me-2 text-primary"></i>Acknowledgment & Signature
                 </h5>
                 <% if (applicant.step1_brieferSigned) { %>
                 <div class="alert alert-success">
-                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <i class="ph-fill ph-check-circle me-2"></i>
                     Briefer acknowledged and signed on <strong><%= applicant.step1_brieferDate %></strong>
                     by <strong><%= applicant.step1_acknowledgedBy %></strong>.
                     <a href="/accreditation/<%= applicant.id %>/step/2" class="btn btn-sm btn-success ms-3">
@@ -138,7 +138,7 @@
                 <% } else { %>
                 <% if (typeof declarationError !== 'undefined' && declarationError) { %>
                 <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <i class="ph-fill ph-warning me-2"></i>
                     All three certifications must be ticked before the briefer can be signed.
                     The disqualification declaration in particular is an eligibility requirement,
                     not a formality.
@@ -146,7 +146,7 @@
                 <% } %>
                 <% if (typeof fileError !== 'undefined' && fileError) { %>
                 <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <i class="ph-fill ph-warning me-2"></i>
                     Attach your signed Briefer form before submitting. Download the form,
                     sign it, then upload the completed copy.
                 </div>
@@ -178,7 +178,7 @@
                             completed copy for submission.
                         </p>
                         <a href="/forms/signed_briefer" class="btn btn-outline-primary mb-3">
-                            <i class="bi bi-download me-1"></i>Download Briefer Form
+                            <i class="ph ph-download me-1"></i>Download Briefer Form
                         </a>
                         <input type="file" class="form-control" id="brieferFile" name="file"
                                accept=".pdf,.jpg,.jpeg,.png,.webp" required>
@@ -187,7 +187,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-upload me-2"></i>Submit Signed Briefer & Proceed to Step 2
+                        <i class="ph ph-upload me-2"></i>Submit Signed Briefer & Proceed to Step 2
                     </button>
                 </form>
                 <% } %>

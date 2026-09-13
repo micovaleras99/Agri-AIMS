@@ -5,7 +5,7 @@
 
     <div class="page-header">
         <div>
-            <h1 class="page-title"><i class="bi bi-person-plus me-2"></i>Register Farmer</h1>
+            <h1 class="page-title"><i class="ph ph-user-plus me-2"></i>Register Farmer</h1>
             <p class="page-subtitle">
                 Record an application for a farmer who applied in person or on paper.
                 Give them a login as well and they can sign in to follow the accreditation
@@ -13,19 +13,19 @@
             </p>
         </div>
         <a href="/applicants" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Back to Applications
+            <i class="ph ph-arrow-left me-1"></i>Back to Applications
         </a>
     </div>
 
     <% if (error) { %>
     <div class="alert alert-danger d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i><span><%= error %></span>
+        <i class="ph-fill ph-warning"></i><span><%= error %></span>
     </div>
     <% } %>
 
     <% if (notice) { %>
     <div class="alert alert-success d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i><span><%= notice %></span>
+        <i class="ph-fill ph-check-circle"></i><span><%= notice %></span>
     </div>
     <% } %>
 
@@ -33,7 +33,7 @@
     <div class="card mb-4 border-success">
         <div class="card-body">
             <h5 class="card-title mb-3">
-                <i class="bi bi-<%= createdUser.hasAccount === false ? 'file-earmark-check' : 'key' %> me-2"></i>
+                <i class="<%= ic(createdUser.hasAccount === false ? 'file-earmark-check' : 'key') %> me-2"></i>
                 <%= createdUser.hasAccount === false ? 'Application recorded' : 'Sign-in details' %>
             </h5>
             <dl class="row mb-0">
@@ -69,7 +69,7 @@
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="card-body">
 
-            <h5 class="section-title mb-3"><i class="bi bi-person me-2"></i>Farmer</h5>
+            <h5 class="section-title mb-3"><i class="ph ph-user me-2"></i>Farmer</h5>
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <label class="form-label" for="firstName">First Name <span class="text-danger">*</span></label>
@@ -101,7 +101,7 @@
                 </div>
             </div>
 
-            <h5 class="section-title mb-3"><i class="bi bi-tree me-2"></i>Farm</h5>
+            <h5 class="section-title mb-3"><i class="ph ph-tree me-2"></i>Farm</h5>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label" for="farmName">Farm / Enterprise Name</label>
@@ -166,7 +166,7 @@
                 </div>
             </div>
 
-            <h5 class="section-title mb-3"><i class="bi bi-lock me-2"></i>Sign-in</h5>
+            <h5 class="section-title mb-3"><i class="ph ph-lock me-2"></i>Sign-in</h5>
             <div class="row g-3">
                 <div class="col-12">
                     <div class="form-check">

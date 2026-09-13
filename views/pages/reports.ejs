@@ -12,7 +12,7 @@
             <% if (['operator','admin','evaluator'].includes(role)) { %>
             <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#reportForm"
                     aria-expanded="<%= (role==='operator' && openPeriods.length) ? 'true' : 'false' %>" aria-controls="reportForm">
-                <i class="bi bi-file-earmark-plus me-1"></i>Submit Semestral Report
+                <i class="ph ph-file-plus me-1"></i>Submit Semestral Report
             </button>
             <% } %>
         </div>
@@ -43,14 +43,14 @@
         <div class="collapse mb-4 <%= (role==='operator' && openPeriods.length) ? 'show' : '' %>" id="reportForm">
             <form method="POST" action="/reports" class="card report-form">
                 <div class="card-header bg-transparent border-0 pt-3 pb-0 px-4">
-                    <h5 class="card-title mb-0"><i class="bi bi-journal-plus me-2 text-primary"></i>New Semestral Report</h5>
+                    <h5 class="card-title mb-0"><i class="ph ph-notebook me-2 text-primary"></i>New Semestral Report</h5>
                     <p class="text-muted small mb-0">Enter the figures for one reporting period, then submit for ATI review.</p>
                 </div>
                 <div class="card-body row g-3 p-4">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <% if (farms.length) { %>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold" for="farmId"><i class="bi bi-building me-1 text-muted"></i>Learning Site</label>
+                        <label class="form-label fw-semibold" for="farmId"><i class="ph ph-building me-1 text-muted"></i>Learning Site</label>
                         <select class="form-select" id="farmId" name="farmId" required>
                             <% farms.forEach(function (f) { %>
                             <option value="<%= f.id %>"><%= f.name %></option>
@@ -59,7 +59,7 @@
                     </div>
                     <% } %>
                     <div class="col-md-<%= farms.length ? '6' : '12' %>">
-                        <label class="form-label fw-semibold" for="period"><i class="bi bi-calendar3 me-1 text-muted"></i>Reporting period</label>
+                        <label class="form-label fw-semibold" for="period"><i class="ph ph-calendar-blank me-1 text-muted"></i>Reporting period</label>
                         <% if (role === 'operator') { %>
                         <!-- The periods this Learning Site actually owes, overdue first.
                              This was "this year's two semesters" for everyone, which a
@@ -73,7 +73,7 @@
                             <% }); %>
                         </select>
                         <% if (!openPeriods.length) { %>
-                        <div class="form-text"><i class="bi bi-check-circle text-success me-1"></i>Every period in this accreditation has been reported.</div>
+                        <div class="form-text"><i class="ph ph-check-circle text-success me-1"></i>Every period in this accreditation has been reported.</div>
                         <% } %>
                         <% } else { %>
                         <input type="text" class="form-control" id="period" name="period" required
@@ -86,17 +86,17 @@
                     <div class="col-12"><span class="small fw-semibold text-muted text-uppercase" style="letter-spacing:.04em;">Accomplishments this period</span></div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold" for="visitors"><i class="bi bi-people me-1 text-info"></i>Visitors received</label>
+                        <label class="form-label fw-semibold" for="visitors"><i class="ph ph-users me-1 text-info"></i>Visitors received</label>
                         <input type="number" min="0" class="form-control" id="visitors" name="visitors" value="0">
                         <div class="form-text">Farm visits &amp; walk-ins.</div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold" for="trainingSessions"><i class="bi bi-mortarboard me-1 text-primary"></i>Training sessions held</label>
+                        <label class="form-label fw-semibold" for="trainingSessions"><i class="ph ph-graduation-cap me-1 text-primary"></i>Training sessions held</label>
                         <input type="number" min="0" class="form-control" id="trainingSessions" name="trainingSessions" value="0">
                         <div class="form-text">Lectures &amp; orientations.</div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold" for="techDemos"><i class="bi bi-lightbulb me-1 text-warning"></i>Technology demonstrations</label>
+                        <label class="form-label fw-semibold" for="techDemos"><i class="ph ph-lightbulb me-1 text-warning"></i>Technology demonstrations</label>
                         <input type="number" min="0" class="form-control" id="techDemos" name="techDemos" value="0">
                         <div class="form-text">Techniques shown to visitors.</div>
                     </div>
@@ -104,7 +104,7 @@
                     <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top">
                         <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#reportForm">Cancel</button>
                         <button type="submit" class="btn btn-primary px-4" <%= (role==='operator' && !openPeriods.length) ? 'disabled' : '' %>>
-                            <i class="bi bi-send me-1"></i>Submit for review
+                            <i class="ph ph-paper-plane-right me-1"></i>Submit for review
                         </button>
                     </div>
                 </div>
@@ -116,25 +116,25 @@
         <div class="row g-4 mb-4">
             <div class="col-6 col-xl-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-primary"><i class="bi bi-file-bar-graph"></i></div>
+                    <div class="stat-icon bg-primary"><i class="ph ph-file-text"></i></div>
                     <div class="stat-info"><h3><%= stats.total %></h3><p>Total Reports</p></div>
                 </div>
             </div>
             <div class="col-6 col-xl-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-success"><i class="bi bi-check-circle"></i></div>
+                    <div class="stat-icon bg-success"><i class="ph ph-check-circle"></i></div>
                     <div class="stat-info"><h3><%= stats.approved %></h3><p>Approved</p></div>
                 </div>
             </div>
             <div class="col-6 col-xl-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-warning"><i class="bi bi-hourglass-split"></i></div>
+                    <div class="stat-icon bg-warning"><i class="ph ph-hourglass"></i></div>
                     <div class="stat-info"><h3><%= stats.pending %></h3><p>Pending Review</p></div>
                 </div>
             </div>
             <div class="col-6 col-xl-3">
                 <div class="stat-card">
-                    <div class="stat-icon bg-info"><i class="bi bi-people"></i></div>
+                    <div class="stat-icon bg-info"><i class="ph ph-users"></i></div>
                     <div class="stat-info"><h3><%= stats.totalVisitors %></h3><p>Total Visitors</p></div>
                 </div>
             </div>
@@ -147,7 +147,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title mb-4">
-                            <i class="bi bi-table me-2 text-primary"></i>Semestral Reports
+                            <i class="ph ph-table me-2 text-primary"></i>Semestral Reports
                         </h5>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
@@ -167,7 +167,7 @@
                                     <% if (!reports.length) { %>
                                     <tr>
                                         <td colspan="<%= canDecide ? 8 : 7 %>" class="text-center text-muted py-5">
-                                            <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
+                                            <i class="ph ph-tray fs-3 d-block mb-2 opacity-50"></i>
                                             No reports yet.
                                             <% if (role === 'operator') { %>
                                             Use <strong>Submit Semestral Report</strong> above to file your first period.
@@ -236,18 +236,18 @@
                 <% const nextDue = openPeriods[0] || null; %>
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title mb-3"><i class="bi bi-calendar-check me-2 text-primary"></i>Your Reporting Status</h5>
+                        <h5 class="card-title mb-3"><i class="ph ph-calendar-check me-2 text-primary"></i>Your Reporting Status</h5>
                         <% if (nextDue) { %>
                         <div class="report-next <%= nextDue.status === 'overdue' ? 'report-next--overdue' : '' %>">
                             <div class="small text-uppercase fw-semibold" style="letter-spacing:.04em;opacity:.75;">
                                 <%= nextDue.status === 'overdue' ? 'Overdue' : 'Next due' %>
                             </div>
                             <div class="fw-bold"><%= nextDue.period %></div>
-                            <div class="small"><i class="bi bi-clock me-1"></i>Due <%= nextDue.dueDate %></div>
+                            <div class="small"><i class="ph ph-clock me-1"></i>Due <%= nextDue.dueDate %></div>
                         </div>
                         <% } else { %>
                         <div class="alert alert-success py-2 px-3 small mb-3">
-                            <i class="bi bi-check-circle me-1"></i>You're all caught up — every period has been reported.
+                            <i class="ph ph-check-circle me-1"></i>You're all caught up — every period has been reported.
                         </div>
                         <% } %>
                         <div class="d-flex justify-content-between border-top pt-2 mt-2">
@@ -265,7 +265,7 @@
                 <!-- Staff: system-wide distribution of Learning Sites. -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title mb-4"><i class="bi bi-bar-chart me-2 text-primary"></i>LSA by Province</h5>
+                        <h5 class="card-title mb-4"><i class="ph ph-chart-bar me-2 text-primary"></i>LSA by Province</h5>
                         <% Object.entries(provinceMap).forEach(([prov, count]) => { %>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
@@ -286,13 +286,13 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title mb-4">
-                            <i class="bi bi-pie-chart me-2 text-primary"></i>Report Status
+                            <i class="ph ph-chart-pie me-2 text-primary"></i>Report Status
                         </h5>
                         <% if (stats.total) { %>
                         <canvas id="reportChart" style="max-height:180px;"></canvas>
                         <% } else { %>
                         <div class="text-center text-muted py-4">
-                            <i class="bi bi-pie-chart d-block mb-2" style="font-size:2rem;opacity:.35;"></i>
+                            <i class="ph ph-chart-pie d-block mb-2" style="font-size:2rem;opacity:.35;"></i>
                             <p class="mb-0 small">No reports to chart yet.</p>
                         </div>
                         <% } %>
