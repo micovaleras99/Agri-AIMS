@@ -203,12 +203,17 @@
 
 /* ── Status Badges ───────────────────────────────────────── */
 .status-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 11px;
     font-weight: 600;
-    text-transform: capitalize;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
 /* Each colour was a raw hex measuring between 1.7:1 and 4.0:1 against its own

@@ -309,18 +309,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .page-title {
-    font-size: 36px;
+    font-size: 28px;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    letter-spacing: -0.02em;
+    color: var(--primary-dark);
+    text-wrap: balance;
 }
 
 .page-subtitle {
     color: var(--text-secondary);
-    font-size: 16px;
-    margin-top: 8px;
+    font-size: 15px;
+    margin-top: 6px;
+    max-width: 68ch;
 }
 
 .video-background {
@@ -497,10 +497,11 @@ h1, h2, h3, h4, h5, h6 {
    ============================================ */
 
 .btn {
-    padding: 12px 24px;
-    border-radius: 12px;
+    padding: 11px 22px;
+    border-radius: 10px;
     font-weight: 600;
-    transition: var(--transition-base);
+    letter-spacing: 0.01em;
+    transition: background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     border: none;
 }
 
@@ -531,8 +532,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-primary:hover {
     background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-success {
@@ -541,8 +541,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-success:hover {
-    background: #229954;
-    transform: translateY(-2px);
+    background: var(--primary-dark);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary {
@@ -567,16 +567,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .card {
     background: white;
-    border-radius: 16px;
-    border: none;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
-    transition: var(--transition-base);
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
     overflow: hidden;
 }
 
 .card:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    border-color: #d3ded8;
 }
 
 .card-title {
@@ -587,24 +587,26 @@ h1, h2, h3, h4, h5, h6 {
 
 .stat-card {
     background: white;
-    padding: 24px;
-    border-radius: 16px;
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
-    gap: 20px;
-    transition: var(--transition-base);
+    gap: 18px;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .stat-card:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-4px);
+    border-color: #d3ded8;
 }
 
 .stat-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -969,10 +971,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 11px;
     font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .status-badge.pending {
@@ -1889,20 +1898,25 @@ body:has(.chat-page) .chatbot-bubble {
 
 .table thead th {
     background: var(--bg-primary);
-    color: var(--text-primary);
-    font-weight: 700;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     border: none;
-    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px;
+    white-space: nowrap;
 }
 
 .table tbody td {
-    padding: 16px;
+    padding: 14px 16px;
     vertical-align: middle;
     border-color: var(--border-color);
 }
 
 .table-hover tbody tr:hover {
-    background: rgba(45, 122, 62, 0.02);
+    background: rgba(45, 122, 62, 0.04);
 }
 
 /* ============================================
