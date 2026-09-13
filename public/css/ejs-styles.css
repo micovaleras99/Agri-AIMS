@@ -129,6 +129,11 @@
 }
 
 .notif-dropdown.show { display: block; animation: slideDown .25s ease; }
+/* The panel is a fixed 340px; on a narrow phone that overflows past the left
+   edge, so on small screens it becomes a full-width sheet with even gutters. */
+@media (max-width: 575.98px) {
+    .notif-dropdown { width: auto; left: 12px; right: 12px; }
+}
 
 .notif-header {
     padding: 14px 18px;
@@ -646,6 +651,14 @@
 .btn-xs {
     padding: 3px 8px; font-size: 11px; font-weight: 600;
     border-radius: 6px; line-height: 1.5;
+}
+/* On touch devices the tiny table-action buttons need a real tap target
+   (WCAG 2.5.8 ~24px); give them room without enlarging them for mouse users. */
+@media (hover: none) {
+    .btn-xs {
+        min-height: 32px; min-width: 32px;
+        display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    }
 }
 
 /* ── Pending Doc Card ──────────────────────────────────────── */
