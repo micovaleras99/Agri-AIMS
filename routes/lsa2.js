@@ -15,7 +15,10 @@ const { LSA2_STEPS, LSA2_DOCUMENTS } = require('../config/lsa2');
 const { hasPrescribedForm } = require('../config/prescribedForms');
 
 /** LSA II forms with a generator (services wired in routes/forms.js GENERATED_DOCS). */
-const LSA2_FILLABLE = new Set(['lsa2_checklist', 'lsa2_qualification_form']);
+const LSA2_FILLABLE = new Set([
+  'lsa2_checklist', 'lsa2_qualification_form',
+  'lsa2_updated_profile', 'lsa2_field_validation_report', 'lsa2_rtwg_endorsement',
+]);
 
 const router = express.Router();
 

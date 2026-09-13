@@ -44,6 +44,11 @@ const GENERATED_DOCS = {
   lsa2_checklist: require('../services/checklistDoc'),
   lsa1_qualification_form: require('../services/qualificationDoc'),
   lsa2_qualification_form: require('../services/qualificationDoc'),
+  // LSA II reuses the same prescribed templates as LSA I, so the same fill
+  // services (fillBuffer) produce the applicant's completed copy.
+  lsa2_updated_profile: require('../services/farmProfileDoc'),
+  lsa2_field_validation_report: require('../services/fieldValidationDoc'),
+  lsa2_rtwg_endorsement: require('../services/endorsementDoc'),
 };
 
 /**
