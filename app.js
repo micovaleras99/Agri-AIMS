@@ -90,9 +90,24 @@ app.use(
     // sends nothing at all when an HTTPS page links out to HTTP.
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     // HSTS only means something over HTTPS, and would be wrong to send in dev.
-    hsts: process.env.NODE_ENV === 'production' ? undefined : false,
+    // Explicit in production: one year, subdomains, and preload-eligible.
+    hsts: process.env.NODE_ENV === 'production'
+      ? { maxAge: 31536000, includeSubDomains: true, preload: true }
+      : false,
   })
 );
+
+// Permissions-Policy: switch off powerful browser features the app never uses,
+// so an injected script (or an embedded resource) cannot ask for them. The
+// geo-tag map is server-driven (coordinates are typed/clicked, not read from the
+// device), so browser geolocation is left to same-origin only rather than opened.
+app.use((req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), payment=(), usb=(), geolocation=(self), interest-cohort=()'
+  );
+  next();
+});
 
 // SEC-09 — cross-origin access is off unless an allowlist is configured.
 // This was `origin: process.env.CORS_ORIGIN || true`, and `true` reflects
