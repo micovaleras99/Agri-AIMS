@@ -48,28 +48,28 @@
             </form>
         </div>
 
-        <!-- Stats Row -->
+        <!-- Stats Row — two per row on phones, four across from md up -->
         <div class="row g-3 mb-4 dir-stats">
-            <div class="col-sm-3">
-                <div class="stat-card">
+            <div class="col-6 col-md-3">
+                <div class="stat-card h-100">
                     <div class="stat-icon bg-success"><i class="ph ph-building"></i></div>
                     <div class="stat-info"><h3><%= totalFarms %></h3><p>Active LSAs</p></div>
                 </div>
             </div>
-            <div class="col-sm-3">
-                <div class="stat-card">
+            <div class="col-6 col-md-3">
+                <div class="stat-card h-100">
                     <div class="stat-icon bg-primary"><i class="ph ph-map-pin"></i></div>
                     <div class="stat-info"><h3><%= provinces.length %></h3><p>Provinces</p></div>
                 </div>
             </div>
-            <div class="col-sm-3">
-                <div class="stat-card">
+            <div class="col-6 col-md-3">
+                <div class="stat-card h-100">
                     <div class="stat-icon bg-info"><i class="ph ph-tag"></i></div>
                     <div class="stat-info"><h3><%= classifications.length %></h3><p>Classifications</p></div>
                 </div>
             </div>
-            <div class="col-sm-3">
-                <div class="stat-card">
+            <div class="col-6 col-md-3">
+                <div class="stat-card h-100">
                     <div class="stat-icon bg-warning"><i class="ph ph-users"></i></div>
                     <div class="stat-info"><h3><%= totalVisitors.toLocaleString() %></h3><p>Total Visitors</p></div>
                 </div>
