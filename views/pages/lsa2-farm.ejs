@@ -229,6 +229,12 @@ const pct = certified ? 100
                         <span class="badge bg-primary-subtle text-primary"><%= subCount %> / <%= packet.length %></span>
                     </div>
                     <p class="small text-muted mb-3">Download the prescribed form, complete it, then upload your copy.</p>
+                    <% if (!farm.applicantId) { %>
+                    <div class="alert alert-warning py-2 px-3 small mb-3">
+                        <i class="ph ph-warning me-1"></i>This farm isn't linked to an applicant record, so forms can't be
+                        auto-filled or uploaded yet. Link it to an applicant first (from the applicant's page).
+                    </div>
+                    <% } %>
 
                     <div class="lsa2-doc-list">
                         <% packet.forEach(function (d) {
@@ -247,9 +253,15 @@ const pct = certified ? 100
                             </div>
                             <div class="lsa2-doc__actions">
                                 <% if (d.hasForm) { %>
-                                <a href="/forms/<%= d.type %>" class="btn btn-xs btn-outline-secondary" title="Download the prescribed form">
+                                <% if (d.fillable && farm.applicantId) { %>
+                                <a href="/forms/<%= d.type %>/filled?applicant=<%= farm.applicantId %>" class="btn btn-xs btn-outline-secondary" title="Download your auto-filled form">
+                                    <i class="ph ph-download"></i><span class="d-none d-sm-inline ms-1">Fill</span>
+                                </a>
+                                <% } else { %>
+                                <a href="/forms/<%= d.type %><%= farm.applicantId ? ('?applicant=' + farm.applicantId) : '' %>" class="btn btn-xs btn-outline-secondary" title="Download the prescribed form">
                                     <i class="ph ph-download"></i><span class="d-none d-sm-inline ms-1">Form</span>
                                 </a>
+                                <% } %>
                                 <% } %>
                                 <% if (d.submitted && d.submitted.storedName) { %>
                                 <a href="/documents/<%= d.submitted.id %>/file" target="_blank" rel="noopener"

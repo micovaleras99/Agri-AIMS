@@ -14,6 +14,9 @@ const notify = require('../services/notify');
 const { LSA2_STEPS, LSA2_DOCUMENTS } = require('../config/lsa2');
 const { hasPrescribedForm } = require('../config/prescribedForms');
 
+/** LSA II forms with a generator (services wired in routes/forms.js GENERATED_DOCS). */
+const LSA2_FILLABLE = new Set(['lsa2_checklist', 'lsa2_qualification_form']);
+
 const router = express.Router();
 
 const STAFF = ['admin'];
@@ -72,6 +75,8 @@ router.get('/farm/:farmId', async (req, res) => {
     ...d,
     submitted: submitted.find((s) => s.type === d.type) || null,
     hasForm: hasPrescribedForm(d.type, farm),
+    // The LSA II forms the system can auto-fill from the applicant's data.
+    fillable: LSA2_FILLABLE.has(d.type),
   }));
 
   res.render('pages/lsa2-farm', {
