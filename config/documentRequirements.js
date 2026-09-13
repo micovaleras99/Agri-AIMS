@@ -123,7 +123,9 @@ const LABELS = Object.fromEntries(ALL_DOCUMENT_TYPES.map((d) => [d.type, d.label
  * kept. `fallbackLabel` covers a custom "other" type with no catalogue entry.
  */
 function submissionFilename(type, applicant, originalName, fallbackLabel) {
-  const slug = (s) => String(s || '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-');
+  // Any run of non-word characters (spaces, "/", ",", …) becomes one dash, so
+  // "Farm/Agri-Enterprise Profile Form" -> "Farm-Agri-Enterprise-Profile-Form".
+  const slug = (s) => String(s || '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const ext = (String(originalName || '').match(/\.[A-Za-z0-9]+$/) || [''])[0].toLowerCase();
   const base = slug(LABELS[type] || fallbackLabel || type) || 'Document';
   const who = applicant ? slug(`${applicant.firstName || ''} ${applicant.lastName || ''}`) : '';
