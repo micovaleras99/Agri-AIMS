@@ -1,6 +1,6 @@
 const fs = require('fs');
 const express = require('express');
-const { ALL_DOCUMENT_TYPES, LABELS, requirementsFor, adminRequirementsFor } = require('../config/documentRequirements');
+const { ALL_DOCUMENT_TYPES, LABELS, requirementsFor, adminRequirementsFor, submissionFilename } = require('../config/documentRequirements');
 const { buildZip } = require('../services/zip');
 const { hasPrescribedForm } = require('../config/prescribedForms');
 const { LSA2_DOCUMENTS } = require('../config/lsa2');
@@ -189,19 +189,6 @@ router.get('/submit', async (req, res) => {
   });
 });
 
-/**
- * A readable filename for a submission, matching the generated forms'
- * "Development-Plan-Laarni-Nacario.pdf" style: the requirement label and the
- * applicant, keeping the uploaded file's own extension.
- */
-function submissionFilename(label, applicant, originalName) {
-  const slug = (s) => String(s || '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-');
-  const ext = (String(originalName || '').match(/\.[A-Za-z0-9]+$/) || [''])[0].toLowerCase();
-  const base = slug(label) || 'Document';
-  const who = applicant ? slug(`${applicant.firstName || ''} ${applicant.lastName || ''}`) : '';
-  return `${base}${who ? `-${who}` : ''}${ext}`;
-}
-
 router.post('/submit', upload.single('file'), requireCsrfAfterUpload, async (req, res) => {
   if (req.uploadRejected === 'type') return res.redirect('/documents/submit?error=type');
   if (!req.file) return res.redirect('/documents/submit?error=missing');
@@ -280,7 +267,7 @@ router.post('/submit', upload.single('file'), requireCsrfAfterUpload, async (req
     // generated forms), not the raw upload name (e.g. "scan_0012.pdf") and not
     // any label the applicant's form supplied. The canonical type label wins;
     // only a custom "other" type with no catalogue entry falls back to docName.
-    filename: submissionFilename(LABELS[docType] || req.body.docName || docType, applicant, req.file.originalname),
+    filename: submissionFilename(docType, applicant, req.file.originalname, req.body.docName),
     storedName: req.file.filename,
     mimeType: req.file.mimetype,
     sizeBytes: req.file.size,

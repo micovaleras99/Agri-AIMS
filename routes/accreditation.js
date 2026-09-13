@@ -67,7 +67,9 @@ async function fileUploadedRequirement(applicant, type, file, status = 'pending_
     applicantName: `${applicant.firstName} ${applicant.lastName}`,
     name: name || LABELS[type] || 'Document',
     type,
-    filename: file.originalname,
+    // Same readable, type-driven name as the Documents module — not the raw
+    // upload name (e.g. "scan_0012.pdf").
+    filename: submissionFilename(type, applicant, file.originalname, name),
     storedName: file.filename,
     mimeType: file.mimetype,
     sizeBytes: file.size,
@@ -93,7 +95,7 @@ const {
     FARM_REQUIREMENTS,
     OPERATOR_REQUIREMENTS,
 } = require('../config/accreditationChecklists');
-const { requirementsFor, LABELS } = require('../config/documentRequirements');
+const { requirementsFor, LABELS, submissionFilename } = require('../config/documentRequirements');
 const { hasPrescribedForm } = require('../config/prescribedForms');
 const { ORGANIZATION } = require('../config/organization');
 const { isWithinPhilippines } = require('../utils/validation');

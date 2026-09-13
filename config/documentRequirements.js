@@ -116,6 +116,20 @@ const ALL_DOCUMENT_TYPES = [...DOCUMENT_REQUIREMENTS, ...LSA2_DOCUMENTS];
 /** type -> label, for the submit form's name lookup. */
 const LABELS = Object.fromEntries(ALL_DOCUMENT_TYPES.map((d) => [d.type, d.label]));
 
+/**
+ * A readable, deterministic filename for an uploaded submission, built from the
+ * document TYPE and the applicant — not the raw upload name — e.g.
+ * "Letter-of-Intent-Juan-Dela-Cruz.pdf". The uploaded file's own extension is
+ * kept. `fallbackLabel` covers a custom "other" type with no catalogue entry.
+ */
+function submissionFilename(type, applicant, originalName, fallbackLabel) {
+  const slug = (s) => String(s || '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-');
+  const ext = (String(originalName || '').match(/\.[A-Za-z0-9]+$/) || [''])[0].toLowerCase();
+  const base = slug(LABELS[type] || fallbackLabel || type) || 'Document';
+  const who = applicant ? slug(`${applicant.firstName || ''} ${applicant.lastName || ''}`) : '';
+  return `${base}${who ? `-${who}` : ''}${ext}`;
+}
+
 module.exports = {
-  DOCUMENT_REQUIREMENTS, ALL_DOCUMENT_TYPES, requirementsFor, adminRequirementsFor, LABELS,
+  DOCUMENT_REQUIREMENTS, ALL_DOCUMENT_TYPES, requirementsFor, adminRequirementsFor, LABELS, submissionFilename,
 };
