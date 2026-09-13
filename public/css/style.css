@@ -1993,7 +1993,13 @@ body:has(.chat-page) .chatbot-bubble {
     .channel-name { margin-bottom: 0; }
 
     .channel-desc { display: none; }    /* already shown in the chat header */
-    
+
+    /* The per-channel rename/delete buttons stack below the name inside each
+       pill on a phone, forcing every tab to ~92px tall (and turning the short
+       active one into an oval). Hide them here — channel management stays on
+       larger screens; the add-channel (+) button remains in the header. */
+    .channel-actions { display: none; }
+
     .chatbot-widget {
         width: calc(100vw - 32px);
         right: 16px;
