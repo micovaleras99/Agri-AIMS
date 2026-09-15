@@ -152,7 +152,9 @@ function chatbotUserAvatar(container) {
     const initials = container.dataset.userInitials;
     if (photo) return `<div class="message-avatar"><img class="avatar-photo" src="${escapeHtml(photo)}" alt="You"></div>`;
     if (initials) return `<div class="message-avatar">${escapeHtml(initials)}</div>`;
-    return '<div class="message-avatar"><i class="ph ph-user"></i></div>';
+    // The chatbot widget stays on Bootstrap Icons (see the header robot), so its
+    // fallbacks must too — a Phosphor class renders a wrong glyph here.
+    return '<div class="message-avatar"><i class="bi bi-person-fill"></i></div>';
 }
 
 /** Append one bubble. `who` is 'user' or 'bot'; `inner` is the message-content HTML. */
@@ -161,7 +163,7 @@ function appendChatMessage(who, inner) {
     if (!container) return;
     const avatar = who === 'user'
         ? chatbotUserAvatar(container)
-        : '<div class="message-avatar"><i class="ph ph-robot"></i></div>';
+        : '<div class="message-avatar"><i class="bi bi-robot"></i></div>';
     container.insertAdjacentHTML('beforeend',
         `<div class="chatbot-message ${who}">${avatar}<div class="message-content">${inner}</div></div>`);
     scrollChatbotToBottom();
@@ -172,7 +174,7 @@ function showChatbotTyping() {
     if (!container || document.getElementById('chatbotTyping')) return;
     container.insertAdjacentHTML('beforeend', `
         <div class="chatbot-message bot" id="chatbotTyping">
-            <div class="message-avatar"><i class="ph ph-robot"></i></div>
+            <div class="message-avatar"><i class="bi bi-robot"></i></div>
             <div class="message-content"><span class="chatbot-typing" aria-label="AgriBot is typing"><span></span><span></span><span></span></span></div>
         </div>
     `);
