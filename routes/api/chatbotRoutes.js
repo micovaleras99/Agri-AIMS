@@ -2,6 +2,8 @@ const express = require('express');
 const { answer, allEntries } = require('../../services/chatbotKnowledge');
 const { answerWithModel } = require('../../services/chatbotLlm');
 const ai = require('../../config/aiProvider');
+const applicantModel = require('../../models/applicantModel');
+const { ACCREDITATION_STEPS } = require('../../config/accreditationChecklists');
 
 const router = express.Router();
 
@@ -43,6 +45,39 @@ function identityReply(role, user) {
   return `You are signed in as ${name}, and your role is ${ROLE_LABEL[role] || 'Guest'}.${can}`;
 }
 
+// "What's my status / what step am I on / how's my application" — the applicant's
+// own accreditation progress, read from the signed-in session's application id
+// (never a value the caller supplies), so it only ever reveals your own record.
+const STATUS = /^\s*(what('?s| is)\s+my\s+(status|progress|step|application)|my\s+(status|progress|application(\s+status)?|accreditation\s+status)|what\s+step\s+am\s+i|how('?s| is)\s+my\s+application|how\s+far\s+am\s+i|where\s+am\s+i\s+in\s+the\s+(process|accreditation))\b/i;
+
+const APPLICANT_STATUS = {
+  submitted: 'Submitted',
+  document_review: 'Document Review',
+  under_review: 'Under Review',
+  approved: 'Approved',
+  rejected: 'Rejected',
+};
+
+async function statusReply(role, user) {
+  if (!user) {
+    return "You are not signed in, so I can't check your application. Sign in from the "
+      + 'home page and ask again.';
+  }
+  if (!user.applicationId) {
+    return `Your account (${ROLE_LABEL[role] || 'user'}) isn't an LSA applicant, so there `
+      + 'is no accreditation application to track.';
+  }
+  const a = await applicantModel.findByApplicationId(user.applicationId).catch(() => null);
+  if (!a) {
+    return "I couldn't find your application record. Please contact the ATI administrator.";
+  }
+  const info = ACCREDITATION_STEPS.find((s) => s.step === Number(a.accreditationStep));
+  const stepText = info ? `Step ${info.step} of 7 — ${info.label}` : `Step ${a.accreditationStep}`;
+  const statusText = APPLICANT_STATUS[a.status] || a.status;
+  return `Your application ${a.applicationId} is on ${stepText} (${a.progress}% complete). `
+    + `Current status: ${statusText}.${info ? ` ${info.desc}.` : ''}`;
+}
+
 /**
  * GET /api/chatbot?q=... — answer a question about the LSA programme.
  *
@@ -78,6 +113,13 @@ router.get('/', async (req, res) => {
     return res.json({
       success: true,
       data: { answer: identityReply(role, currentUser), source: null, matched: true, generated: false },
+    });
+  }
+
+  if (STATUS.test(question)) {
+    return res.json({
+      success: true,
+      data: { answer: await statusReply(role, currentUser), source: null, matched: true, generated: false },
     });
   }
 
