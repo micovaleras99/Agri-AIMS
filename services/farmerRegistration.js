@@ -166,6 +166,9 @@ async function attemptRegister(input, createAccount) {
           farmId: null,
           applicationId,
           createdByAdmin: input.createdByAdmin ? 1 : 0,
+          // Admin-created accounts are trusted immediately; a self-registered
+          // farmer must verify their email by OTP before the account activates.
+          emailVerified: input.createdByAdmin ? 1 : 0,
         },
         { connection: conn }
       );

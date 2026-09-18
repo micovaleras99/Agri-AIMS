@@ -16,7 +16,7 @@ const { ping } = require('./config/database');
 const { roleContext } = require('./middleware/roleContext');
 const { requireAuthPage } = require('./middleware/requireAuthPage');
 const { csrfProtection } = require('./middleware/csrf');
-const { loginLimiter, registerLimiter, apiLimiter, chatbotLimiter } = require('./middleware/rateLimit');
+const { loginLimiter, registerLimiter, apiLimiter, chatbotLimiter, otpLimiter } = require('./middleware/rateLimit');
 const { requestLogger } = require('./middleware/requestLogger');
 const { errorHandler, notFoundApi } = require('./middleware/errorHandler');
 
@@ -180,6 +180,12 @@ app.use('/farm-profile', requireAuthPage, require('./routes/farmProfile'));
 
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', registerLimiter);
+// OTP issue/verify + password-reset endpoints: a tight per-IP backstop on top
+// of the per-email cooldown and per-code attempt cap in services/otp.js.
+app.use([
+  '/api/auth/verify-otp', '/api/auth/resend-otp',
+  '/api/auth/forgot-password', '/api/auth/verify-reset-otp', '/api/auth/reset-password',
+], otpLimiter);
 app.use('/api/chatbot', chatbotLimiter);
 app.use('/api', apiLimiter);
 app.use('/api', require('./routes/api'));

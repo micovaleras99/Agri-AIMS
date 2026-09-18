@@ -57,6 +57,10 @@
                             aria-label="Show password"><i class="ph ph-eye"></i></button>
                 </div>
 
+                <div class="text-end mb-2">
+                    <button type="button" class="btn btn-link btn-sm p-0" id="forgotLink">Forgot password?</button>
+                </div>
+
                 <!-- ── Role Selector (development demo only) ── -->
                 <% if (demoLogin) { %>
                 <div class="role-selector mb-4">
@@ -271,6 +275,70 @@
             </button>
         </form>
 
+        <!-- ── OTP Verification (registration + password reset) ── -->
+        <div id="otpForm" class="auth-form" style="display:none;">
+            <div class="auth-form-content">
+                <h2 id="otpTitle" class="h5 fw-bold mb-1">Verify Your Email</h2>
+                <p id="otpSubtitle" class="text-muted small mb-3">We've sent a 6-digit verification code to your email address.</p>
+                <div class="otp-inputs" id="otpInputs" role="group" aria-label="6-digit verification code">
+                    <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" class="otp-box" aria-label="Digit 1">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 2">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 3">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 4">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 5">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 6">
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3 small">
+                    <span class="text-muted">OTP expires in: <span id="otpCountdown" aria-live="polite">05:00</span></span>
+                    <button type="button" class="btn btn-link btn-sm p-0" id="otpResendBtn" disabled>Resend OTP</button>
+                </div>
+                <div id="otpMessage" class="small mt-2" role="alert" aria-live="polite"></div>
+            </div>
+            <button type="button" class="btn btn-primary w-100 btn-lg auth-form-button" id="otpVerifyBtn">
+                <i class="ph ph-check-circle me-2"></i>Verify OTP
+            </button>
+            <button type="button" class="btn btn-link w-100 mt-1" id="otpBackBtn">Back</button>
+        </div>
+
+        <!-- ── Forgot Password: enter email ── -->
+        <form id="forgotForm" class="auth-form" style="display:none;">
+            <div class="auth-form-content">
+                <h2 class="h5 fw-bold mb-1">Reset Password</h2>
+                <p class="text-muted small mb-3">Enter your registered email address and we'll send a 6-digit verification code.</p>
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="forgotEmail" placeholder="email" required>
+                    <label for="forgotEmail"><i class="ph ph-envelope me-1"></i>Email Address</label>
+                </div>
+                <div id="forgotMessage" class="small" role="alert" aria-live="polite"></div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 btn-lg auth-form-button" id="forgotSubmitBtn">
+                <i class="ph ph-paper-plane-right me-2"></i>Send Code
+            </button>
+            <button type="button" class="btn btn-link w-100 mt-1" id="forgotBackBtn">Back to login</button>
+        </form>
+
+        <!-- ── Reset Password: new password ── -->
+        <form id="resetForm" class="auth-form" style="display:none;">
+            <div class="auth-form-content">
+                <h2 class="h5 fw-bold mb-1">Create New Password</h2>
+                <p class="text-muted small mb-3">Choose a new password for your account.</p>
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control has-pw-toggle" id="resetPass" placeholder="New password" required>
+                    <label for="resetPass"><i class="ph ph-lock me-1"></i>New Password</label>
+                    <button type="button" class="pw-toggle" data-target="resetPass" aria-label="Show password"><i class="ph ph-eye"></i></button>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control has-pw-toggle" id="resetConf" placeholder="Confirm new password" required>
+                    <label for="resetConf"><i class="ph-fill ph-lock me-1"></i>Confirm New Password</label>
+                    <button type="button" class="pw-toggle" data-target="resetConf" aria-label="Show password"><i class="ph ph-eye"></i></button>
+                </div>
+                <div id="resetMessage" class="small" role="alert" aria-live="polite"></div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 btn-lg auth-form-button" id="resetSubmitBtn">
+                <i class="ph ph-check-circle me-2"></i>Update Password
+            </button>
+        </form>
+
     </div>
 </div>
 
@@ -312,12 +380,27 @@ document.addEventListener('click', function (e) {
     btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
     btn.querySelector('i').className = show ? 'ph ph-eye-slash' : 'ph ph-eye';
 });
+// Show exactly one of the auth panels; hide the Login/Register tab bar while an
+// OTP, forgot-password or reset panel is up (those are flows, not tabs).
+function showAuthScreen(id) {
+    ['loginForm', 'registerForm', 'otpForm', 'forgotForm', 'resetForm'].forEach((f) => {
+        const el = document.getElementById(f);
+        if (el) el.style.display = (f === id) ? 'block' : 'none';
+    });
+    const tabs = document.querySelector('.auth-tabs');
+    if (tabs) tabs.style.display = (id === 'loginForm' || id === 'registerForm') ? '' : 'none';
+}
+
 function switchAuthTab(tab, el) {
-    document.getElementById('loginForm').style.display    = tab==='login'    ? 'block' : 'none';
-    document.getElementById('registerForm').style.display = tab==='register' ? 'block' : 'none';
+    showAuthScreen(tab === 'register' ? 'registerForm' : 'loginForm');
     document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
+    if (el && el.classList) el.classList.add('active');
     if (tab === 'register') loadFarmOptions();
+}
+
+/** Return to the login panel with its tab active. */
+function backToLogin() {
+    switchAuthTab('login', document.querySelector('.auth-tab'));
 }
 
 <% if (demoLogin) { %>
@@ -416,6 +499,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const json = await res.json();
             if (!res.ok) {
+                // An unverified email can't sign in — the server sent a fresh
+                // code; drop into verification instead of just erroring.
+                if (json.code === 'EMAIL_UNVERIFIED' && json.data && json.data.needsOtp) {
+                    showNotification(json.error, 'warning');
+                    startOtp({ email: json.data.email, purpose: 'registration' });
+                    return;
+                }
                 showNotification(json.error || 'Login failed', 'danger');
                 return;
             }
@@ -478,13 +568,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(body),
             });
             const json = await res.json();
+            // Registration no longer signs the user in — it starts email OTP
+            // verification. The server returns needsOtp with the address even on
+            // a soft failure (e.g. the code email could not be sent), so the user
+            // lands on the verification screen and can Resend.
+            if (json.data && json.data.needsOtp) {
+                if (json.data.emailSent === false) {
+                    showNotification("Account created, but we couldn't send the code. Tap Resend OTP.", 'warning');
+                } else {
+                    showNotification('Account created — check your email for a verification code.', 'success');
+                }
+                startOtp({ email: json.data.email, purpose: 'registration' });
+                return;
+            }
             if (!res.ok) {
                 showNotification(json.error || 'Registration failed', 'danger');
                 return;
             }
-            // The server issues the session cookie (HttpOnly) on this response.
-            showNotification('Account created — welcome!', 'success');
-            window.location.href = '/dashboard';
         } catch (err) {
             showNotification('Network error — try again.', 'danger');
         } finally {
@@ -492,6 +592,231 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+</script>
+<script nonce="<%= cspNonce %>">
+/*
+ * OTP verification + forgot-password flow.
+ *
+ * The OTP panel is reused for two purposes: 'registration' (verify then the
+ * server signs the user in) and 'password_reset' (verify then a short-lived
+ * token unlocks the new-password panel). The code is never held in JS beyond
+ * the six input boxes, never put in the URL, and never logged.
+ */
+(function () {
+    var otpCtx = { email: '', purpose: 'registration' };
+    var resetToken = null;
+    var expiryTimer = null;
+    var resendTimer = null;
+    var EXPIRY_SECONDS = 5 * 60;
+    var RESEND_SECONDS = 60;
+
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('#otpInputs .otp-box'));
+    var verifyBtn = document.getElementById('otpVerifyBtn');
+    var resendBtn = document.getElementById('otpResendBtn');
+    var countdownEl = document.getElementById('otpCountdown');
+    var msgEl = document.getElementById('otpMessage');
+
+    function fmt(s) {
+        var m = Math.floor(s / 60), r = s % 60;
+        return (m < 10 ? '0' : '') + m + ':' + (r < 10 ? '0' : '') + r;
+    }
+    function otpValue() { return boxes.map(function (b) { return b.value; }).join(''); }
+    function setMsg(text, kind) {
+        msgEl.textContent = text || '';
+        msgEl.className = 'small mt-2 ' + (kind === 'error' ? 'text-danger' : kind === 'ok' ? 'text-success' : 'text-muted');
+    }
+    function clearBoxes() {
+        boxes.forEach(function (b) { b.value = ''; });
+        if (boxes[0]) boxes[0].focus();
+        verifyBtn.disabled = true;
+    }
+
+    function stopTimers() {
+        if (expiryTimer) { clearInterval(expiryTimer); expiryTimer = null; }
+        if (resendTimer) { clearInterval(resendTimer); resendTimer = null; }
+    }
+    function startExpiry() {
+        var left = EXPIRY_SECONDS;
+        countdownEl.textContent = fmt(left);
+        if (expiryTimer) clearInterval(expiryTimer);
+        expiryTimer = setInterval(function () {
+            left -= 1;
+            countdownEl.textContent = fmt(Math.max(0, left));
+            if (left <= 0) {
+                clearInterval(expiryTimer); expiryTimer = null;
+                verifyBtn.disabled = true;
+                setMsg('This code has expired. Please tap Resend OTP.', 'error');
+            }
+        }, 1000);
+    }
+    function startResendCooldown() {
+        var left = RESEND_SECONDS;
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Resend OTP (' + left + 's)';
+        if (resendTimer) clearInterval(resendTimer);
+        resendTimer = setInterval(function () {
+            left -= 1;
+            if (left <= 0) {
+                clearInterval(resendTimer); resendTimer = null;
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Resend OTP';
+            } else {
+                resendBtn.textContent = 'Resend OTP (' + left + 's)';
+            }
+        }, 1000);
+    }
+
+    // Exposed for the register/login handlers in the other script block.
+    window.startOtp = function (ctx) {
+        otpCtx = { email: ctx.email, purpose: ctx.purpose || 'registration' };
+        resetToken = null;
+        var reg = otpCtx.purpose === 'registration';
+        document.getElementById('otpTitle').textContent = reg ? 'Verify Your Email' : 'Verify Password Reset';
+        document.getElementById('otpSubtitle').textContent = reg
+            ? "We've sent a 6-digit verification code to your email address."
+            : 'Enter the 6-digit verification code sent to your email address.';
+        showAuthScreen('otpForm');
+        clearBoxes();
+        setMsg('', '');
+        startExpiry();
+        startResendCooldown();
+    };
+
+    // ── OTP box behaviour: one digit each, auto-advance, backspace, paste ──
+    boxes.forEach(function (box, i) {
+        box.addEventListener('input', function () {
+            box.value = box.value.replace(/\D/g, '').slice(-1);
+            if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+            verifyBtn.disabled = otpValue().length !== 6;
+        });
+        box.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+            if (e.key === 'Enter' && otpValue().length === 6) verifyBtn.click();
+        });
+        box.addEventListener('paste', function (e) {
+            e.preventDefault();
+            var digits = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+            if (!digits) return;
+            for (var j = 0; j < boxes.length; j++) boxes[j].value = digits[j] || '';
+            (boxes[Math.min(digits.length, boxes.length) - 1] || boxes[0]).focus();
+            verifyBtn.disabled = otpValue().length !== 6;
+        });
+    });
+
+    async function postJson(url, body) {
+        var res = await fetch(url, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        });
+        var json = await res.json().catch(function () { return {}; });
+        return { res: res, json: json };
+    }
+
+    verifyBtn.addEventListener('click', async function () {
+        var code = otpValue();
+        if (code.length !== 6) return;
+        verifyBtn.disabled = true;
+        var reg = otpCtx.purpose === 'registration';
+        try {
+            var url = reg ? '/api/auth/verify-otp' : '/api/auth/verify-reset-otp';
+            var out = await postJson(url, { email: otpCtx.email, code: code });
+            if (!out.res.ok) {
+                setMsg(out.json.error || 'Verification failed.', 'error');
+                clearBoxes();
+                return;
+            }
+            if (reg) {
+                stopTimers();
+                setMsg('Verified! Signing you in…', 'ok');
+                window.location.href = (typeof nextDestination === 'function') ? nextDestination() : '/dashboard';
+            } else {
+                stopTimers();
+                resetToken = out.json.data.resetToken;
+                showAuthScreen('resetForm');
+            }
+        } catch (err) {
+            setMsg('Network error — please try again.', 'error');
+            verifyBtn.disabled = false;
+        }
+    });
+
+    resendBtn.addEventListener('click', async function () {
+        startResendCooldown();
+        try {
+            await postJson('/api/auth/resend-otp', { email: otpCtx.email, purpose: otpCtx.purpose });
+            clearBoxes();
+            startExpiry();
+            setMsg('A new code has been sent to your email.', 'ok');
+        } catch (err) {
+            setMsg('Could not resend the code — please try again shortly.', 'error');
+        }
+    });
+
+    document.getElementById('otpBackBtn').addEventListener('click', function () { stopTimers(); backToLogin(); });
+
+    // ── Forgot password ──────────────────────────────────────────────────
+    var forgotLink = document.getElementById('forgotLink');
+    if (forgotLink) forgotLink.addEventListener('click', function () {
+        var em = document.getElementById('loginEmail').value.trim();
+        document.getElementById('forgotEmail').value = em;
+        document.getElementById('forgotMessage').textContent = '';
+        showAuthScreen('forgotForm');
+        document.getElementById('forgotEmail').focus();
+    });
+    document.getElementById('forgotBackBtn').addEventListener('click', backToLogin);
+
+    document.getElementById('forgotForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var email = document.getElementById('forgotEmail').value.trim();
+        if (!email) return;
+        var btn = document.getElementById('forgotSubmitBtn');
+        btn.disabled = true;
+        try {
+            var out = await postJson('/api/auth/forgot-password', { email: email });
+            // Always the same generic response, then move to the OTP panel.
+            showNotification(out.json.data && out.json.data.message
+                ? out.json.data.message
+                : 'If an account with that email exists, a verification code has been sent.', 'info');
+            window.startOtp({ email: email, purpose: 'password_reset' });
+        } catch (err) {
+            showNotification('Network error — please try again.', 'danger');
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    // ── Reset password (new password) ────────────────────────────────────
+    document.getElementById('resetForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var pass = document.getElementById('resetPass').value;
+        var conf = document.getElementById('resetConf').value;
+        var msg = document.getElementById('resetMessage');
+        msg.className = 'small text-danger';
+        if (pass !== conf) { msg.textContent = 'Passwords do not match.'; return; }
+        if (!resetToken) { msg.textContent = 'Your reset session has expired. Please start again.'; return; }
+        var btn = document.getElementById('resetSubmitBtn');
+        btn.disabled = true;
+        try {
+            var out = await postJson('/api/auth/reset-password', {
+                resetToken: resetToken, password: pass, confirmPassword: conf,
+            });
+            if (!out.res.ok) {
+                msg.textContent = out.json.error || 'Could not reset the password.';
+                if (out.json.code === 'RESET_EXPIRED') { resetToken = null; }
+                return;
+            }
+            resetToken = null;
+            showNotification('Password updated — please sign in.', 'success');
+            document.getElementById('loginEmail').value = document.getElementById('forgotEmail').value.trim();
+            document.getElementById('resetPass').value = '';
+            document.getElementById('resetConf').value = '';
+            backToLogin();
+        } catch (err) {
+            msg.textContent = 'Network error — please try again.';
+        } finally {
+            btn.disabled = false;
+        }
+    });
+})();
 </script>
 </body>
 </html>

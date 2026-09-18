@@ -86,6 +86,8 @@ const createUser = asyncHandler(async (req, res) => {
     phone: phone || '',
     farmId: farmId != null ? Number(farmId) : null,
     applicationId: applicationId || null,
+    // An admin creating an account vouches for it — no email OTP required.
+    emailVerified: 1,
   });
 
   const user = await userModel.findById(id);

@@ -34,7 +34,7 @@ async function roleContext(req, res, next) {
         // A still-valid token from an account deactivated mid-session must not
         // keep it signed in — treat a non-active account as a guest so the
         // lockout takes effect immediately, not only when the token expires.
-        currentUser = found && found.isActive !== false && (!found.status || found.status === 'active')
+        currentUser = found && found.isActive !== false && (!found.status || found.status === 'active') && found.emailVerified !== false
           ? found
           : null;
       } catch {

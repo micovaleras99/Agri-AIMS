@@ -35,7 +35,13 @@ function usesBearerToken(req) {
  * session to protect yet, and they are documented as plain REST endpoints in
  * SETUP.md — they are covered by rate limiting instead.
  */
-const EXEMPT_PATHS = new Set(['/api/auth/login', '/api/auth/register', '/api/auth/logout']);
+const EXEMPT_PATHS = new Set([
+  '/api/auth/login', '/api/auth/register', '/api/auth/logout',
+  // OTP + password-reset endpoints run before a session exists, exactly like
+  // login/register; they are guarded by rate limiting and the OTP logic itself.
+  '/api/auth/verify-otp', '/api/auth/resend-otp',
+  '/api/auth/forgot-password', '/api/auth/verify-reset-otp', '/api/auth/reset-password',
+]);
 
 function newToken() {
   return crypto.randomBytes(32).toString('hex');

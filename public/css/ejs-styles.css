@@ -2021,3 +2021,34 @@ body { overflow-wrap: break-word; }
     border-radius: 4px;
 }
 .form-control.has-pw-toggle { padding-right: 3rem; }
+
+/* ── OTP verification boxes (auth page) ─────────────────────────────────────
+   Six single-character inputs; the caret sits centered and large so a typed or
+   pasted code reads clearly. Sized down on the narrowest phones so all six fit
+   the auth card without a horizontal scroll. */
+.otp-inputs {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+.otp-box {
+    width: 100%;
+    max-width: 52px;
+    aspect-ratio: 1 / 1;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    border: 1.5px solid var(--border-color, #d0d5d5);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--text-primary, #1a1a2e);
+}
+.otp-box:focus {
+    outline: none;
+    border-color: var(--primary-color, #2d7a3e);
+    box-shadow: 0 0 0 3px rgba(45, 122, 62, 0.15);
+}
+@media (max-width: 380px) {
+    .otp-inputs { gap: 5px; }
+    .otp-box { font-size: 18px; border-radius: 8px; }
+}

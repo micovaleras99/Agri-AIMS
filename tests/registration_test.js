@@ -155,6 +155,10 @@ async function main() {
     for (const id of madeUsers) {
       await pool.execute('DELETE FROM users WHERE id = ?', [id]).catch(() => {});
     }
+    // Registration now returns needsOtp (no logged-in user in the body), so the
+    // created accounts aren't captured above — remove them by their test emails
+    // (these fixed prefixes are used only by this test).
+    await pool.execute("DELETE FROM users WHERE email LIKE 'org.reg.%@example.com' OR email LIKE 'bare.reg.%@example.com'").catch(() => {});
     await pool.end();
   }
 

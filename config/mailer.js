@@ -136,6 +136,61 @@ async function send(to, payload) {
   }
 }
 
+/**
+ * The body of an OTP email. The 6-digit code is shown large and monospaced; the
+ * expiry and a security notice follow. No links, no user password, nothing else.
+ */
+function renderOtpHtml({ heading, intro, code, minutes, notice }) {
+  return `<div style="font-family:Segoe UI,Arial,sans-serif;color:#1a1a2e;line-height:1.5">
+  <p style="margin:0 0 4px;font-size:12px;color:#697475">Agri-AIMS — ATI Learning Site for Agriculture</p>
+  <h2 style="margin:0 0 12px;font-size:18px">${esc(heading)}</h2>
+  <p style="margin:0 0 16px">${esc(intro)}</p>
+  <p style="margin:0 0 8px;font-size:13px;color:#697475">Your verification code:</p>
+  <p style="margin:0 0 16px;font:700 30px/1.2 'Courier New',monospace;letter-spacing:8px;color:#1c7d45">${esc(code)}</p>
+  <p style="margin:0 0 16px">This code expires in <strong>${esc(minutes)} minutes</strong>.</p>
+  <p style="margin:24px 0 0;font-size:12px;color:#697475">${esc(notice)}</p>
+</div>`;
+}
+
+/**
+ * Sends a one-time password. `purpose` is 'registration' or 'password_reset';
+ * the subject, wording and security notice follow the purpose. The code is in
+ * the body (that is the point) but never in a subject, link, or log line.
+ *
+ * @param {string} to
+ * @param {{purpose:'registration'|'password_reset', code:string, minutes?:number}} opts
+ * @returns {Promise<boolean>} whether the mail server accepted it
+ */
+async function sendOtp(to, { purpose, code, minutes = 5 }) {
+  const tx = getTransport();
+  if (!tx || !to) return false;
+  const reg = purpose === 'registration';
+  const subject = reg
+    ? 'Verify Your Email Address – Agri-AIMS'
+    : 'Password Reset Verification – Agri-AIMS';
+  const heading = reg ? 'Verify your email address' : 'Password reset requested';
+  const intro = reg
+    ? 'Thank you for registering with Agri-AIMS. Use the code below to verify your email address and activate your account.'
+    : 'We received a request to reset the password for your Agri-AIMS account. Use the code below to continue.';
+  const notice = reg
+    ? 'For your security, never share this code with anyone. ATI staff will never ask you for it.'
+    : 'For your security, never share this code. If you did not request a password reset, please ignore this email — your password will not change.';
+  try {
+    await tx.sendMail({
+      from: FROM,
+      to,
+      subject,
+      text: `${heading}\n\n${intro}\n\nYour verification code: ${code}\nThis code expires in ${minutes} minutes.\n\n${notice}`,
+      html: renderOtpHtml({ heading, intro, code, minutes, notice }),
+    });
+    return true;
+  } catch (err) {
+    // Log the failure, never the code.
+    logger.error(`mailer: could not send OTP to ${to}`, err);
+    return false;
+  }
+}
+
 /** Proves the SMTP settings work, for `npm run mail:check`. */
 async function verify() {
   const tx = getTransport();
@@ -148,4 +203,4 @@ async function verify() {
   }
 }
 
-module.exports = { isConfigured, send, verify, renderHtml, BASE_URL, FROM };
+module.exports = { isConfigured, send, sendOtp, verify, renderHtml, BASE_URL, FROM };

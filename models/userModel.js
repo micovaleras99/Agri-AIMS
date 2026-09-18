@@ -8,13 +8,13 @@ const { likeTerm } = require('../utils/search');
 
 const SELECT_SAFE = `
   SELECT id, first_name, last_name, email, role, position, office, region, avatar, photo, phone, farm_id, application_id,
-         is_active, status, deleted_at, created_at, updated_at
+         is_active, status, email_verified, deleted_at, created_at, updated_at
   FROM users
 `;
 
 const SELECT_WITH_HASH = `
   SELECT id, first_name, last_name, email, password_hash, role, position, office, region, avatar, photo, phone, farm_id, application_id,
-         is_active, status, deleted_at, created_at, updated_at
+         is_active, status, email_verified, deleted_at, created_at, updated_at
   FROM users
 `;
 
@@ -23,6 +23,7 @@ function formatPublic(row) {
   const o = rowToCamel(row);
   if (o.farmId != null) o.farmId = Number(o.farmId);
   if (o.isActive != null) o.isActive = Number(o.isActive) === 1;
+  if (o.emailVerified != null) o.emailVerified = Number(o.emailVerified) === 1;
   return o;
 }
 
@@ -86,8 +87,8 @@ async function emailTaken(email, excludeId = null) {
 async function createUser(data, opts = {}) {
   const executor = opts.connection || pool;
   const sql = `
-    INSERT INTO users (first_name, last_name, email, password_hash, role, position, office, region, avatar, phone, farm_id, application_id, created_by_admin)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO users (first_name, last_name, email, password_hash, role, position, office, region, avatar, phone, farm_id, application_id, created_by_admin, email_verified)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `;
   const [res] = await executor.execute(sql, [
     data.firstName,
@@ -103,6 +104,10 @@ async function createUser(data, opts = {}) {
     data.farmId ?? null,
     data.applicationId ?? null,
     data.createdByAdmin ? 1 : 0,
+    // Trusted by default — admin-, system- and test-created accounts are active
+    // immediately. Only public self-registration passes emailVerified:0, which
+    // requires email OTP verification before the account can sign in.
+    (data.emailVerified === 0 || data.emailVerified === false) ? 0 : 1,
   ]);
   return res.insertId;
 }
@@ -130,6 +135,11 @@ async function updateUser(id, data) {
 
 async function updatePasswordHash(id, passwordHash) {
   await query('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, id]);
+}
+
+/** Mark the email verified (OTP passed) so the account can sign in. */
+async function markEmailVerified(id) {
+  await query('UPDATE users SET email_verified = 1 WHERE id = ?', [id]);
 }
 
 /**
@@ -267,6 +277,7 @@ module.exports = {
   createUser,
   updateUser,
   updatePasswordHash,
+  markEmailVerified,
   deactivate,
   reactivate,
   relink,

@@ -42,9 +42,9 @@ const authenticateJWT = asyncHandler(async (req, res, next) => {
   if (!user) {
     return res.status(401).json({ success: false, error: 'User no longer exists', code: 'USER_GONE' });
   }
-  // A deactivated account keeps its data but loses access, even with a token
-  // that has not expired yet.
-  if (user.isActive === false || (user.status && user.status !== 'active')) {
+  // A deactivated or email-unverified account keeps its data but loses access,
+  // even with a token that has not expired yet.
+  if (user.isActive === false || (user.status && user.status !== 'active') || user.emailVerified === false) {
     return res.status(403).json({ success: false, error: 'Account is not active', code: 'ACCOUNT_INACTIVE' });
   }
   req.authUser = user;
@@ -58,7 +58,7 @@ const tryAuthenticate = asyncHandler(async (req, res, next) => {
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET);
       const user = await userModel.findById(Number(payload.sub));
-      if (user && user.isActive !== false && (!user.status || user.status === 'active')) {
+      if (user && user.isActive !== false && (!user.status || user.status === 'active') && user.emailVerified !== false) {
         req.authUser = user;
       }
     } catch {

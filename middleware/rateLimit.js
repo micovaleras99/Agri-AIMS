@@ -15,6 +15,9 @@ function jsonMessage(error) {
   return { success: false, error, code: 'RATE_LIMITED' };
 }
 
+/** The automated test suite drives many auth calls from one IP; don't throttle it. */
+const isTest = () => process.env.NODE_ENV === 'test';
+
 /**
  * Sign-in attempts. Deliberately tight: an ATI account guarded by a password
  * like the seeded demo ones falls to an unthrottled script in seconds.
@@ -24,6 +27,7 @@ const loginLimiter = rateLimit({
   limit: 10,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  skip: isTest,
   skipSuccessfulRequests: true, // only failed attempts count toward the limit
   message: jsonMessage('Too many sign-in attempts. Please wait 15 minutes and try again.'),
 });
@@ -34,6 +38,7 @@ const registerLimiter = rateLimit({
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  skip: isTest,
   message: jsonMessage('Too many accounts created from this address. Please try again later.'),
 });
 
@@ -61,4 +66,18 @@ const chatbotLimiter = rateLimit({
   message: jsonMessage('Too many questions in a short time. Please wait a minute and ask again.'),
 });
 
-module.exports = { loginLimiter, registerLimiter, apiLimiter, chatbotLimiter };
+/**
+ * OTP send / resend / verify. A per-IP backstop against hammering the codes
+ * endpoints; the real anti-abuse controls are per-email (a 60s resend cooldown
+ * and a per-code attempt cap) enforced in services/otp.js.
+ */
+const otpLimiter = rateLimit({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip: isTest,
+  message: jsonMessage('Too many verification requests. Please wait a few minutes and try again.'),
+});
+
+module.exports = { loginLimiter, registerLimiter, apiLimiter, chatbotLimiter, otpLimiter };
