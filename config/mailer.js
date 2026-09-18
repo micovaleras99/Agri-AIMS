@@ -76,6 +76,15 @@ function getTransport() {
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 15000,
+      tls: {
+        // Some networks (corporate proxies, or antivirus doing "TLS inspection"
+        // like Kaspersky/ESET) intercept the connection and present their own
+        // self-signed root, which Node rejects with "self-signed certificate in
+        // certificate chain". On such a machine, set
+        // SMTP_TLS_REJECT_UNAUTHORIZED=false in .env to accept it. Default is
+        // secure (verify the certificate).
+        rejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false',
+      },
     });
   }
   return transport;
