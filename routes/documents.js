@@ -37,7 +37,18 @@ router.get('/', async (req, res) => {
     docs = await documentModel.findFiltered({ status, type, search });
   }
 
-  const docStats = await documentModel.statsGlobal();
+  // The stat cards must match what the user can actually see. An applicant or
+  // operator only sees their own documents, so their tiles are counted from that
+  // scoped list — not the system-wide totals, which would leak how many
+  // documents every other applicant has. Staff keep the global figures.
+  const docStats = (role === 'applicant' || role === 'operator')
+    ? {
+        total: docs.length,
+        verified: docs.filter((d) => d.status === 'verified').length,
+        pending: docs.filter((d) => d.status === 'pending_review').length,
+        incomplete: docs.filter((d) => d.status === 'incomplete').length,
+      }
+    : await documentModel.statsGlobal();
 
   // Group by requirement, not by applicant: one container per document type
   // holding every applicant's submission of it — the order the reviewer works
