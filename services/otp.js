@@ -1,6 +1,6 @@
 /**
  * One-time password logic: cryptographically random 6-digit codes, bcrypt-hashed
- * at rest, 5-minute expiry, a 60-second resend cooldown, and a hard cap on wrong
+ * at rest, a short expiry, a 60-second resend cooldown, and a hard cap on wrong
  * attempts. The plaintext code is returned only to the server-side caller (which
  * emails it) — it is never stored, logged, or sent to the browser.
  */
@@ -9,10 +9,19 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const otpModel = require('../models/otpModel');
 
-const OTP_TTL_MS = 5 * 60 * 1000;       // codes expire after 5 minutes
+// Expiry per purpose: registration verification is quick, so 5 minutes; a
+// password reset asks the user to also compose a new password, so 10 minutes.
+const TTL_MS_BY_PURPOSE = {
+  registration: 5 * 60 * 1000,
+  password_reset: 10 * 60 * 1000,
+};
+const DEFAULT_TTL_MS = 5 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60 * 1000;   // one code per email/purpose per 60s
 const MAX_ATTEMPTS = 5;                 // wrong guesses before a code is dead
 const BCRYPT_ROUNDS = 10;
+
+function ttlMs(purpose) { return TTL_MS_BY_PURPOSE[purpose] || DEFAULT_TTL_MS; }
+function ttlMinutes(purpose) { return Math.round(ttlMs(purpose) / 60000); }
 
 /** A cryptographically secure 6-digit code, zero-padded ("004821"). */
 function generateCode() {
@@ -37,7 +46,7 @@ async function issue({ email, userId = null, purpose }) {
   await otpModel.invalidateActive(addr, purpose);
   const code = generateCode();
   const otpHash = await bcrypt.hash(code, BCRYPT_ROUNDS);
-  await otpModel.insert({ email: addr, userId, otpHash, purpose, ttlSeconds: OTP_TTL_MS / 1000 });
+  await otpModel.insert({ email: addr, userId, otpHash, purpose, ttlSeconds: ttlMs(purpose) / 1000 });
   return { ok: true, code };
 }
 
@@ -68,8 +77,8 @@ module.exports = {
   issue,
   verify,
   cleanup: otpModel.cleanup,
-  OTP_TTL_MS,
+  ttlMs,
+  ttlMinutes,
   RESEND_COOLDOWN_MS,
   MAX_ATTEMPTS,
-  TTL_MINUTES: OTP_TTL_MS / 60000,
 };

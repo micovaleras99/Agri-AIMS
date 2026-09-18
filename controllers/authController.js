@@ -58,7 +58,7 @@ async function issueAndEmail(email, userId, purpose) {
       : { status: 'error' };
   }
   const sent = await mailer.sendOtp(email, {
-    purpose, code: issued.code, minutes: otpService.TTL_MINUTES,
+    purpose, code: issued.code, minutes: otpService.ttlMinutes(purpose),
   });
   return { status: sent ? 'sent' : 'mailfail' };
 }
@@ -203,9 +203,9 @@ const resendOtp = asyncHandler(async (req, res) => {
 
   const user = await userModel.findByEmail(email);
   if (purpose === 'registration') {
-    if (user && !user.emailVerified) await issueAndEmail(email, user.id, 'registration');
+    if (user && !user.emailVerified) await issueAndEmail(user.email, user.id, 'registration');
   } else if (user && Number(user.isActive) !== 0 && (!user.status || user.status === 'active')) {
-    await issueAndEmail(email, user.id, 'password_reset');
+    await issueAndEmail(user.email, user.id, 'password_reset');
   }
   return res.json(generic);
 });
@@ -268,8 +268,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   const user = await userModel.findByEmail(email);
   // Only active accounts get a reset code; the response is identical regardless.
+  // The code is sent TO the account's own registered address (user.email from
+  // the database) — never to the system sender — with FROM = SMTP_FROM.
   if (user && Number(user.isActive) !== 0 && (!user.status || user.status === 'active')) {
-    await issueAndEmail(email, user.id, 'password_reset').catch(() => {});
+    await issueAndEmail(user.email, user.id, 'password_reset').catch(() => {});
   }
   return res.json(generic);
 });

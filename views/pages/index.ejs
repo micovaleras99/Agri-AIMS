@@ -677,6 +677,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('otpSubtitle').textContent = reg
             ? "We've sent a 6-digit verification code to your email address."
             : 'Enter the 6-digit verification code sent to your email address.';
+        // Reset codes live 10 minutes, registration codes 5 — match the server.
+        EXPIRY_SECONDS = otpCtx.purpose === 'password_reset' ? 10 * 60 : 5 * 60;
         showAuthScreen('otpForm');
         clearBoxes();
         setMsg('', '');
