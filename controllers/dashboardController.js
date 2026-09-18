@@ -242,8 +242,17 @@ async function renderDashboard(req, res) {
     });
   }
 
-  const myApp =
-    applicants.find((a) => a.applicationId === currentUser.applicationId) || applicants[0];
+  // Only ever the applicant's own record — never a fallback to applicants[0],
+  // which would show someone else's application to an account whose id didn't
+  // resolve.
+  const myApp = applicants.find((a) => a.applicationId === currentUser.applicationId);
+  if (!myApp) {
+    return res.status(404).render('pages/error', {
+      title: 'No Application',
+      code: 404,
+      message: 'No LSA application is linked to your account yet. Please contact the ATI administrator.',
+    });
+  }
 
   const lsaSteps = [
     { step: 1, label: 'Briefing', icon: 'book', desc: 'Read and sign the LSA Briefer (ATI-QF-PAD-162)' },

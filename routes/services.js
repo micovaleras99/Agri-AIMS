@@ -57,6 +57,14 @@ router.get('/', async (req, res) => {
   const myParticipation = await serviceModel.findParticipationForUser(currentUser.id);
   const joinedIds = new Set(myParticipation.map((p) => p.serviceId));
 
+  // The Attended / Enrolled tile: staff see the programme-wide totals, but a
+  // member must see only their OWN participation, not how many people across the
+  // whole system have enrolled or attended.
+  if (memberView) {
+    stats.participants = myParticipation.length;
+    stats.attended = myParticipation.filter((p) => Number(p.attended) === 1).length;
+  }
+
   res.render('pages/services', {
     title: 'Services — Agri-AIMS',
     page: 'services',
