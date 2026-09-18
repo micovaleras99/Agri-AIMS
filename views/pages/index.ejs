@@ -54,7 +54,7 @@
                            placeholder="Password" value="<%= demoLogin ? 'admin123' : '' %>" required>
                     <label for="loginPassword"><i class="ph ph-lock me-1"></i>Password</label>
                     <button type="button" class="pw-toggle" data-target="loginPassword"
-                            aria-label="Show password"><i class="ph ph-eye"></i></button>
+                            aria-label="Show password"><i class="ph ph-eye-slash"></i></button>
                 </div>
 
                 <div class="text-end mb-2">
@@ -253,13 +253,13 @@
                     <input type="password" class="form-control has-pw-toggle" id="regPass" placeholder="Password" required>
                     <label for="regPass"><i class="ph ph-lock me-1"></i>Password</label>
                     <button type="button" class="pw-toggle" data-target="regPass"
-                            aria-label="Show password"><i class="ph ph-eye"></i></button>
+                            aria-label="Show password"><i class="ph ph-eye-slash"></i></button>
                 </div>
                 <div class="form-floating mb-3">
                     <input type="password" class="form-control has-pw-toggle" id="regConf" placeholder="Confirm" required>
                     <label for="regConf"><i class="ph-fill ph-lock me-1"></i>Confirm Password</label>
                     <button type="button" class="pw-toggle" data-target="regConf"
-                            aria-label="Show password"><i class="ph ph-eye"></i></button>
+                            aria-label="Show password"><i class="ph ph-eye-slash"></i></button>
                 </div>
                 <div class="form-check mb-3">
                     <input type="checkbox" class="form-check-input" id="agree" required>
@@ -325,12 +325,12 @@
                 <div class="form-floating mb-3">
                     <input type="password" class="form-control has-pw-toggle" id="resetPass" placeholder="New password" required>
                     <label for="resetPass"><i class="ph ph-lock me-1"></i>New Password</label>
-                    <button type="button" class="pw-toggle" data-target="resetPass" aria-label="Show password"><i class="ph ph-eye"></i></button>
+                    <button type="button" class="pw-toggle" data-target="resetPass" aria-label="Show password"><i class="ph ph-eye-slash"></i></button>
                 </div>
                 <div class="form-floating mb-3">
                     <input type="password" class="form-control has-pw-toggle" id="resetConf" placeholder="Confirm new password" required>
                     <label for="resetConf"><i class="ph-fill ph-lock me-1"></i>Confirm New Password</label>
-                    <button type="button" class="pw-toggle" data-target="resetConf" aria-label="Show password"><i class="ph ph-eye"></i></button>
+                    <button type="button" class="pw-toggle" data-target="resetConf" aria-label="Show password"><i class="ph ph-eye-slash"></i></button>
                 </div>
                 <div id="resetMessage" class="small" role="alert" aria-live="polite"></div>
             </div>
@@ -368,17 +368,19 @@
     video.appendChild(source);
     video.load();
 })();
-// Show/hide password. One delegated handler covers the login and both
-// registration fields; it flips the input type and swaps the eye icon.
+// Show/hide password. One delegated handler covers the login, registration and
+// reset fields; it flips the input type and swaps the eye icon. The icon shows
+// the CURRENT state: an open eye while the password is visible, a crossed-out
+// eye while it is hidden.
 document.addEventListener('click', function (e) {
     const btn = e.target.closest('.pw-toggle');
     if (!btn) return;
     const input = document.getElementById(btn.dataset.target);
     if (!input) return;
-    const show = input.type === 'password';
+    const show = input.type === 'password'; // true = we are about to reveal it
     input.type = show ? 'text' : 'password';
     btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-    btn.querySelector('i').className = show ? 'ph ph-eye-slash' : 'ph ph-eye';
+    btn.querySelector('i').className = show ? 'ph ph-eye' : 'ph ph-eye-slash';
 });
 // Show exactly one of the auth panels; hide the Login/Register tab bar while an
 // OTP, forgot-password or reset panel is up (those are flows, not tabs).
